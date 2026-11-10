@@ -2325,12 +2325,18 @@ try {
  const publicUrl=urlData?.publicUrl;
  if(!publicUrl) throw new Error('Could not get a public URL for the uploaded media.');
 
- const { data: insertedReel, error: insertError } = await supabaseClient.from('reels').insert({
+ const insertPayload={
+   user_id: postingUser.id,
    media_url: publicUrl,
-   caption: captionText,
-   user_id: postingUser.id
- }).select().single();
- if(insertError) throw insertError;
+   caption: captionText
+ };
+ const { data: insertedReel, error: insertError } = await supabaseClient.from('reels').insert(insertPayload).select().single();
+ if(insertError){
+  console.error('Reel insert error:',insertError.message);
+  setCreateStatus(insertError.message,'error');
+  toast(insertError.message);
+  return;
+ }
 
  const reel=normalizeReel({
    ...insertedReel,
