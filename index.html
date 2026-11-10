@@ -105,16 +105,16 @@ button{cursor:pointer;color:white}
 @keyframes appear{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
 .heading{font-size:24px;font-weight:750;margin:17px 0 22px}
 .subheading{color:var(--muted);font-size:13px;margin-top:7px}
-.stories{display:flex;gap:14px;overflow-x:auto;padding:12px 16px;margin-bottom:25px;border-radius:20px;scrollbar-width:none}
-.stories{scrollbar-width:none}
+.stories{display:flex;align-items:center;gap:16px;overflow-x:auto;overflow-y:hidden;padding:12px 16px;margin-bottom:25px;border-radius:20px;background:transparent;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .stories::-webkit-scrollbar{display:none}
+.stories::before,.stories::after{content:none;display:none}
 .story{position:relative;display:flex;flex-direction:column;align-items:center;width:68px;flex-shrink:0;border:0;background:transparent;color:inherit;text-align:center;cursor:pointer}
-.story-avatar-button{display:block;width:64px;height:64px;flex:0 0 64px;padding:0;border:0;border-radius:50%;background:transparent}
-.story-avatar-wrap{position:relative;width:64px;height:64px;border-radius:50%;overflow:hidden;padding:2px;background:#515158}
-.story.has-story .story-avatar-wrap{background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)}
-.story img{display:block;width:100%;height:100%;object-fit:cover;border-radius:50%}
-.story-plus{position:absolute;right:0;top:43px;z-index:2;width:23px;height:23px;display:grid;place-items:center;padding:0;border:2px solid #111;border-radius:50%;background:#1685ed;color:#fff;font-size:19px;line-height:1}
-.story small{display:block;width:68px;margin-top:7px;overflow:hidden;color:#ccc;font-size:11px;text-overflow:ellipsis;white-space:nowrap}
+.story-avatar-button{display:block;width:62px;height:62px;flex:0 0 62px;padding:0;border:0;border-radius:50%;background:transparent}
+.story-avatar-wrap{position:relative;display:flex;align-items:center;justify-content:center;width:62px;height:62px;border-radius:50%;padding:2px;background:#262626}
+.story.has-unviewed .story-avatar-wrap{background:linear-gradient(135deg,#fff,#888)}
+.story img{display:block;width:100%;height:100%;object-fit:cover;border:2px solid #000;border-radius:50%}
+.story-plus{position:absolute;bottom:0;right:0;z-index:2;width:20px;height:20px;display:flex;align-items:center;justify-content:center;padding:0;border:2px solid #000;border-radius:50%;background:#000;color:#fff;font-size:13px;font-weight:bold;line-height:1}
+.story small{display:block;width:100%;margin-top:6px;overflow:hidden;color:#a8a8a8;font-size:11px;text-align:center;text-overflow:ellipsis;white-space:nowrap}
 .story-viewer{position:fixed;inset:0;z-index:10000;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#000;opacity:0;visibility:hidden;transition:opacity .2s ease,visibility .2s}
 .story-viewer.open{opacity:1;visibility:visible}
 .story-stage{position:relative;width:min(100vw,520px);height:100dvh;max-height:100dvh;overflow:hidden;background:#000}
@@ -231,6 +231,28 @@ button{cursor:pointer;color:white}
 .dm-error{color:#ff9999}
 .dm-back{font-size:23px}
 @media(max-width:600px){.dm-drawer{width:100%;height:min(82vh,760px);border-radius:20px 20px 0 0}}
+.activity-overlay{position:fixed;inset:0;z-index:85;display:flex;justify-content:flex-end;background:#0009;opacity:0;visibility:hidden;transition:opacity .24s ease,visibility .24s}
+.activity-overlay.open{opacity:1;visibility:visible}
+.activity-drawer{display:flex;flex-direction:column;width:min(100%,410px);height:100%;overflow:hidden;border-left:1px solid #ffffff20;background:rgba(17,18,22,.98);backdrop-filter:blur(24px);transform:translateX(100%);transition:transform .28s cubic-bezier(.22,.75,.25,1);box-shadow:-16px 0 55px #0008}
+.activity-overlay.open .activity-drawer{transform:translateX(0)}
+.activity-header{height:68px;display:flex;align-items:center;gap:14px;padding:0 20px;border-bottom:1px solid #ffffff16;flex-shrink:0}
+.activity-header h2{flex:1;font-size:18px}
+.activity-close{width:36px;height:36px;border:0;border-radius:50%;background:#ffffff10;color:#fff;font-size:21px}
+.activity-list{flex:1;min-height:0;overflow-y:auto;padding:8px 0;overscroll-behavior:contain}
+.activity-item{display:flex;align-items:center;gap:11px;width:100%;min-height:76px;padding:11px 15px;border:0;border-bottom:1px solid #ffffff0d;background:transparent;color:#fff;text-align:left}
+.activity-item.unread{background:#ffffff08}
+.activity-avatar{width:42px;height:42px;flex:0 0 42px;border-radius:50%;object-fit:cover;background:#333}
+.activity-copy{flex:1;min-width:0;font-size:12px;line-height:1.45}
+.activity-copy b{font-weight:750}
+.activity-time{display:block;margin-top:4px;color:#888;font-size:11px}
+.activity-thumb-button{flex:0 0 42px;padding:0;border:0;background:transparent;cursor:pointer}
+.activity-thumb{width:42px;height:52px;flex:0 0 42px;border-radius:5px;object-fit:cover;background:#252525}
+.activity-follow{flex:0 0 auto;margin-left:auto;padding:8px 11px;font-size:11px}
+.activity-empty{padding:55px 20px;color:#8e8e93;text-align:center;font-size:13px}
+.activity-icon{position:relative}
+.notification-dot{position:absolute;top:7px;right:7px;width:9px;height:9px;border:1px solid #111;border-radius:50%;background:#ff3040}
+.notification-dot[hidden]{display:none}
+@media(max-width:600px){.activity-drawer{width:min(100%,410px)}}
 
 /* PROFILE */
 .profile-header{padding:25px;border-radius:22px;margin-bottom:20px}
@@ -435,7 +457,7 @@ button{cursor:pointer;color:white}
  <button class="nav" data-page="messages" onclick="go('messages')">▢ Messages</button>
  <button class="nav" onclick="openCreate()">＋ Create</button>
  <button class="nav" data-page="saved" onclick="go('saved')">♧ Saved</button>
- <button class="nav" data-page="notifications" onclick="go('notifications')">♧ Notifications</button>
+ <button class="nav" data-page="notifications" onclick="openActivityDrawer()">♧ Notifications</button>
  <button class="nav" data-page="profile" onclick="go('profile')">◎ Profile</button>
  <div class="sidebar-bottom"><button class="nav" data-page="settings" onclick="go('settings')">⚙ Settings</button></div>
 </aside>
@@ -445,7 +467,10 @@ button{cursor:pointer;color:white}
  <div class="brand" style="display:none;font-size:25px;margin:0" id="mobileBrand">VYBE.</div>
  <input id="topSearchInput" class="search" placeholder="⌕  Search VYBE..." autocomplete="off">
  <div class="top-actions">
-  <button class="icon-btn" onclick="go('notifications')">♧</button>
+  <button id="activityButton" class="icon-btn activity-icon" type="button" aria-label="Activity" onclick="toggleActivityDrawer()">
+   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></svg>
+   <span id="notificationDot" class="notification-dot" hidden></span>
+  </button>
   <button class="icon-btn" aria-label="Messages" onclick="openDMDrawer()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4Z"/></svg></button>
   <button id="authButton" class="secondary" onclick="currentUser ? go('profile') : openAuthModal('login')">Log In</button>
   <button id="headerLogoutButton" class="secondary logout-button" onclick="logoutUser()" style="display:none" aria-label="Logout">
@@ -499,6 +524,16 @@ button{cursor:pointer;color:white}
    <input id="messageText" type="text" maxlength="4000" autocomplete="off" placeholder="Message...">
    <button class="dm-send" id="dmSendButton" type="submit">Send</button>
   </form>
+ </section>
+</div>
+
+<div class="activity-overlay" id="activityDrawer" aria-hidden="true" onclick="if(event.target===this)closeActivityDrawer()">
+ <section class="activity-drawer" role="dialog" aria-modal="true" aria-labelledby="activityTitle">
+  <header class="activity-header">
+   <h2 id="activityTitle">Notifications</h2>
+   <button class="activity-close" type="button" aria-label="Close activity" onclick="closeActivityDrawer()">✕</button>
+  </header>
+  <div class="activity-list" id="activityList" aria-live="polite"></div>
  </section>
 </div>
 
@@ -641,6 +676,9 @@ let storyViewerItemIndex=0;
 let storyAdvanceTimer=null;
 const viewedStoryIds=new Set();
 let storyUploading=false;
+let activityNotifications=[];
+let activityChannel=null;
+let activityRequestToken=0;
 let authMode = 'login';
 let currentUser = null;
 let currentProfile = null;
@@ -809,6 +847,8 @@ function enterApp(user){
  if(!user) return;
  if(currentUser?.id !== user.id){
   closeDMDrawer();
+  closeActivityDrawer();
+  closeActivityRealtime();
   closeStoryViewer();
   currentProfile = null;
   hasCurrentProfile = false;
@@ -825,6 +865,9 @@ function enterApp(user){
   dmMessages=[];
   storyGroups=[];
   viewedStoryIds.clear();
+  activityNotifications=[];
+  activityRequestToken++;
+  updateNotificationBadge();
   activeChat=null;
   loadingFollowStates.clear();
   saved.clear();
@@ -969,6 +1012,8 @@ async function logoutUser(){
 function resetSignedOutState(){
  closeCommentsDrawer();
  closeDMDrawer();
+ closeActivityDrawer();
+ closeActivityRealtime();
  closeStoryViewer();
  currentUser=null;
  currentProfile=null;
@@ -991,6 +1036,9 @@ function resetSignedOutState(){
  dmMessages=[];
  storyGroups=[];
  viewedStoryIds.clear();
+ activityNotifications=[];
+ activityRequestToken++;
+ updateNotificationBadge();
  activeChat=null;
  notifications=[];
  activeChat=null;
@@ -1023,7 +1071,9 @@ window.supabaseClient.auth.onAuthStateChange((event, session)=>{
   void syncCurrentProfile().catch(error=>console.error('Profile sync error:', error));
   void loadReels();
   void loadSavedReels();
-   void loadStories();
+  void loadStories();
+  subscribeToActivityNotifications();
+  void loadActivityNotifications();
  } else {
   resetSignedOutState();
  }
@@ -1047,6 +1097,7 @@ function toast(s){
 }
 function go(id){
  if(id==='messages'){openDMDrawer();return;}
+ if(id==='notifications'){openActivityDrawer();return;}
  const blockedPages = ['reels','home','saved','notifications','profile'];
  if (blockedPages.includes(id) && !currentUser) {
    openAuthModal('login');
@@ -1214,19 +1265,22 @@ function renderStories(){
  const storyWrap=document.getElementById('stories');
  if(!storyWrap) return;
  const ownStory=storyGroups.find(group=>group.userId===String(currentUser?.id));
+ const ownUnviewed=Boolean(ownStory?.stories.some(story=>!viewedStoryIds.has(String(story.id))));
  const groups=storyGroups.filter(group=>group.userId!==String(currentUser?.id));
  storyWrap.innerHTML=`
-  <div class="story ${ownStory?'has-story':''}">
-   <button class="story-avatar-button" type="button" onclick="${ownStory?'openOwnStory()':'pickStoryUpload()'}" aria-label="${ownStory?'View your story':'Add to your story'}">
-    <span class="story-avatar-wrap"><img src="${safe(avatarSrc(me.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'" alt=""></span>
-   </button>
-   <button class="story-plus" type="button" aria-label="Add another story" onclick="event.stopPropagation();pickStoryUpload()">+</button>
+  <div class="story ${ownStory?'has-story':''} ${ownUnviewed?'has-unviewed':''}">
+   <div class="story-avatar-button" role="button" tabindex="0" onclick="${ownStory?'openOwnStory()':'pickStoryUpload()'}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${ownStory?'openOwnStory()':'pickStoryUpload()'}}" aria-label="${ownStory?'View your story':'Add to your story'}">
+    <span class="story-avatar-wrap">
+     <img src="${safe(avatarSrc(me.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'" alt="">
+     <button class="story-plus" type="button" aria-label="Add another story" onclick="event.stopPropagation();pickStoryUpload()">+</button>
+    </span>
+   </div>
    <small>Your Story</small>
   </div>
   ${groups.map(group=>{
    const groupIndex=storyGroups.indexOf(group);
    const unviewed=group.stories.some(story=>!viewedStoryIds.has(String(story.id)));
-   return `<div class="story ${group.stories.length?'has-story':''} ${unviewed?'has-unviewed':''}">
+   return `<div class="story ${unviewed?'has-unviewed':''}">
     <button class="story-avatar-button" type="button" onclick="openStoryViewer(${groupIndex})" aria-label="View @${safe(group.profile.username)}'s story">
      <span class="story-avatar-wrap"><img src="${safe(avatarSrc(group.profile.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'" alt=""></span>
     </button>
@@ -1941,6 +1995,225 @@ function renderNotifications(){
  list.innerHTML = notifications.length ? notifications.map(n=>`<div class="person"><div>${safe(n)}</div></div>`).join('') : '<div class="empty">No recent activity.</div>';
 }
 
+function updateNotificationBadge(){
+ const dot=document.getElementById('notificationDot');
+ if(dot) dot.hidden=!activityNotifications.some(item=>!item.is_read);
+}
+
+function activityActor(notification){
+ const profile=notification.sender_profile||notification.profiles;
+ const actor=Array.isArray(profile)?profile[0]:profile;
+ return {
+  id:String(notification.sender_id||notification.actor_id||''),
+  username:actor?.username||notification.sender_username||'user',
+  name:actor?.full_name||actor?.display_name||actor?.name||actor?.username||'Someone',
+  avatar:actor?.avatar_url||actor?.profile_avatar_url||avatarPlaceholder
+ };
+}
+
+function activityText(notification){
+ const type=String(notification.type||'').toLowerCase();
+ if(type==='like') return 'liked your post';
+ if(type==='comment'){
+  const snippet=String(notification.comment_text||notification.content||'').trim();
+  return `commented: ${snippet?`${snippet.slice(0,70)}${snippet.length>70?'…':''}`:'on your post'}`;
+ }
+ if(type==='follow') return 'started following you';
+ return notification.message||'interacted with you';
+}
+
+function renderActivityNotifications(){
+ const list=document.getElementById('activityList');
+ if(!list) return;
+ if(!activityNotifications.length){
+  list.innerHTML='<div class="activity-empty">You’re all caught up.</div>';
+  updateNotificationBadge();
+  return;
+ }
+ list.innerHTML=activityNotifications.map((notification,index)=>{
+  const actor=activityActor(notification);
+  const reelId=notification.reel_id||notification.post_id||'';
+  const reel=reels.find(item=>String(item.id)===String(reelId))||archivedReels.find(item=>String(item.id)===String(reelId));
+  const thumbnail=notification.thumbnail_url||reel?.src||'';
+  const type=String(notification.type||'').toLowerCase();
+  const isFollowing=follows.has(actor.id)||Boolean(followStates.get(actor.id)?.isFollowing);
+  return `<article class="activity-item ${notification.is_read?'':'unread'}" data-activity-index="${index}">
+   <img class="activity-avatar" src="${safe(avatarSrc(actor.avatar))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'" alt="">
+   <span class="activity-copy"><b>${safe(actor.username)}</b> ${safe(activityText(notification))}<time class="activity-time">${safe(formatCommentTime(notification.created_at))}</time></span>
+   ${type==='follow'?`<button class="${isFollowing?'secondary following':'primary'} activity-follow" type="button" data-activity-follow="${safe(actor.id)}" ${pendingFollows.has(actor.id)?'disabled':''}>${pendingFollows.has(actor.id)?'...':isFollowing?'Following':'Follow back'}</button>`:['like','comment'].includes(type)?`<button class="activity-thumb-button" type="button" data-activity-reel="${safe(reelId)}" aria-label="View post"><img class="activity-thumb" src="${safe(thumbnail||avatarPlaceholder)}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'" alt=""></button>`:''}
+  </article>`;
+ }).join('');
+ list.querySelectorAll('[data-activity-follow]').forEach(button=>button.addEventListener('click',event=>{
+  event.stopPropagation();
+  void toggleFollow(button.dataset.activityFollow);
+ }));
+ list.querySelectorAll('[data-activity-reel]').forEach(button=>button.addEventListener('click',()=>{
+  openActivityPost(button.dataset.activityReel);
+ }));
+ list.querySelectorAll('.activity-item').forEach(item=>item.addEventListener('click',event=>{
+  if(event.target.closest('button')) return;
+  const notification=activityNotifications[Number(item.dataset.activityIndex)];
+  const actor=activityActor(notification);
+  if(actor.id) viewProfile(actor.id);
+  closeActivityDrawer();
+ }));
+ updateNotificationBadge();
+}
+
+async function loadActivityNotifications(){
+ if(!currentUser) return;
+ const userId=String(currentUser.id);
+ const request=++activityRequestToken;
+ const list=document.getElementById('activityList');
+ if(list && !activityNotifications.length) list.innerHTML='<div class="activity-empty">Loading activity...</div>';
+ try {
+  const {data,error}=await supabaseClient.from('user_notifications').select('*').eq('receiver_id',userId).order('created_at',{ascending:false}).limit(75);
+  if(error) throw error;
+  if(request!==activityRequestToken||String(currentUser?.id)!==userId) return;
+  const rows=data||[];
+  const senderIds=[...new Set(rows.map(item=>String(item.sender_id||'')).filter(Boolean))];
+  const reelIds=[...new Set(rows.map(item=>String(item.post_id||'')).filter(Boolean))];
+  const commentRows=rows.filter(item=>String(item.type||'').toLowerCase()==='comment');
+  const commentPostIds=[...new Set(commentRows.map(item=>String(item.post_id||'')).filter(Boolean))];
+  const [profilesResult,reelsResult,commentsResult]=await Promise.all([
+   senderIds.length?supabaseClient.from('profiles').select('*').in('id',senderIds):Promise.resolve({data:[],error:null}),
+   reelIds.length?supabaseClient.from('reels').select('*').in('id',reelIds):Promise.resolve({data:[],error:null}),
+   commentPostIds.length&&senderIds.length?supabaseClient.from('post_comments').select('*').in('reel_id',commentPostIds).in('user_id',senderIds).order('created_at',{ascending:false}).limit(150):Promise.resolve({data:[],error:null})
+  ]);
+  if(profilesResult.error) throw profilesResult.error;
+  if(reelsResult.error) console.error('Activity post preview fetch error:',reelsResult.error);
+  if(commentsResult.error) console.error('Activity comment preview fetch error:',commentsResult.error);
+  if(currentUser?.id===userId&&senderIds.length){
+   try { await loadFollowingStates(senderIds); }
+   catch(error){console.error('Activity follow state fetch error:',error);}
+  }
+  const profilesById=new Map((profilesResult.data||[]).map(profile=>[String(profile.id),profile]));
+  const reelsById=new Map((reelsResult.data||[]).map(reel=>[String(reel.id),normalizeReel(reel,0)]));
+  activityNotifications=rows.map(item=>{
+   const senderId=String(item.sender_id||'');
+   const reelId=String(item.post_id||'');
+   const profile=profilesById.get(senderId);
+   const reel=reelsById.get(reelId);
+   const comment=String(item.type||'').toLowerCase()==='comment'
+    ?(commentsResult.data||[]).filter(row=>String(row.user_id)===senderId&&String(row.reel_id)===reelId)
+      .sort((a,b)=>Math.abs(new Date(a.created_at||0)-new Date(item.created_at||0))-Math.abs(new Date(b.created_at||0)-new Date(item.created_at||0)))[0]
+    :null;
+   return {...item,reel_id:item.post_id,sender_profile:profile||null,reel_preview:reel||null,comment_text:item.comment_text||comment?.comment_text||'',thumbnail_url:item.thumbnail_url||reel?.src||null,is_read:Boolean(item.is_read)};
+  });
+  renderActivityNotifications();
+  if(document.getElementById('activityDrawer')?.classList.contains('open')) await markActivityNotificationsRead();
+ } catch(error) {
+  if(request!==activityRequestToken) return;
+  console.error('Activity notifications fetch error:',error);
+  if(list) list.innerHTML='<div class="activity-empty">Unable to load notifications. Please try again.</div>';
+  toast(error?.message||'Unable to load notifications.');
+ }
+}
+
+async function markActivityNotificationsRead(){
+ if(!currentUser) return;
+ const unreadIds=activityNotifications.filter(item=>!item.is_read).map(item=>item.id).filter(Boolean);
+ if(!unreadIds.length) return;
+ activityNotifications=activityNotifications.map(item=>({...item,is_read:true}));
+ renderActivityNotifications();
+ try {
+  const {error}=await supabaseClient.from('user_notifications').update({is_read:true}).eq('receiver_id',currentUser.id).in('id',unreadIds);
+  if(error) throw error;
+ } catch(error) {
+  activityNotifications=activityNotifications.map(item=>unreadIds.includes(item.id)?{...item,is_read:false}:item);
+  renderActivityNotifications();
+  console.error('Mark notifications read error:',error);
+  toast(error?.message||'Unable to mark notifications as read.');
+ }
+}
+
+async function createActivityNotification(recipientId,type,{reelId,commentText}={}){
+ if(!currentUser||!recipientId||String(recipientId)===String(currentUser.id)) return;
+ const payload={receiver_id:recipientId,sender_id:currentUser.id,type,is_read:false};
+ if(reelId!==undefined&&reelId!==null) payload.post_id=reelId;
+ try {
+  const {data,error}=await supabaseClient.from('user_notifications').insert(payload).select('*').single();
+  if(error) throw error;
+  if(data&&String(currentUser?.id)!==String(recipientId)){
+   const existing=new Set(activityNotifications.map(item=>String(item.id)));
+   if(data.id&&!existing.has(String(data.id))){
+    const sender={id:currentUser.id,username:currentProfile||me.username,full_name:me.name,avatar_url:me.pic};
+    activityNotifications.unshift({...data,reel_id:data.post_id,comment_text:commentText||'',sender_profile:sender,is_read:Boolean(data.is_read)});
+    renderActivityNotifications();
+   }
+  }
+ } catch(error) {
+  console.error(`${type} notification insert error:`,error);
+  toast(error?.message||'Your action succeeded, but its notification could not be sent.');
+ }
+}
+
+function toggleActivityDrawer(){
+ if(document.getElementById('activityDrawer')?.classList.contains('open')) closeActivityDrawer();
+ else openActivityDrawer();
+}
+
+function openActivityDrawer(){
+ if(!currentUser){openAuthModal('login');return;}
+ const drawer=document.getElementById('activityDrawer');
+ if(!drawer) return;
+ drawer.classList.add('open');
+ drawer.setAttribute('aria-hidden','false');
+ document.body.style.overflow='hidden';
+ subscribeToActivityNotifications();
+ void loadActivityNotifications();
+}
+
+function closeActivityDrawer(){
+ const drawer=document.getElementById('activityDrawer');
+ if(!drawer) return;
+ drawer.classList.remove('open');
+ drawer.setAttribute('aria-hidden','true');
+ document.body.style.overflow='';
+}
+
+function openActivityPost(reelId){
+ const notification=activityNotifications.find(item=>String(item.post_id||'')===String(reelId));
+ const cachedReel=reels.find(item=>String(item.id)===String(reelId))||archivedReels.find(item=>String(item.id)===String(reelId))||likedReelItems.find(item=>String(item.id)===String(reelId));
+ closeActivityDrawer();
+ if(cachedReel){openReel(cachedReel.id);return;}
+ const reel=notification?.reel_preview;
+ const mediaUrl=reel?.src||notification?.thumbnail_url;
+ if(!mediaUrl) return;
+ const postDetail=document.getElementById('postDetail');
+ if(!postDetail) return;
+ const isVideo=reel?.video||/\.(mp4|webm|ogg|m4v|mov|mkv|3gp)(\?|$)/i.test(mediaUrl);
+ const media=isVideo?`<video class="postmedia" controls autoplay playsinline src="${safe(mediaUrl)}"></video>`:`<img class="postmedia" src="${safe(mediaUrl)}" alt="Post">`;
+ postDetail.innerHTML=`<div class="post glass">${media}<div class="caption">${safe(reel?.caption||notification?.caption||'')}</div></div>`;
+ show('postModal');
+ const video=postDetail.querySelector('video');
+ if(video) void video.play().catch(error=>console.info('Post video autoplay was blocked:',error));
+}
+
+function subscribeToActivityNotifications(){
+ if(activityChannel||!currentUser) return;
+ const userId=String(currentUser.id);
+ activityChannel=supabaseClient.channel(`user-notifications-${userId}-${Date.now()}`)
+  .on('postgres_changes',{event:'INSERT',schema:'public',table:'user_notifications',filter:`receiver_id=eq.${userId}`},payload=>{
+   const incoming=payload.new;
+   if(!incoming) return;
+   const exists=activityNotifications.some(item=>String(item.id)===String(incoming.id));
+   if(!exists) activityNotifications.unshift({...incoming,is_read:Boolean(incoming.is_read)});
+   void loadActivityNotifications();
+   updateNotificationBadge();
+  })
+  .subscribe(status=>{
+   if(status==='CHANNEL_ERROR'||status==='TIMED_OUT') console.error('Activity realtime subscription status:',status);
+  });
+}
+
+function closeActivityRealtime(){
+ if(!activityChannel) return;
+ const channel=activityChannel;
+ activityChannel=null;
+ void supabaseClient.removeChannel(channel).catch(error=>console.error('Activity channel cleanup error:',error));
+}
+
 function normalizeReel(reel, index) {
   const src = reel.media_url || reel.video_url || reel.src || reel.url || reel.video || '';
   const id = reel.id ?? reel.reel_id ?? index + 1;
@@ -2199,6 +2472,8 @@ async function submitReelComment(event){
   }).select('*').single();
   if(error) throw error;
   if(!data) throw new Error('The comment was not returned after saving.');
+  const commentedReel=reels.find(reel=>String(reel.id)===String(activeCommentReelId))||archivedReels.find(reel=>String(reel.id)===String(activeCommentReelId));
+  if(commentedReel) await createActivityNotification(commentedReel.user,'comment',{reelId:commentedReel.id,commentText:text});
   if(activeCommentReelId===String(data.reel_id ?? activeCommentReelId)){
    const list=document.getElementById('commentsList');
    const empty=list?.querySelector('.comments-empty, .comments-error');
@@ -2234,6 +2509,7 @@ document.getElementById('commentsHandle')?.addEventListener('pointerup',event=>{
 document.addEventListener('keydown',event=>{
  if(event.key==='Escape' && document.getElementById('commentsDrawer')?.classList.contains('open')) closeCommentsDrawer();
  if(event.key==='Escape' && document.getElementById('dmDrawer')?.classList.contains('open')) closeDMDrawer();
+ if(event.key==='Escape' && document.getElementById('activityDrawer')?.classList.contains('open')) closeActivityDrawer();
 });
 
 function startVisibleReel(){
@@ -2295,6 +2571,7 @@ async function toggleReelLike(id){
   const {data,error}=await supabaseClient.from('reels').update({likes_count:reel.likes}).eq('id',reel.id).select('id').maybeSingle();
   if(error) throw error;
   if(!data) throw new Error('The reel like count could not be updated.');
+  if(shouldLike) await createActivityNotification(reel.user,'like',{reelId:reel.id});
   if(currentUser?.id===userId && profileTab==='likes' && document.getElementById('profile')?.classList.contains('active')) renderProfile();
  } catch(error) {
   if(likeMutationCommitted && shouldLike){
@@ -2534,6 +2811,7 @@ async function toggleFollow(userId){
   }else{
    const {error}=await supabaseClient.from('user_follows').insert({follower_id:currentUser.id,following_id:userId});
    if(error) throw error;
+   await createActivityNotification(userId,'follow');
   }
   toast(wasFollowing?'Unfollowed':'Following');
  } catch(error) {
@@ -2549,6 +2827,7 @@ async function toggleFollow(userId){
   renderOtherProfile();
   renderSearchResults();
   renderProfile();
+  renderActivityNotifications();
  }
 }
 
@@ -2774,6 +3053,8 @@ async function initializeApp(){
    await loadReels();
    await loadSavedReels();
    await loadStories();
+   subscribeToActivityNotifications();
+   await loadActivityNotifications();
   }else{
    openAuthModal('login');
   }
