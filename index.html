@@ -151,6 +151,17 @@ button{cursor:pointer;color:white}
 .stats small{display:block;color:var(--muted);margin-top:5px}
 .people{display:flex;align-items:center;gap:12px;padding:15px;border-radius:15px;margin:10px 0}
 .people button{margin-left:auto}
+.search-results{max-width:760px;margin:0 auto}
+.search-results-list{display:flex;flex-direction:column;gap:8px}
+.search-result{display:flex;align-items:center;gap:13px;width:100%;padding:13px 15px;border:1px solid transparent;border-radius:15px;background:var(--glass);color:white;text-align:left;transition:background .18s,border-color .18s}
+.search-result:hover{background:#ffffff12;border-color:var(--line)}
+.search-result img{width:48px;height:48px;flex:0 0 48px;object-fit:cover;border-radius:50%;background:#ddd}
+.search-result-details{min-width:0}
+.search-result-name{display:block;font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.search-result-username{display:block;color:#999;font-size:12px;margin-top:4px}
+.search-result-follow{min-width:94px;margin-left:auto}
+.follow-button.following{border-color:#ffffff40;background:transparent;color:#ddd}
+.follow-button:disabled,.search-result-follow:disabled{opacity:.6;cursor:wait}
 .chatbox{padding:15px;border-radius:18px}
 .person{display:flex;align-items:center;gap:12px;padding:14px;border-bottom:1px solid var(--line);cursor:pointer}
 .person p{color:var(--muted);font-size:12px;margin-top:5px}
@@ -360,7 +371,7 @@ button{cursor:pointer;color:white}
 <main class="main">
 <header class="topbar">
  <div class="brand" style="display:none;font-size:25px;margin:0" id="mobileBrand">VYBE.</div>
- <input class="search" placeholder="⌕  Search VYBE..." oninput="searchPosts(this.value)">
+ <input id="topSearchInput" class="search" placeholder="⌕  Search VYBE..." autocomplete="off">
  <div class="top-actions">
   <button class="icon-btn" onclick="go('notifications')">♧</button>
   <button class="icon-btn" onclick="go('messages')">✉</button>
@@ -383,7 +394,8 @@ button{cursor:pointer;color:white}
  <div class="stories glass" id="stories"></div>
  <h2 class="heading">Your Feed</h2><div id="feed"></div>
 </section>
-<section id="explore" class="page"><h2 class="heading">Discover</h2><div id="exploreGrid" class="grid discover-grid"></div></section>
+<section id="explore" class="page"><h2 class="heading">Explore</h2><div id="exploreGrid" class="grid discover-grid"></div></section>
+<section id="searchResults" class="page"><div class="search-results"><h2 class="heading">Search results</h2><div id="searchResultList" class="search-results-list"></div></div></section>
 <section id="profile" class="page"><div id="profileView"></div></section>
 <section id="other" class="page"><div id="otherView"></div></section>
 <section id="saved" class="page"><h2 class="heading">Saved Collections</h2><div id="savedGrid" class="grid"></div></section>
@@ -498,7 +510,7 @@ const supabaseAnonKey = "sb_publishable_qSOZ_ABJcPhpcyNo0mY3Cw_gLEyMoB3";
 window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
 const supabaseClient = window.supabaseClient;
 
-let me={id:0,name:"",username:"",bio:"",pic:avatar(),followers:120,following:85};
+let me={id:0,name:"",username:"",bio:"",pic:avatar(),followers:0,following:0};
 let users=[
  {id:1,name:"Alex",username:"alex.design",pic:avatar(),bio:"Creative soul | Design & lifestyle",followers:2450,following:430},
  {id:2,name:"Sarah",username:"sarah.official",pic:avatar(),bio:"Living beautifully | Everyday moments",followers:5200,following:610},
@@ -516,9 +528,12 @@ let posts=[
 
 let reels=[],archivedReels=[];
 
-let follows=new Set(),saved=new Set(),savedReels=new Set(),likedReels=new Set(),likedReelItems=[],pendingReelLikes=new Set(),notifications=[],chats={};
+let follows=new Set(),followStates=new Map(),pendingFollows=new Set(),loadingFollowStates=new Set(),saved=new Set(),savedReels=new Set(),likedReels=new Set(),likedReelItems=[],pendingReelLikes=new Set(),notifications=[],chats={};
 let nextId=10,activeChat=null,viewing=null,profileTab="posts",muted=true;
 let searchTerm="";
+let searchDebounceTimer=null;
+let searchRequestToken=0;
+const searchedProfiles=new Map();
 let authMode = 'login';
 let currentUser = null;
 let currentProfile = null;
@@ -584,7 +599,60 @@ async function syncCurrentProfile(){
   renderReels();
   renderExplore();
   renderProfile();
+  await loadFollowData(profileUser.id);
   return hasCurrentProfile;
+}
+
+async function loadFollowData(targetUserId){
+ if(!targetUserId) return null;
+ const targetId=String(targetUserId);
+ const followerQuery=supabaseClient.from('user_follows').select('follower_id',{count:'exact',head:true}).eq('following_id',targetUserId);
+ const followingQuery=supabaseClient.from('user_follows').select('following_id',{count:'exact',head:true}).eq('follower_id',targetUserId);
+ const requests=[followerQuery,followingQuery];
+ if(currentUser && String(currentUser.id)!==targetId){
+  requests.push(supabaseClient.from('user_follows').select('follower_id').eq('follower_id',currentUser.id).eq('following_id',targetUserId).maybeSingle());
+ }
+ const [followersResult,followingResult,relationshipResult]=await Promise.all(requests);
+ if(followersResult.error) throw followersResult.error;
+ if(followingResult.error) throw followingResult.error;
+ if(relationshipResult?.error && relationshipResult.error.code!=='PGRST116') throw relationshipResult.error;
+ const state={
+  followers:Number(followersResult.count||0),
+  following:Number(followingResult.count||0),
+  isFollowing:Boolean(relationshipResult?.data)
+ };
+ followStates.set(targetId,state);
+ if(state.isFollowing) follows.add(targetId); else follows.delete(targetId);
+ if(String(currentUser?.id)===targetId){
+  me.followers=state.followers;
+  me.following=state.following;
+  renderProfile();
+ }else{
+  const profile=users.find(item=>String(item.id)===targetId);
+  if(profile){ profile.followers=state.followers; profile.following=state.following; }
+  if(String(viewing)===targetId) renderOtherProfile();
+ }
+ return state;
+}
+
+async function loadFollowingStates(userIds){
+ if(!currentUser) return;
+ const ids=[...new Set(userIds.map(String).filter(id=>id!==String(currentUser.id)))];
+ if(!ids.length) return;
+ ids.forEach(id=>loadingFollowStates.add(id));
+ try {
+  const {data,error}=await supabaseClient.from('user_follows').select('following_id').eq('follower_id',currentUser.id).in('following_id',ids);
+  if(error) throw error;
+  const followingIds=new Set((data||[]).map(row=>String(row.following_id)));
+  ids.forEach(id=>{
+   const existing=followStates.get(id)||{followers:0,following:0,isFollowing:false};
+   existing.isFollowing=followingIds.has(id);
+   followStates.set(id,existing);
+   if(existing.isFollowing) follows.add(id); else follows.delete(id);
+  });
+ } finally {
+  ids.forEach(id=>loadingFollowStates.delete(id));
+ }
 }
 
 function setAuthStatus(message, type='info'){ const el=document.getElementById('authStatus'); if(!el) return; el.textContent=message; el.className='auth-status '+type; }
@@ -641,6 +709,9 @@ function enterApp(user){
   likedReels.clear();
   likedReelItems=[];
   follows.clear();
+  followStates.clear();
+  pendingFollows.clear();
+  loadingFollowStates.clear();
   saved.clear();
  }
  currentUser = user;
@@ -793,6 +864,9 @@ function resetSignedOutState(){
  likedReelItems=[];
  pendingReelLikes.clear();
  follows.clear();
+ followStates.clear();
+ pendingFollows.clear();
+ loadingFollowStates.clear();
  saved.clear();
  chats={};
  notifications=[];
@@ -800,6 +874,11 @@ function resetSignedOutState(){
  viewing=null;
  profileTab='posts';
  searchTerm='';
+ clearTimeout(searchDebounceTimer);
+ searchRequestToken++;
+ searchedProfiles.clear();
+ const searchInput=document.getElementById('topSearchInput');
+ if(searchInput) searchInput.value='';
  posts.forEach(post=>{post.liked=false;});
  closeAuthModal();
  updateAuthUI();
@@ -843,7 +922,7 @@ function toast(s){
  clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>t.style.display='none',2200);
 }
 function go(id){
- const blockedPages = ['reels','home','explore','saved','messages','notifications','profile','other','chat'];
+ const blockedPages = ['reels','home','saved','messages','notifications','profile','chat'];
  if (blockedPages.includes(id) && !currentUser) {
    openAuthModal('login');
    return;
@@ -853,11 +932,16 @@ function go(id){
  document.querySelectorAll('.nav,.bottom button').forEach(x=>x.classList.remove('active'));
  document.querySelectorAll('.nav').forEach(x=>{if(x.dataset.page===id)x.classList.add('active')});
  let map={reels:0,home:1,explore:2,profile:4};
- if(map[id]!==undefined)document.querySelectorAll('.bottom button')[map[id]]?.classList.add('active');
+ const activeNav=id==='searchResults'||id==='other'?'explore':id;
+ if(map[activeNav]!==undefined)document.querySelectorAll('.bottom button')[map[activeNav]]?.classList.add('active');
  if(id==='reels'){ void loadReelLikes(); startVisibleReel(); }
  if(id==='home')renderFeed();
- if(id==='profile')renderProfile();
- if(id==='explore')renderExplore();
+ if(id==='profile'){
+  renderProfile();
+  if(currentUser) void loadFollowData(currentUser.id).catch(error=>{console.error('Own profile follow count error:',error);toast(error?.message||'Unable to load follow counts.');});
+ }
+ if(id==='explore'){renderExplore();void loadExploreFeed();}
+ if(id==='searchResults')renderSearchResults();
  if(id==='saved')renderSaved();
  if(id==='messages')renderChats();
  if(id==='notifications')renderNotifications();
@@ -865,6 +949,14 @@ function go(id){
 function viewProfile(id){
  if(id===0 || (currentUser && String(id)===String(currentUser.id))){go('profile');return}
  viewing=id;profileTab="posts";renderOtherProfile();go('other');
+ void loadFollowData(id).catch(error=>{console.error('Profile follow count error:',error);toast(error?.message||'Unable to load follow counts.');});
+}
+function openSearchedProfile(id){
+ const match=searchedProfiles.get(String(id));
+ if(!match) return;
+ users=users.filter(existing=>String(existing.id)!==String(match.id));
+ users.push(match);
+ viewProfile(match.id);
 }
 function openCreate(){
  if (!currentUser) {
@@ -958,11 +1050,7 @@ function renderStories(){
 function renderFeed(){
  const feed=document.getElementById('feed');
  if(!feed) return;
- const term=searchTerm.trim().toLowerCase();
- const list=posts.filter(post=>{
-   const author=user(post.user);
-   return !term || uName(author).includes(term) || (post.caption||'').toLowerCase().includes(term);
- });
+ const list=posts;
  if(!list.length){
    feed.innerHTML='<div class="empty">No posts match your search.</div>';
    return;
@@ -999,12 +1087,60 @@ function renderFeed(){
 function renderExplore(){
  const exploreGrid=document.getElementById('exploreGrid');
  if(!exploreGrid) return;
- exploreGrid.innerHTML=reels.length ? reels.map((reel,index)=>`
+ const publicItems=reels.filter(isPublicActiveReel);
+ exploreGrid.innerHTML=publicItems.length ? publicItems.map((reel,index)=>`
    <div class="tile" style="grid-row-end:span ${index%4===2?25:index%4===3?22:18}" onclick="openReel('${safe(reel.id)}')">
     ${isOwnReel(reel)?`<button class="reel-manage" aria-label="Manage your post" onclick="event.stopPropagation();openReelMenu('${safe(reel.id)}')">⋯</button>`:''}
-    ${reel.video?`<video src="${safe(reel.src)}" muted playsinline></video>`:`<img src="${safe(reel.src)}" alt="Public post">`}
+    ${reel.video?`<video src="${safe(reel.src)}" muted playsinline preload="metadata"></video>`:`<img src="${safe(reel.src)}" alt="Public post">`}
     <span>@${safe(reelAuthorName(reel))}</span>
    </div>`).join('') : '<div class="empty">No public posts or reels yet.</div>';
+}
+
+async function loadExploreFeed(){
+ const exploreGrid=document.getElementById('exploreGrid');
+ if(!exploreGrid) return;
+ exploreGrid.innerHTML='<div class="empty">Loading public posts...</div>';
+ try {
+  const {data,error}=await supabaseClient.from('reels').select('*').order('created_at',{ascending:false});
+  if(error) throw error;
+  const loaded=(data||[]).map(normalizeReel).filter(isPublicActiveReel);
+  const loadedIds=new Set(loaded.map(item=>String(item.id)));
+  reels=[...loaded,...reels.filter(item=>!loadedIds.has(String(item.id))&&isPublicActiveReel(item))];
+  renderExplore();
+ } catch(error) {
+  console.error('Explore feed fetch error:',error);
+  exploreGrid.innerHTML='<div class="empty">Unable to load public posts. Please try again.</div>';
+  toast(error?.message || 'Unable to load Explore.');
+ }
+}
+
+function renderSearchResults(message){
+ const resultList=document.getElementById('searchResultList');
+ if(!resultList) return;
+ if(message){
+  resultList.innerHTML=`<div class="empty">${safe(message)}</div>`;
+  return;
+ }
+ const matches=[...searchedProfiles.values()];
+ if(!matches.length){
+  resultList.innerHTML='<div class="empty">No users found.</div>';
+  return;
+ }
+ resultList.innerHTML=matches.map(profile=>{
+  const isOwn=String(currentUser?.id)===String(profile.id);
+  const state=followStates.get(String(profile.id));
+  const isFollowing=Boolean(state?.isFollowing || follows.has(String(profile.id)));
+  const isLoading=loadingFollowStates.has(String(profile.id));
+  return `<div class="search-result">
+   <button class="search-result-identity" type="button" data-profile-id="${safe(profile.id)}" style="display:flex;align-items:center;gap:13px;flex:1;min-width:0;border:0;background:transparent;color:inherit;text-align:left">
+    <img src="${safe(avatarSrc(profile.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'" alt="">
+    <span class="search-result-details"><span class="search-result-name">${safe(profile.name)}</span><span class="search-result-username">@${safe(profile.username)}</span></span>
+   </button>
+   ${isOwn?'':`<button class="${isFollowing?'secondary following':'primary'} follow-button search-result-follow" type="button" data-follow-user="${safe(profile.id)}" ${isLoading||pendingFollows.has(String(profile.id))?'disabled':''}>${isLoading||pendingFollows.has(String(profile.id))?'...':isFollowing?'Following':'Follow'}</button>`}
+  </div>`;
+ }).join('');
+ resultList.querySelectorAll('.search-result-identity').forEach(button=>button.addEventListener('click',()=>openSearchedProfile(button.dataset.profileId)));
+ resultList.querySelectorAll('[data-follow-user]').forEach(button=>button.addEventListener('click',()=>toggleFollow(button.dataset.followUser)));
 }
 
 function renderSaved(){
@@ -1066,7 +1202,15 @@ function renderOtherProfile(){
  const otherView=document.getElementById('otherView');
  if(!otherView || !viewing) return;
  const userData=user(viewing);
- const relevant=posts.filter(p=>p.user===viewing);
+ const relevantPosts=posts.filter(post=>String(post.user)===String(viewing));
+ const relevantReels=reels.filter(reel=>String(reel.user)===String(viewing)&&isPublicActiveReel(reel));
+ const relevant=[...relevantPosts,...relevantReels];
+ const followState=followStates.get(String(userData.id)) || {followers:Number(userData.followers||0),following:Number(userData.following||0),isFollowing:follows.has(String(userData.id))};
+ const isOwnProfile=String(currentUser?.id)===String(userData.id);
+ const profileTiles=[
+  ...relevantPosts.map(post=>`<div class="profile-tile" onclick="openPost(${post.id})">${post.video?`<video src="${safe(post.src)}"></video>`:`<img src="${safe(post.src)}">`}</div>`),
+  ...relevantReels.map(reel=>`<div class="profile-tile" onclick="openReel('${safe(reel.id)}')">${reel.video?`<video src="${safe(reel.src)}" muted playsinline></video>`:`<img src="${safe(reel.src)}">`}</div>`)
+ ];
  otherView.innerHTML=`
  <div class="profile-header glass">
   <div class="profile-top">
@@ -1074,21 +1218,20 @@ function renderOtherProfile(){
    <div class="profile-details">
     <div class="profile-username">${safe(userData.name)} <span style="color:#aaa;font-size:12px">@${safe(uName(userData))}</span></div>
     <div class="profile-buttons">
-      <button class="primary" onclick="toggleFollow(${userData.id})">${follows.has(userData.id)?'Following':'Follow'}</button>
-      <button class="secondary" onclick="openChat(${userData.id})">Message</button>
+      ${isOwnProfile?'<button class="secondary edit-profile-button" onclick="editProfile()">Edit profile</button>':`<button class="${followState.isFollowing?'secondary following':'primary'} follow-button" ${pendingFollows.has(String(userData.id))?'disabled':''} onclick="toggleFollow('${safe(userData.id)}')">${followState.isFollowing?'Following':'Follow'}</button><button class="secondary" onclick="openChat('${safe(userData.id)}')">Message</button>`}
     </div>
     <div class="profile-bio">${safe(userData.bio)}</div>
     <div class="profile-stats">
       <button><b>${relevant.length}</b><span>Posts</span></button>
-      <button><b>${userData.followers}</b><span>Followers</span></button>
-      <button><b>${userData.following}</b><span>Following</span></button>
+      <button><b>${Number(followState.followers||0)}</b><span>Followers</span></button>
+      <button><b>${Number(followState.following||0)}</b><span>Following</span></button>
     </div>
    </div>
   </div>
   <div class="profile-tabs">
     <button class="active">POSTS</button>
   </div>
-  <div class="profile-grid">${relevant.length ? relevant.map(post=>`<div class="profile-tile" onclick="openPost(${post.id})">${post.video?`<video src="${post.src}"></video>`:`<img src="${post.src}">`}</div>`).join('') : '<div class="profile-empty">No posts yet.</div>'}</div>
+  <div class="profile-grid">${profileTiles.length ? profileTiles.join('') : '<div class="profile-empty">No posts yet.</div>'}</div>
  </div>`;
 }
 
@@ -1698,10 +1841,58 @@ function toggleSave(postId){
  renderSaved(); renderFeed();
 }
 
-function toggleFollow(userId){
- if(follows.has(userId)){follows.delete(userId); toast('Unfollowed');}
- else {follows.add(userId); toast('Followed');}
+async function toggleFollow(userId){
+ if(!currentUser){openAuthModal('login');return;}
+ const targetId=String(userId);
+ const followerId=String(currentUser.id);
+ if(targetId===followerId || pendingFollows.has(targetId)) return;
+ if(!followStates.has(followerId)){
+  try { await loadFollowData(currentUser.id); }
+  catch(error){console.error('Own follow count load error:',error);toast(error?.message||'Unable to load follow counts.');return;}
+ }
+ if(!followStates.has(targetId)){
+  try { await loadFollowData(userId); }
+  catch(error){console.error('Follow state load error:',error);toast(error?.message||'Unable to check follow status.');return;}
+ }
+ const state=followStates.get(targetId)||{followers:0,following:0,isFollowing:follows.has(targetId)};
+ const wasFollowing=state.isFollowing;
+ const profile=users.find(item=>String(item.id)===targetId);
+ const previousState={...state};
+ const previousOwnState={...(followStates.get(followerId)||{followers:me.followers,following:me.following,isFollowing:false})};
+ const nextState={...state,followers:Math.max(0,state.followers+(wasFollowing?-1:1)),isFollowing:!wasFollowing};
+ pendingFollows.add(targetId);
+ followStates.set(targetId,nextState);
+ if(profile) profile.followers=nextState.followers;
+ const ownNextState={...previousOwnState,following:Math.max(0,previousOwnState.following+(wasFollowing?-1:1))};
+ followStates.set(followerId,ownNextState);
+ me.following=ownNextState.following;
+ if(wasFollowing) follows.delete(targetId); else follows.add(targetId);
  renderOtherProfile();
+ renderSearchResults();
+ renderProfile();
+ try {
+  if(wasFollowing){
+   const {error}=await supabaseClient.from('user_follows').delete().eq('follower_id',currentUser.id).eq('following_id',userId);
+   if(error) throw error;
+  }else{
+   const {error}=await supabaseClient.from('user_follows').insert({follower_id:currentUser.id,following_id:userId});
+   if(error) throw error;
+  }
+  toast(wasFollowing?'Unfollowed':'Following');
+ } catch(error) {
+  followStates.set(targetId,previousState);
+  if(profile) profile.followers=previousState.followers;
+  followStates.set(followerId,previousOwnState);
+  me.following=previousOwnState.following;
+  if(wasFollowing) follows.add(targetId); else follows.delete(targetId);
+  console.error('Follow update error:',error);
+  toast(error?.message||'Unable to update follow status.');
+ } finally {
+  pendingFollows.delete(targetId);
+  renderOtherProfile();
+  renderSearchResults();
+  renderProfile();
+ }
 }
 
 function sharePost(postId){
@@ -1735,9 +1926,11 @@ function openReel(id){
  if(!reel) return;
  const postDetail=document.getElementById('postDetail');
  if(!postDetail) return;
- const media=reel.video?`<video class="postmedia" controls playsinline src="${safe(reel.src)}"></video>`:`<img class="postmedia" src="${safe(reel.src)}" alt="Post">`;
+ const media=reel.video?`<video class="postmedia" controls autoplay playsinline src="${safe(reel.src)}"></video>`:`<img class="postmedia" src="${safe(reel.src)}" alt="Post">`;
  postDetail.innerHTML=`<div class="post glass">${media}<div class="caption"><b>@${safe(reelAuthorName(reel))}</b> ${safe(reel.caption)}</div></div>`;
  show('postModal');
+ const video=postDetail.querySelector('video');
+ if(video) void video.play().catch(error=>console.info('Post video autoplay was blocked:',error));
 }
 
 async function createPost(){
@@ -1852,9 +2045,60 @@ function showPeopleList(title, ids){
 }
 
 function searchPosts(term){
- searchTerm=term || '';
- renderFeed();
+ const hadQuery=Boolean(searchTerm.trim());
+ searchTerm=String(term || '');
+ clearTimeout(searchDebounceTimer);
+ const query=searchTerm.trim().replace(/^@/,'').replace(/[^\p{L}\p{N}_. -]/gu,' ').replace(/\s+/g,' ').trim();
+ if(!query){
+  searchRequestToken++;
+  searchedProfiles.clear();
+  renderExplore();
+  if(hadQuery || document.getElementById('searchResults')?.classList.contains('active')) go('explore');
+  return;
+ }
+ go('searchResults');
+ renderSearchResults('Searching...');
+ const token=++searchRequestToken;
+ searchDebounceTimer=setTimeout(async()=>{
+  try {
+   const {data,error}=await supabaseClient.from('profiles')
+    .select('id, username, full_name, avatar_url')
+    .or(`username.ilike.%${query}%,full_name.ilike.%${query}%`)
+    .limit(10);
+   if(error) throw error;
+   if(token!==searchRequestToken || query!==searchTerm.trim().replace(/^@/,'').replace(/[^\p{L}\p{N}_. -]/gu,' ').replace(/\s+/g,' ').trim()) return;
+   searchedProfiles.clear();
+   (data||[]).forEach(profile=>{
+    if(!profile.id) return;
+    const username=normalizeUsername(profile.username);
+    if(!username) return;
+    searchedProfiles.set(String(profile.id),{
+     id:profile.id,
+     name:profile.full_name || profile.display_name || profile.name || username,
+     username,
+     pic:profile.avatar_url || profile.profile_avatar_url || avatarPlaceholder,
+     bio:profile.bio || '',
+     followers:Number(profile.followers||0),
+     following:Number(profile.following||0)
+    });
+   });
+   renderSearchResults();
+   if(currentUser){
+    try { await loadFollowingStates([...searchedProfiles.keys()]); }
+    catch(followError){console.error('Search follow state error:',followError);toast(followError?.message||'Unable to load follow status.');}
+    if(token!==searchRequestToken) return;
+    renderSearchResults();
+   }
+  } catch(error) {
+   if(token!==searchRequestToken) return;
+   console.error('Profile search error:',error);
+   renderSearchResults('Unable to search profiles. Please try again.');
+   toast(error?.message || 'Unable to search profiles.');
+  }
+ },300);
 }
+
+document.getElementById('topSearchInput')?.addEventListener('input',event=>searchPosts(event.currentTarget.value));
 
 async function initializeApp(){
  try {
