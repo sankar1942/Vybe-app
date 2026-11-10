@@ -95,6 +95,20 @@ button{cursor:pointer;color:white}
  border-radius:14px;background:var(--glass);
  border:1px solid var(--line);color:white;outline:none;
 }
+.search-wrap{position:relative;width:300px;max-width:45%;flex:0 1 300px}
+.search-wrap .search{display:block;width:100%;max-width:none;padding-right:44px}
+.search-clear{position:absolute;top:50%;right:9px;display:none;width:28px;height:28px;transform:translateY(-50%);border:0;border-radius:50%;background:#ffffff12;color:#ddd;font-size:17px;line-height:1}
+.search-wrap.has-query .search-clear{display:block}
+.search-suggestions{position:absolute;top:calc(100% + 8px);left:0;right:0;z-index:60;display:none;max-height:min(65vh,420px);overflow-y:auto;padding:6px;border:1px solid var(--line);border-radius:16px;background:rgba(20,20,22,.98);box-shadow:0 16px 38px #000b;backdrop-filter:blur(24px)}
+.search-suggestions.open{display:block}
+.search-suggestion{display:flex;width:100%;align-items:center;gap:12px;padding:10px;border:0;border-radius:11px;background:transparent;color:#fff;text-align:left}
+.search-suggestion:hover,.search-suggestion:focus-visible{background:#ffffff12;outline:none}
+.search-suggestion img{width:42px;height:42px;flex:0 0 42px;border-radius:50%;object-fit:cover;background:#333}
+.search-suggestion-copy{min-width:0}
+.search-suggestion-name,.search-suggestion-username{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.search-suggestion-name{font-size:13px;font-weight:700}
+.search-suggestion-username{margin-top:4px;color:#999;font-size:11px}
+.search-suggestion-state{padding:18px 12px;color:#aaa;font-size:12px;text-align:center}
 .search::placeholder{color:#888}
 .top-actions{display:flex;gap:10px}
 .logout-button{display:flex;align-items:center;gap:7px;white-space:nowrap}
@@ -165,6 +179,8 @@ button{cursor:pointer;color:white}
 .action.liked{color:#ff3040}
 .action.saved{color:#fff}
 .action.save{margin-left:auto}
+.action.save svg,.reel-bookmark-button svg,.profile-saved-tab svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle}
+.action.save.saved svg,.reel-bookmark-button.saved svg{fill:#fff;stroke:#fff}
 .likes{padding:0 16px;font-size:13px;font-weight:700}
 .caption{padding:10px 16px;font-size:13px;line-height:1.7;overflow-wrap:anywhere}
 .commentlist{padding:0 16px;font-size:12px;color:#ccc}
@@ -292,10 +308,23 @@ button{cursor:pointer;color:white}
 .highlight img{width:65px;height:65px;border-radius:50%;border:1px solid #888;padding:4px;object-fit:cover}
 .highlight small{display:block;font-size:11px;color:#bbb;margin-top:6px}
 .profile-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
-.discover-grid{grid-auto-rows:10px;align-items:stretch}
-.discover-grid .tile{height:auto;grid-row:span 18}
-.discover-grid .tile:nth-child(3n){grid-row:span 25}
-.discover-grid .tile:nth-child(4n){grid-row:span 22}
+.explore-grid-wrap{width:100%;container-type:inline-size}
+.discover-grid{grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:calc((100cqw - 4px)/3);gap:2px;align-items:stretch}
+.discover-grid .tile{height:auto;min-width:0;grid-row:span 1;border-radius:0}
+.discover-grid .tile:nth-child(6n + 3){grid-column:span 2;grid-row:span 2}
+.discover-grid .tile .explore-video-badge{position:absolute;top:9px;right:9px;bottom:auto;left:auto;z-index:2;width:24px;height:24px;display:grid;place-items:center;border-radius:50%;background:#0009}
+.explore-video-badge svg{width:13px;height:13px;fill:#fff}
+.explore-lightbox{width:min(100%,560px);max-width:560px;padding:14px}
+.explore-lightbox .close{float:none;display:block;margin-left:auto}
+.explore-lightbox-media{display:grid;place-items:center;max-height:min(55vh,620px);overflow:hidden;background:#050505;border-radius:12px}
+.explore-lightbox-media img,.explore-lightbox-media video{display:block;width:100%;max-height:min(55vh,620px);object-fit:contain}
+.explore-lightbox-creator{display:flex;align-items:center;gap:10px;padding:12px 4px 8px}
+.explore-lightbox-creator img{width:36px;height:36px;border-radius:50%;object-fit:cover}
+.explore-lightbox-creator button{border:0;background:none;color:#fff;font-size:13px;font-weight:700}
+.explore-lightbox-actions{display:flex;align-items:center;gap:15px;padding:4px}
+.explore-lightbox-actions button{border:0;background:none;color:#fff;font-size:19px}
+.explore-lightbox-actions [data-reel-like].active{color:#ff3040}
+.explore-lightbox-caption{padding:7px 4px;font-size:13px;line-height:1.6}
 .profile-tabs{flex-wrap:wrap;gap:24px}
 .profile-tile{aspect-ratio:1;position:relative;overflow:hidden;cursor:pointer;background:#181818}
 .profile-tile img,.profile-tile video{width:100%;height:100%;object-fit:cover}
@@ -326,9 +355,11 @@ button{cursor:pointer;color:white}
 .reel-user img{width:38px;height:38px;border-radius:50%;cursor:pointer}
 .reel-user button{background:none;border:0;color:white;font-size:12px}
 .reel-info p{font-size:13px;line-height:1.6}
-.reel-audio-tag{display:flex;align-items:center;gap:6px;max-width:min(270px,75vw);margin-top:9px;padding:6px 9px;border:1px solid #ffffff20;border-radius:999px;background:#0007;color:#fff;text-align:left}
+.reel-audio-tag{display:flex;align-items:center;gap:6px;width:min(270px,75vw);max-width:100%;margin-top:9px;padding:6px 9px;border:1px solid #ffffff20;border-radius:999px;background:#0007;color:#fff;text-align:left}
 .reel-audio-tag svg{width:14px;height:14px;flex:0 0 14px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-.reel-audio-title{overflow:hidden;font-size:12px;line-height:1.2;text-overflow:ellipsis;white-space:nowrap}
+.reel-audio-title{display:block;flex:1;min-width:0;overflow:hidden;font-size:12px;line-height:1.2;white-space:nowrap}
+.reel-audio-track{display:inline-block;min-width:max-content;padding-left:100%;animation:reel-audio-marquee 12s linear infinite}
+@keyframes reel-audio-marquee{to{transform:translateX(-100%)}}
 .reel-side{position:absolute;right:16px;bottom:90px;z-index:10;display:flex;flex-direction:column;gap:19px;align-items:center}
 .reel-side button{background:#0008;border:1px solid #ffffff40;border-radius:50%;width:43px;height:43px;font-size:20px}
 .reel-side .reel-share-button{display:grid;place-items:center}
@@ -336,7 +367,7 @@ button{cursor:pointer;color:white}
 .reel-side .reel-like-button.active{color:#ff3040;border-color:#ff3040}
 .reel-side small{font-size:10px}
 .reel-comment-count{font-size:10px;color:#ddd;line-height:1;margin-top:-15px}
-.reel-vinyl-wrap{position:absolute;right:19px;bottom:24px;z-index:10;width:38px;height:38px;padding:3px;border:1px solid #ffffff70;border-radius:50%;background:#151515;box-shadow:0 2px 12px #000b}
+.reel-vinyl-wrap{position:absolute;right:19px;bottom:24px;z-index:10;width:34px;height:34px;padding:2px;border:1px solid #ffffff70;border-radius:50%;background:#151515;box-shadow:0 2px 12px #000b}
 .reel-vinyl-disc{position:relative;width:100%;height:100%;overflow:hidden;border:1px solid #ffffff65;border-radius:50%;background:repeating-radial-gradient(circle,#111 0 2px,#292929 2.5px 3.5px,#101010 4px 5px);animation:reel-vinyl-spin 3s linear infinite;animation-play-state:paused}
 .reel-vinyl-disc:before,.reel-vinyl-disc:after{position:absolute;inset:5px;border:1px solid #ffffff35;border-radius:50%;content:"";pointer-events:none}
 .reel-vinyl-disc:after{inset:9px}
@@ -345,7 +376,7 @@ button{cursor:pointer;color:white}
 @keyframes reel-vinyl-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 .reel-sound-indicator{position:absolute;left:50%;top:50%;z-index:12;display:grid;width:72px;height:72px;place-items:center;border:1px solid #ffffff40;border-radius:50%;background:#0009;opacity:0;pointer-events:none;transform:translate(-50%,-50%) scale(.8)}
 .reel-sound-indicator svg{width:32px;height:32px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.reel-sound-indicator.visible{animation:reel-sound-indicator-fade 500ms ease-out forwards}
+.reel-sound-indicator.visible{animation:reel-sound-indicator-fade 600ms ease-out forwards}
 @keyframes reel-sound-indicator-fade{0%{opacity:0;transform:translate(-50%,-50%) scale(.8)}18%{opacity:1;transform:translate(-50%,-50%) scale(1)}78%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1.05)}}
 .sound-btn{position:absolute;right:15px;top:15px;z-index:4;border:1px solid #ffffff55;background:#0008;width:40px;height:40px;border-radius:50%}
 .reel-manage{position:absolute;left:15px;top:15px;z-index:4;border:1px solid #ffffff55;background:#0008;width:40px;height:40px;border-radius:50%;font-size:20px}
@@ -436,20 +467,14 @@ button{cursor:pointer;color:white}
  background:#222;padding:13px 22px;border:1px solid var(--line);
  border-radius:25px;z-index:90;font-size:13px;max-width:90%;text-align:center;
 }
-.pwa-install-button{
- position:fixed;right:20px;bottom:20px;z-index:95;display:none;
- padding:13px 18px;border:1px solid #ffffff35;border-radius:999px;
- background:#fff;color:#111;font-size:13px;font-weight:750;
- box-shadow:0 8px 28px #0009;
-}
-.pwa-install-button.visible{display:block}
 @media(max-width:800px){
  .sidebar{display:none}
  .main{margin:0;width:100%;padding:13px 12px 90px}
  .bottom{display:flex}
  .topbar{gap:8px}
- .search{width:65%;max-width:65%}
+ .search-wrap{width:65%;max-width:65%;flex-basis:65%}
  .grid .tile{height:155px}
+ .discover-grid .tile{height:100%}
  .profilebox{padding:15px;gap:13px}
  .profilepic{width:78px;height:78px}
  .stats{gap:12px}
@@ -471,13 +496,13 @@ button{cursor:pointer;color:white}
  .top-actions #authButton{max-width:84px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:9px 8px}
  .top-actions .logout-button{gap:4px;padding:9px 8px;font-size:11px}
  .top-actions .logout-button svg{width:15px;height:15px}
- .search{width:35%;max-width:35%;padding:11px 9px}
+ .search-wrap{width:35%;max-width:35%;flex-basis:35%}
+ .search-wrap .search{padding:11px 36px 11px 9px}
 }
  </style>
 </head>
 
 <body>
-<button id="installPwaButton" class="pwa-install-button" type="button" hidden>📲 Install VYBE App</button>
 <div class="app">
 <aside class="sidebar">
  <div class="brand">VYBE.<small>YOUR SOCIAL WORLD</small></div>
@@ -495,7 +520,11 @@ button{cursor:pointer;color:white}
 <main class="main">
 <header class="topbar">
  <div class="brand" style="display:none;font-size:25px;margin:0" id="mobileBrand">VYBE.</div>
- <input id="topSearchInput" class="search" placeholder="⌕  Search VYBE..." autocomplete="off">
+ <div id="searchWrap" class="search-wrap">
+  <input id="topSearchInput" class="search" placeholder="⌕  Search VYBE..." autocomplete="off" aria-label="Search VYBE" aria-controls="searchSuggestions" aria-expanded="false">
+  <button id="searchClearButton" class="search-clear" type="button" aria-label="Clear search">✕</button>
+  <div id="searchSuggestions" class="search-suggestions" role="listbox" aria-label="Matching profiles"></div>
+ </div>
  <div class="top-actions">
   <button id="activityButton" class="icon-btn activity-icon" type="button" aria-label="Activity" onclick="toggleActivityDrawer()">
    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></svg>
@@ -521,7 +550,7 @@ button{cursor:pointer;color:white}
  <div class="stories glass" id="stories"></div>
  <h2 class="heading">Your Feed</h2><div id="feed"></div>
 </section>
-<section id="explore" class="page"><h2 class="heading">Explore</h2><div id="exploreGrid" class="grid discover-grid"></div></section>
+<section id="explore" class="page"><h2 class="heading">Explore</h2><div class="explore-grid-wrap"><div id="exploreGrid" class="grid discover-grid"></div></div></section>
 <section id="searchResults" class="page"><div class="search-results"><h2 class="heading">Search results</h2><div id="searchResultList" class="search-results-list"></div></div></section>
 <section id="profile" class="page"><div id="profileView"></div></section>
 <section id="other" class="page"><div id="otherView"></div></section>
@@ -693,7 +722,7 @@ let posts=[
 
 let reels=[],archivedReels=[];
 
-let follows=new Set(),followStates=new Map(),pendingFollows=new Set(),loadingFollowStates=new Set(),saved=new Set(),savedReels=new Set(),likedReels=new Set(),likedReelItems=[],pendingReelLikes=new Set(),notifications=[],chats={};
+let follows=new Set(),followStates=new Map(),pendingFollows=new Set(),loadingFollowStates=new Set(),saved=new Set(),savedReels=new Set(),savedReelItems=[],pendingBookmarks=new Set(),savedBookmarksLoading=false,likedReels=new Set(),likedReelItems=[],pendingReelLikes=new Set(),notifications=[],chats={};
 let nextId=10,activeChat=null,viewing=null,profileTab="posts",muted=true,pendingReelShareDraft=null;
 let dmConversations=[],dmProfiles=new Map(),dmMessages=[],dmChannel=null,dmRequestToken=0,dmSending=false;
 let searchTerm="";
@@ -708,6 +737,7 @@ const viewedStoryIds=new Set();
 let storyUploading=false;
 let activityNotifications=[];
 let activityChannel=null;
+let bookmarkLoadToken=0;
 let activityRequestToken=0;
 let authMode = 'login';
 let currentUser = null;
@@ -885,6 +915,10 @@ function enterApp(user){
   me={id:user.id,name:'',username:'',bio:'',pic:avatar(),followers:0,following:0};
   archivedReels=[];
   savedReels.clear();
+  savedReelItems=[];
+  pendingBookmarks.clear();
+  savedBookmarksLoading=false;
+  bookmarkLoadToken++;
   likedReels.clear();
   likedReelItems=[];
   follows.clear();
@@ -1052,6 +1086,10 @@ function resetSignedOutState(){
  reels=[];
  archivedReels=[];
  savedReels.clear();
+ savedReelItems=[];
+ pendingBookmarks.clear();
+ savedBookmarksLoading=false;
+ bookmarkLoadToken++;
  likedReels.clear();
  likedReelItems=[];
  pendingReelLikes.clear();
@@ -1149,7 +1187,7 @@ function go(id){
  }
  if(id==='explore'){renderExplore();void loadExploreFeed();}
  if(id==='searchResults')renderSearchResults();
- if(id==='saved')renderSaved();
+ if(id==='saved'){renderSaved();if(currentUser)void loadSavedReels();}
  if(id==='notifications')renderNotifications();
 }
 function viewProfile(id){
@@ -1162,6 +1200,7 @@ function openSearchedProfile(id){
  if(!match) return;
  users=users.filter(existing=>String(existing.id)!==String(match.id));
  users.push(match);
+ clearSearchSuggestions({clearInput:true});
  viewProfile(match.id);
 }
 function openCreate(){
@@ -1506,7 +1545,8 @@ function renderFeed(){
  feed.innerHTML=list.map(post=>{
    const author=user(post.user);
    const likedClass=post.liked?'liked':'';
-   const savedClass=saved.has(post.id)?'saved':'';
+   const postSaved=saved.has(String(post.id))||savedReels.has(String(post.id));
+   const savedClass=postSaved?'saved':'';
    const comments=(post.comments||[]).slice(0,2).map(c=>`<div class="meta">${safe(user(c.user).name)}: ${safe(c.text)}</div>`).join('');
    return `<article class="post glass">
      <div class="posthead">
@@ -1522,7 +1562,7 @@ function renderFeed(){
        <button class="action ${likedClass}" data-post-like="${safe(post.id)}" aria-label="${post.liked?'Unlike post':'Like post'}" aria-pressed="${Boolean(post.liked)}" onclick="toggleLike(${post.id})">♥</button>
        <span class="post-comment-action"><button class="action" onclick="openCommentsDrawer('${safe(post.id)}')">💬</button><small class="comment-feed-count" data-post-comment-count="${safe(post.id)}">${(post.comments||[]).length}</small></span>
        <button class="action" onclick="sharePost(${post.id})">↗</button>
-       <button class="action save ${savedClass}" onclick="toggleSave(${post.id})">★</button>
+       <button class="action save ${savedClass}" type="button" data-bookmark-post="${safe(post.id)}" aria-label="${postSaved?'Remove bookmark':'Save post'}" aria-pressed="${postSaved}" onclick="toggleSave('${safe(post.id)}')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.75h12v17l-6-4-6 4v-17Z"/></svg></button>
      </div>
      <div class="likes"><span data-post-like-count="${safe(post.id)}">${Number(post.likes).toLocaleString()}</span> likes</div>
      <div class="caption"><b>${safe(author.username)}</b> ${safe(post.caption)}</div>
@@ -1537,9 +1577,10 @@ function renderExplore(){
  if(!exploreGrid) return;
  const publicItems=reels.filter(isPublicActiveReel);
  exploreGrid.innerHTML=publicItems.length ? publicItems.map((reel,index)=>`
-   <div class="tile" style="grid-row-end:span ${index%4===2?25:index%4===3?22:18}" onclick="openReel('${safe(reel.id)}')">
+   <div class="tile" role="button" tabindex="0" aria-label="View ${reel.video?'video':'photo'} by @${safe(reelAuthorName(reel))}" onclick="openReel('${safe(reel.id)}')" onkeydown="if(event.target===event.currentTarget&&(event.key==='Enter'||event.key===' ')){event.preventDefault();openReel('${safe(reel.id)}')}">
     ${isOwnReel(reel)?`<button class="reel-manage" aria-label="Manage your post" onclick="event.stopPropagation();openReelMenu('${safe(reel.id)}')">⋯</button>`:''}
     ${reel.video?`<video src="${safe(reel.src)}" muted playsinline preload="metadata"></video>`:`<img src="${safe(reel.src)}" alt="Public post">`}
+    ${reel.video?'<span class="explore-video-badge" aria-label="Video"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5a1 1 0 0 1 1.5-.86l8 4.62a2 2 0 0 1 0 3.46l-8 4.62A1 1 0 0 1 4 13.48Z"/></svg></span>':''}
     <span>@${safe(reelAuthorName(reel))}</span>
    </div>`).join('') : '<div class="empty">No public posts or reels yet.</div>';
 }
@@ -1549,7 +1590,7 @@ async function loadExploreFeed(){
  if(!exploreGrid) return;
  exploreGrid.innerHTML='<div class="empty">Loading public posts...</div>';
  try {
-  const {data,error}=await supabaseClient.from('reels').select('*').order('created_at',{ascending:false});
+  const {data,error}=await supabaseClient.from('reels').select('*').eq('is_archived',false).order('created_at',{ascending:false});
   if(error) throw error;
   const loaded=(data||[]).map(normalizeReel).filter(isPublicActiveReel);
   const loadedIds=new Set(loaded.map(item=>String(item.id)));
@@ -1594,13 +1635,14 @@ function renderSearchResults(message){
 function renderSaved(){
  const savedGrid=document.getElementById('savedGrid');
  if(!savedGrid) return;
- const savedPosts=posts.filter(p=>saved.has(p.id));
- const savedReelItems=reels.filter(reel=>savedReels.has(String(reel.id)));
+ const savedPosts=posts.filter(p=>saved.has(String(p.id))||saved.has(p.id));
  const items=[
-   ...savedPosts.map(post=>`<div class="tile" onclick="openPost(${post.id})"><img src="${safe(post.src)}" alt="Saved post"></div>`),
-   ...savedReelItems.map(reel=>`<div class="tile" onclick="openReel('${safe(reel.id)}')">${reel.video?`<video src="${safe(reel.src)}" muted playsinline></video>`:`<img src="${safe(reel.src)}" alt="Saved reel">`}</div>`)
+   ...savedPosts.map(post=>`<div class="tile" role="button" tabindex="0" onclick="openPost(${post.id})"><img src="${safe(post.src)}" alt="Saved post"></div>`),
+   ...savedReelItems.map(reel=>`<div class="tile" role="button" tabindex="0" onclick="openReel('${safe(reel.id)}')">${reel.video?`<video src="${safe(reel.src)}" muted playsinline></video>`:`<img src="${safe(reel.src)}" alt="Saved reel">`}</div>`)
  ];
- savedGrid.innerHTML=items.length ? items.join('') : '<div class="empty">No saved posts or reels yet.</div>';
+ savedGrid.innerHTML=savedBookmarksLoading&&!items.length
+  ? '<div class="empty">Loading saved items...</div>'
+  : items.length ? items.join('') : '<div class="empty">No saved posts or reels yet.</div>';
 }
 
 function renderProfile(){
@@ -1610,14 +1652,19 @@ function renderProfile(){
  const ownedReels=reels.filter(reel=>isOwnReel(reel));
  const ownedArchived=archivedReels.filter(reel=>isOwnReel(reel));
  const userPosts=[...posts.filter(post=>post.user===0),...ownedReels];
+ const savedPostItems=posts.filter(post=>saved.has(String(post.id))||saved.has(post.id));
+ const savedProfileItems=[...savedPostItems,...savedReelItems];
  const tabItems={
    posts:userPosts,
    reels:ownedReels.filter(reel=>reel.video),
   likes:likedReelItems,
-  saved:reels.filter(reel=>savedReels.has(String(reel.id))),
+  saved:savedProfileItems,
   archived:ownedArchived
  }[profileTab] || userPosts;
  const profileItems=profileTab==='posts'?userPosts:tabItems;
+ const profileItemsContent=profileTab==='saved'&&savedBookmarksLoading&&!profileItems.length
+  ?'<div class="profile-empty">Loading saved items...</div>'
+  :profileItems.length?renderTiles(profileItems):'<div class="profile-empty">Nothing to show yet.</div>';
  profileView.innerHTML=`
  <div class="profile-header glass">
   <div class="profile-top">
@@ -1639,10 +1686,10 @@ function renderProfile(){
     <button class="${profileTab==='posts'?'active':''}" onclick="setProfileTab('posts')">POSTS</button>
     <button class="${profileTab==='reels'?'active':''}" onclick="setProfileTab('reels')">REELS</button>
     <button class="${profileTab==='likes'?'active':''}" onclick="setProfileTab('likes')">LIKES</button>
-    <button class="${profileTab==='saved'?'active':''}" onclick="setProfileTab('saved')">SAVED</button>
+    <button class="profile-saved-tab ${profileTab==='saved'?'active':''}" onclick="setProfileTab('saved')" aria-label="Saved"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.75h12v17l-6-4-6 4v-17Z"/></svg> SAVED</button>
     <button class="${profileTab==='archived'?'active':''}" onclick="setProfileTab('archived')">ARCHIVED</button>
   </div>
-  <div class="profile-grid">${profileItems.length?renderTiles(profileItems):'<div class="profile-empty">Nothing to show yet.</div>'}</div>
+  <div class="profile-grid">${profileItemsContent}</div>
  </div>`;
 }
 
@@ -1685,6 +1732,7 @@ function renderOtherProfile(){
 
 function setProfileTab(tab){
  profileTab=tab; renderProfile();
+ if(tab==='saved'&&currentUser) void loadSavedReels();
 }
 
 function renderChats(){
@@ -2382,15 +2430,15 @@ function renderReels(){
    <div class="reel-info">
      <div class="reel-user"><img src="${safe(avatarSrc(author.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'"><button onclick="viewProfile('${safe(reel.user)}')">@${safe(authorUsername)}</button></div>
      <p>${safe(reel.caption)}</p>
-     <button class="reel-audio-tag" type="button" aria-label="Toggle reel sound" onclick="toggleReelsMute(this.closest('.reel'))">
+     <button class="reel-audio-tag" type="button" aria-label="Toggle reel sound: ${safe(audioLabel)}" onclick="toggleReelsMute(this.closest('.reel'))">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-      <span class="reel-audio-title">${safe(audioLabel)}</span>
+      <span class="reel-audio-title" aria-hidden="true"><span class="reel-audio-track">♫ ${safe(audioLabel)}　•　♫ ${safe(audioLabel)}</span></span>
      </button>
    </div>
    <div class="reel-side">
      <button class="reel-like-button ${liked?'active':''}" aria-label="${liked?'Unlike reel':'Like reel'}" aria-pressed="${liked}" data-reel-like="${safe(reel.id)}" onclick="toggleReelLike('${safe(reel.id)}')">♥</button>
      <small data-reel-like-count="${safe(reel.id)}">${Number(reel.likes || 0).toLocaleString()}</small>
-     <button class="action ${savedReels.has(String(reel.id))?'saved':''}" aria-label="Save reel" onclick="toggleSaveReel('${safe(reel.id)}')">${savedReels.has(String(reel.id))?'★':'☆'}</button>
+     <button class="action reel-bookmark-button ${savedReels.has(String(reel.id))?'saved':''}" type="button" data-bookmark-reel="${safe(reel.id)}" aria-label="${savedReels.has(String(reel.id))?'Remove bookmark':'Save reel'}" aria-pressed="${savedReels.has(String(reel.id))}" onclick="toggleSaveReel('${safe(reel.id)}')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.75h12v17l-6-4-6 4v-17Z"/></svg></button>
      <small>${savedReels.has(String(reel.id))?'Saved':'Save'}</small>
      <button aria-label="View comments" onclick="openCommentsDrawer('${safe(reel.id)}')">💬</button>
      <small class="reel-comment-count" data-reel-comment-count="${safe(reel.id)}">${Number(reel.commentCount||0).toLocaleString()}</small>
@@ -2813,45 +2861,148 @@ document.addEventListener('touchstart',event=>{
  }
 },{passive:false});
 
+function localSavedPostsKey(userId=currentUser?.id){
+ return userId?`vybe:saved-posts:${userId}`:null;
+}
+
+function restoreLocalSavedPosts(userId){
+ const key=localSavedPostsKey(userId);
+ if(!key) return;
+ try{
+  const parsed=JSON.parse(localStorage.getItem(key)||'[]');
+  saved=new Set(Array.isArray(parsed)?parsed.map(String):[]);
+ }catch(error){
+  console.error('Local saved posts restore error:',error);
+  toast('Unable to restore locally saved posts.');
+ }
+}
+
+function persistLocalSavedPosts(){
+ const key=localSavedPostsKey();
+ if(!key) return false;
+ try{
+  localStorage.setItem(key,JSON.stringify([...saved].map(String)));
+  return true;
+ }catch(error){
+  console.error('Local saved posts persistence error:',error);
+  toast(error?.message||'Unable to save this demo post locally.');
+  return false;
+ }
+}
+
+function updateBookmarkButtons(){
+ document.querySelectorAll('[data-bookmark-post]').forEach(button=>{
+  const key=String(button.dataset.bookmarkPost);
+  const isSaved=saved.has(key)||savedReels.has(key);
+  button.classList.toggle('saved',isSaved);
+  button.setAttribute('aria-pressed',String(isSaved));
+  button.setAttribute('aria-label',isSaved?'Remove bookmark':'Save post');
+ });
+ document.querySelectorAll('[data-bookmark-reel]').forEach(button=>{
+  const key=String(button.dataset.bookmarkReel);
+  const isSaved=savedReels.has(key);
+  button.classList.toggle('saved',isSaved);
+  button.setAttribute('aria-pressed',String(isSaved));
+  button.setAttribute('aria-label',isSaved?'Remove bookmark':'Save reel');
+  if(button.nextElementSibling) button.nextElementSibling.textContent=isSaved?'Saved':'Save';
+ });
+}
+
 async function loadSavedReels(){
- if(!currentUser){ savedReels.clear(); renderSaved(); renderProfile(); return; }
- const userId=currentUser.id;
- try {
-  const { data, error } = await supabaseClient.from('saved_reels').select('reel_id').eq('user_id', userId);
-  if(error) throw error;
-  if(currentUser?.id!==userId) return;
-  savedReels=new Set((data||[]).map(row=>String(row.reel_id)));
-  renderReels();
+ if(!currentUser){
+  savedReels.clear();
+  savedReelItems=[];
+  savedBookmarksLoading=false;
   renderSaved();
   renderProfile();
- } catch(error) {
-  console.error('Saved reels fetch error:', error);
-  toast(error?.message || 'Unable to load saved reels.');
+  updateBookmarkButtons();
+  return;
+ }
+ const userId=currentUser.id;
+ const token=++bookmarkLoadToken;
+ restoreLocalSavedPosts(userId);
+ savedBookmarksLoading=true;
+ if(profileTab==='saved') renderProfile();
+ renderSaved();
+ try{
+  const {data,error}=await supabaseClient.from('bookmarks').select('reel_id,reels(*)').eq('user_id',userId);
+  if(error) throw error;
+  if(token!==bookmarkLoadToken||String(currentUser?.id)!==String(userId)) return;
+  const rows=data||[];
+  const bookmarkedIds=new Set(rows.map(row=>String(row.reel_id)).filter(Boolean));
+  const joinedReels=rows.map(row=>{
+   const joined=Array.isArray(row.reels)?row.reels[0]:row.reels;
+   return joined?normalizeReel(joined,0):null;
+  }).filter(Boolean);
+  const joinedIds=new Set(joinedReels.map(reel=>String(reel.id)));
+  const missingIds=[...bookmarkedIds].filter(id=>!joinedIds.has(id));
+  let fetchedReels=[];
+  if(missingIds.length){
+   const {data:fetched,error:fetchError}=await supabaseClient.from('reels').select('*').in('id',missingIds);
+   if(fetchError) throw fetchError;
+   fetchedReels=(fetched||[]).map(reel=>normalizeReel(reel,0));
+  }
+  if(token!==bookmarkLoadToken||String(currentUser?.id)!==String(userId)) return;
+  savedReels=bookmarkedIds;
+  savedReelItems=[...joinedReels,...fetchedReels.filter(reel=>!joinedIds.has(String(reel.id)))];
+  updateBookmarkButtons();
+ }catch(error){
+  if(token!==bookmarkLoadToken) return;
+  console.error('Bookmarks fetch error:',error);
+  toast(error?.message||'Unable to load saved items.');
+ }finally{
+  if(token===bookmarkLoadToken){
+   savedBookmarksLoading=false;
+   renderSaved();
+   renderProfile();
+  }
  }
 }
 
 async function toggleSaveReel(id){
- if(!currentUser){ openAuthModal('login'); return; }
- const reel=reels.find(item=>String(item.id)===String(id));
+ if(!currentUser){openAuthModal('login');return;}
+ const reel=reels.find(item=>String(item.id)===String(id))
+  ||archivedReels.find(item=>String(item.id)===String(id))
+  ||savedReelItems.find(item=>String(item.id)===String(id));
  if(!reel) return;
- const wasSaved=savedReels.has(String(reel.id));
- try {
+ const key=String(reel.id);
+ if(pendingBookmarks.has(key)) return;
+ const wasSaved=savedReels.has(key);
+ pendingBookmarks.add(key);
+ if(wasSaved){
+  savedReels.delete(key);
+  savedReelItems=savedReelItems.filter(item=>String(item.id)!==key);
+ }else{
+  savedReels.add(key);
+  if(!savedReelItems.some(item=>String(item.id)===key)) savedReelItems.unshift(reel);
+ }
+ updateBookmarkButtons();
+ renderSaved();
+ if(profileTab==='saved') renderProfile();
+ try{
   if(wasSaved){
-   const { error }=await supabaseClient.from('saved_reels').delete().eq('user_id',currentUser.id).eq('reel_id',reel.id);
+   const {error}=await supabaseClient.from('bookmarks').delete().eq('user_id',currentUser.id).eq('reel_id',reel.id);
    if(error) throw error;
-   savedReels.delete(String(reel.id));
   }else{
-   const { error }=await supabaseClient.from('saved_reels').insert({user_id:currentUser.id,reel_id:reel.id});
+   const {error}=await supabaseClient.from('bookmarks').insert({user_id:currentUser.id,reel_id:reel.id});
    if(error) throw error;
-   savedReels.add(String(reel.id));
   }
-  renderReels();
-  renderSaved();
-  renderProfile();
   toast(wasSaved?'Removed from saved':'Saved to collection');
- } catch(error) {
-  console.error('Saved reel update error:', error);
-  toast(error?.message || 'Unable to update saved reel.');
+ }catch(error){
+  if(wasSaved){
+   savedReels.add(key);
+   savedReelItems.unshift(reel);
+  }else{
+   savedReels.delete(key);
+   savedReelItems=savedReelItems.filter(item=>String(item.id)!==key);
+  }
+  console.error('Bookmark update error:',error);
+  toast(error?.message||'Unable to update bookmark.');
+ }finally{
+  pendingBookmarks.delete(key);
+  updateBookmarkButtons();
+  renderSaved();
+  if(profileTab==='saved') renderProfile();
  }
 }
 
@@ -2925,6 +3076,7 @@ async function deleteReel(id){
   reels=reels.filter(item=>String(item.id)!==String(reel.id));
   archivedReels=archivedReels.filter(item=>String(item.id)!==String(reel.id));
   savedReels.delete(String(reel.id));
+  savedReelItems=savedReelItems.filter(item=>String(item.id)!==String(reel.id));
   hide('listModal');
   renderReels(); renderExplore(); renderProfile(); renderSaved();
   toast('Post deleted');
@@ -2950,10 +3102,39 @@ function toggleLike(postId){
  renderProfile();
 }
 
-function toggleSave(postId){
- if(saved.has(postId)){saved.delete(postId); toast('Removed from saved');}
- else {saved.add(postId); toast('Saved to collection');}
- renderSaved(); renderFeed();
+async function toggleSave(postId){
+ if(!currentUser){openAuthModal('login');return;}
+ const key=String(postId);
+ let reel=reels.find(item=>String(item.id)===key)
+  ||archivedReels.find(item=>String(item.id)===key)
+  ||savedReelItems.find(item=>String(item.id)===key);
+ if(!reel&&isValidUserUuid(key)){
+  try{
+   const {data,error}=await supabaseClient.from('reels').select('*').eq('id',key).maybeSingle();
+   if(error) throw error;
+   if(data){
+    reel=normalizeReel(data,0);
+    if(!reels.some(item=>String(item.id)===key)) reels.unshift(reel);
+   }
+  }catch(error){
+   console.error('Bookmark reel lookup error:',error);
+   toast(error?.message||'Unable to save this post.');
+   return;
+  }
+ }
+ if(reel){await toggleSaveReel(reel.id);return;}
+ const wasSaved=saved.has(key);
+ if(wasSaved) saved.delete(key);
+ else saved.add(key);
+ const persisted=persistLocalSavedPosts();
+ if(!persisted){
+  if(wasSaved) saved.add(key);
+  else saved.delete(key);
+ }
+ updateBookmarkButtons();
+ renderSaved();
+ renderProfile();
+ if(persisted) toast(wasSaved?'Removed from saved':'Saved to collection');
 }
 
 async function toggleFollow(userId){
@@ -3076,8 +3257,25 @@ function openReel(id){
  if(!reel) return;
  const postDetail=document.getElementById('postDetail');
  if(!postDetail) return;
+ const author=user(reel.user);
+ const authorName=reelAuthorName(reel);
+ const liked=likedReels.has(String(reel.id));
  const media=reel.video?`<video class="postmedia" controls autoplay playsinline src="${safe(reel.src)}"></video>`:`<img class="postmedia" src="${safe(reel.src)}" alt="Post">`;
- postDetail.innerHTML=`<div class="post glass"><div class="post-media-stage" data-like-media data-like-kind="reel" data-like-id="${safe(reel.id)}">${media}</div><div class="caption"><b>@${safe(reelAuthorName(reel))}</b> ${safe(reel.caption)}</div></div>`;
+ postDetail.innerHTML=`<div class="post glass explore-lightbox">
+  <div class="explore-lightbox-creator">
+   <img src="${safe(avatarSrc(author.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'" alt="">
+   <button type="button" onclick="viewProfile('${safe(reel.user)}')">@${safe(authorName)}</button>
+  </div>
+  <div class="explore-lightbox-media">${media}</div>
+  <div class="explore-lightbox-actions">
+   <button class="action ${liked?'active':''}" data-reel-like="${safe(reel.id)}" aria-label="${liked?'Unlike reel':'Like reel'}" aria-pressed="${liked}" onclick="toggleReelLike('${safe(reel.id)}')">♥</button>
+   <span data-reel-like-count="${safe(reel.id)}">${Number(reel.likes||0).toLocaleString()}</span>
+   <button type="button" aria-label="View comments" onclick="openCommentsDrawer('${safe(reel.id)}')">💬</button>
+   <span data-reel-comment-count="${safe(reel.id)}">${Number(reel.commentCount||0).toLocaleString()}</span>
+   <button type="button" aria-label="Share reel" onclick="shareReel('${safe(reel.id)}')">↗</button>
+  </div>
+  <div class="explore-lightbox-caption"><b>@${safe(authorName)}</b> ${safe(reel.caption)}</div>
+ </div>`;
  show('postModal');
  const video=postDetail.querySelector('video');
  if(video) void video.play().catch(error=>console.info('Post video autoplay was blocked:',error));
@@ -3199,61 +3397,113 @@ function showPeopleList(title, ids){
  show('listModal');
 }
 
+function closeSearchSuggestions(){
+ const suggestions=document.getElementById('searchSuggestions');
+ const input=document.getElementById('topSearchInput');
+ suggestions?.classList.remove('open');
+ input?.setAttribute('aria-expanded','false');
+}
+
+function clearSearchSuggestions({clearInput=false}={}){
+ clearTimeout(searchDebounceTimer);
+ searchRequestToken++;
+ searchedProfiles.clear();
+ closeSearchSuggestions();
+ if(clearInput){
+  const input=document.getElementById('topSearchInput');
+  if(input) input.value='';
+  document.getElementById('searchWrap')?.classList.remove('has-query');
+  searchTerm='';
+ }
+}
+
+function renderSearchSuggestions(state='results'){
+ const suggestions=document.getElementById('searchSuggestions');
+ if(!suggestions) return;
+ if(state==='loading'){
+  suggestions.innerHTML='<div class="search-suggestion-state">Searching profiles...</div>';
+  return;
+ }
+ if(state==='error'){
+  suggestions.innerHTML='<div class="search-suggestion-state">Unable to search profiles. Try again.</div>';
+  return;
+ }
+ if(!searchedProfiles.size){
+  suggestions.innerHTML='<div class="search-suggestion-state">No users found.</div>';
+  return;
+ }
+ suggestions.innerHTML=[...searchedProfiles.values()].map(profile=>`
+  <button class="search-suggestion" type="button" role="option" data-profile-id="${safe(profile.id)}">
+   <img src="${safe(avatarSrc(profile.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'" alt="">
+   <span class="search-suggestion-copy"><span class="search-suggestion-name">${safe(profile.name)}</span><span class="search-suggestion-username">@${safe(profile.username)}</span></span>
+  </button>`).join('');
+ suggestions.querySelectorAll('[data-profile-id]').forEach(button=>button.addEventListener('click',()=>openSearchedProfile(button.dataset.profileId)));
+}
+
 function searchPosts(term){
- const hadQuery=Boolean(searchTerm.trim());
- searchTerm=String(term || '');
+ searchTerm=String(term||'');
  clearTimeout(searchDebounceTimer);
  const query=searchTerm.trim().replace(/^@/,'').replace(/[^\p{L}\p{N}_. -]/gu,' ').replace(/\s+/g,' ').trim();
+ const wrapper=document.getElementById('searchWrap');
+ const input=document.getElementById('topSearchInput');
+ const suggestions=document.getElementById('searchSuggestions');
+ wrapper?.classList.toggle('has-query',Boolean(searchTerm));
  if(!query){
   searchRequestToken++;
   searchedProfiles.clear();
+  closeSearchSuggestions();
   renderExplore();
-  if(hadQuery || document.getElementById('searchResults')?.classList.contains('active')) go('explore');
+  if(document.getElementById('searchResults')?.classList.contains('active')) go('explore');
   return;
  }
- go('searchResults');
- renderSearchResults('Searching...');
+ if(!document.getElementById('explore')?.classList.contains('active')) go('explore');
+ suggestions?.classList.add('open');
+ input?.setAttribute('aria-expanded','true');
+ renderSearchSuggestions('loading');
  const token=++searchRequestToken;
  searchDebounceTimer=setTimeout(async()=>{
-  try {
+  try{
    const {data,error}=await supabaseClient.from('profiles')
-    .select('id, username, full_name, avatar_url')
+    .select('id, username, full_name, avatar_url, bio')
     .or(`username.ilike.%${query}%,full_name.ilike.%${query}%`)
     .limit(10);
    if(error) throw error;
-   if(token!==searchRequestToken || query!==searchTerm.trim().replace(/^@/,'').replace(/[^\p{L}\p{N}_. -]/gu,' ').replace(/\s+/g,' ').trim()) return;
+   if(token!==searchRequestToken) return;
    searchedProfiles.clear();
    (data||[]).forEach(profile=>{
     if(!profile.id) return;
-    const username=normalizeUsername(profile.username);
-    if(!username) return;
+    const username=normalizeUsername(profile.username)||String(profile.id).slice(0,8);
     searchedProfiles.set(String(profile.id),{
      id:profile.id,
-     name:profile.full_name || profile.display_name || profile.name || username,
+     name:profile.full_name||profile.display_name||profile.name||username,
      username,
-     pic:profile.avatar_url || profile.profile_avatar_url || avatarPlaceholder,
-     bio:profile.bio || '',
+     pic:profile.avatar_url||profile.profile_avatar_url||avatarPlaceholder,
+     bio:profile.bio||'',
      followers:Number(profile.followers||0),
      following:Number(profile.following||0)
     });
    });
-   renderSearchResults();
-   if(currentUser){
-    try { await loadFollowingStates([...searchedProfiles.keys()]); }
-    catch(followError){console.error('Search follow state error:',followError);toast(followError?.message||'Unable to load follow status.');}
-    if(token!==searchRequestToken) return;
-    renderSearchResults();
-   }
-  } catch(error) {
+   renderSearchSuggestions();
+  }catch(error){
    if(token!==searchRequestToken) return;
    console.error('Profile search error:',error);
-   renderSearchResults('Unable to search profiles. Please try again.');
-   toast(error?.message || 'Unable to search profiles.');
+   renderSearchSuggestions('error');
   }
- },300);
+ },250);
 }
 
 document.getElementById('topSearchInput')?.addEventListener('input',event=>searchPosts(event.currentTarget.value));
+document.getElementById('searchClearButton')?.addEventListener('click',()=>{
+ const input=document.getElementById('topSearchInput');
+ if(input){input.value='';input.focus();}
+ searchPosts('');
+});
+document.addEventListener('click',event=>{
+ if(!event.target.closest('.search-wrap')) closeSearchSuggestions();
+});
+document.addEventListener('keydown',event=>{
+ if(event.key==='Escape') closeSearchSuggestions();
+});
 
 async function initializeApp(){
  try {
@@ -3288,73 +3538,6 @@ async function initializeApp(){
 }
 
 void initializeApp();
-const installPwaButton=document.getElementById('installPwaButton');
-window.deferredPrompt=null;
-const isStandalonePwa=()=>window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
-const hideInstallPwaButton=()=>{
- if(!installPwaButton) return;
- installPwaButton.classList.remove('visible');
- installPwaButton.hidden=true;
-};
-const showInstallPwaButton=()=>{
- if(!installPwaButton||isStandalonePwa()) return;
- installPwaButton.hidden=false;
- installPwaButton.classList.add('visible');
-};
-const showManualInstallInstructions=()=>{
- toast("To install on your phone: Tap Chrome menu (⋮) -> 'Install App' or 'Add to Home screen'");
-};
-if(installPwaButton){
- if(isStandalonePwa()) hideInstallPwaButton();
- else showInstallPwaButton();
- window.addEventListener('beforeinstallprompt',event=>{
-  event.preventDefault();
-  if(isStandalonePwa()) return;
-  window.deferredPrompt=event;
-  showInstallPwaButton();
- });
- window.addEventListener('appinstalled',()=>{
-  window.deferredPrompt=null;
-  hideInstallPwaButton();
- });
- window.matchMedia('(display-mode: standalone)').addEventListener?.('change',event=>{
-  if(event.matches){
-   window.deferredPrompt=null;
-   hideInstallPwaButton();
-  }else{
-   showInstallPwaButton();
-  }
- });
- installPwaButton.addEventListener('click',async()=>{
-  if(isStandalonePwa()){
-   window.deferredPrompt=null;
-   hideInstallPwaButton();
-   return;
-  }
-  const promptEvent=window.deferredPrompt;
-  if(!promptEvent){
-   showManualInstallInstructions();
-   return;
-  }
-  window.deferredPrompt=null;
-  installPwaButton.disabled=true;
-  try{
-   await promptEvent.prompt();
-   const choice=await promptEvent.userChoice;
-   if(choice?.outcome==='accepted'||isStandalonePwa()) hideInstallPwaButton();
-   else{
-    showInstallPwaButton();
-    showManualInstallInstructions();
-   }
-  }catch(error){
-   console.error('PWA install prompt failed:',error);
-   showInstallPwaButton();
-   showManualInstallInstructions();
-  }finally{
-   installPwaButton.disabled=false;
-  }
- });
-}
 if ('serviceWorker' in navigator) {
  window.addEventListener('load', () => {
   navigator.serviceWorker.register('/sw.js', { scope: '/' })
