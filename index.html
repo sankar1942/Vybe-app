@@ -259,6 +259,7 @@ button{cursor:pointer;color:white}
 .comments-input:focus{border-color:#ffffff45}
 .comment-post-btn{border:0;background:transparent;color:#3797f0;font-weight:700;padding:10px 4px}
 .comment-post-btn:disabled{opacity:.45;cursor:default}
+.post-comment-action{display:inline-flex;align-items:center;gap:4px}
 .comment-feed-count{font-size:11px;color:#aaa}
 @media(max-width:600px){
  .comments-sheet{width:100%;height:min(78vh,720px);border-radius:20px 20px 0 0}
@@ -473,7 +474,7 @@ button{cursor:pointer;color:white}
   <div class="comments-handle-wrap" id="commentsHandle"><span class="comments-handle"></span></div>
   <header class="comments-header">
    <h2 id="commentsTitle">Comments <span id="commentsTotal">(0)</span></h2>
-   <button class="comments-close" type="button" aria-label="Close comments" onclick="closeCommentsDrawer()">×</button>
+   <button class="comments-close" type="button" aria-label="Close comments" onclick="closeCommentsDrawer()">✕</button>
   </header>
   <div class="comments-list" id="commentsList" aria-live="polite"></div>
   <form class="comments-composer" id="commentsComposer" onsubmit="submitReelComment(event)">
@@ -780,6 +781,7 @@ async function logoutUser(){
 }
 
 function resetSignedOutState(){
+ closeCommentsDrawer();
  currentUser=null;
  currentProfile=null;
  hasCurrentProfile=false;
@@ -982,8 +984,7 @@ function renderFeed(){
      ${post.video?`<video class="postmedia" controls muted playsinline src="${post.src}"></video>`:`<img class="postmedia" src="${post.src}" alt="post">`}
      <div class="actions">
        <button class="action ${likedClass}" onclick="toggleLike(${post.id})">♥</button>
-       <button class="action" onclick="openCommentsDrawer('${safe(post.id)}')">💬</button>
-       <small class="comment-feed-count" data-post-comment-count="${safe(post.id)}">${(post.comments||[]).length}</small>
+       <span class="post-comment-action"><button class="action" onclick="openCommentsDrawer('${safe(post.id)}')">💬</button><small class="comment-feed-count" data-post-comment-count="${safe(post.id)}">${(post.comments||[]).length}</small></span>
        <button class="action" onclick="sharePost(${post.id})">↗</button>
        <button class="action save ${savedClass}" onclick="toggleSave(${post.id})">★</button>
      </div>
@@ -1158,7 +1159,7 @@ function normalizeReel(reel, index) {
     isPublic: reel.is_public,
     caption: reel.caption || reel.title || 'Discover something beautiful',
     likes: Number(reel.likes ?? reel.likes_count ?? reel.like_count ?? 0),
-    commentCount: Number(reel.comment_count ?? reel.comments_count ?? reel.comments ?? 0),
+    commentCount: Number(reel.comment_count ?? reel.comments_count ?? (Array.isArray(reel.comments) ? reel.comments.length : 0)),
     liked: Boolean(reel.liked),
     video: Boolean(reel.video ?? (reel.media_type ? reel.media_type.startsWith('video/') : src && /(\.mp4|\.webm|\.ogg|\.m4v|\.mov|\.mkv|\.3gp)(\?|$)/i.test(src)))
   };
@@ -1279,6 +1280,161 @@ function renderReels(){
   </div>`;
  }).join('');
 }
+
+function formatCommentTime(value){
+ const timestamp=value ? new Date(value).getTime() : Date.now();
+ if(!Number.isFinite(timestamp)) return 'Just now';
+ const seconds=Math.max(0,Math.floor((Date.now()-timestamp)/1000));
+ if(seconds<60) return 'Just now';
+ const minutes=Math.floor(seconds/60);
+ if(minutes<60) return `${minutes}m ago`;
+ const hours=Math.floor(minutes/60);
+ if(hours<24) return `${hours}h ago`;
+ const days=Math.floor(hours/24);
+ if(days<7) return `${days}d ago`;
+ return new Date(timestamp).toLocaleDateString();
+}
+
+function commentAuthor(comment){
+ const profile=Array.isArray(comment.profiles)?comment.profiles[0]:comment.profiles;
+ const username=profile?.username || comment.username || (currentUser && String(comment.user_id)===String(currentUser.id) ? currentProfile : '') || 'user';
+ const name=profile?.full_name || profile?.display_name || comment.full_name || username;
+ const pic=profile?.avatar_url || profile?.profile_avatar_url || (currentUser && String(comment.user_id)===String(currentUser.id) ? me.pic : '') || avatarPlaceholder;
+ return {username,name,pic};
+}
+
+function renderComments(comments){
+ const list=document.getElementById('commentsList');
+ if(!list) return;
+ if(!comments.length){
+  list.innerHTML='<div class="comments-empty">No comments yet. Start the conversation!</div>';
+  return;
+ }
+ list.innerHTML=comments.map(comment=>{
+  const author=commentAuthor(comment);
+  return `<article class="comment-item"><img class="comment-avatar" src="${safe(avatarSrc(author.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'" alt=""><div class="comment-content"><span class="comment-author">${safe(author.username)}</span>${safe(comment.comment_text || comment.text || '')}<time class="comment-time">${safe(formatCommentTime(comment.created_at))}</time></div></article>`;
+ }).join('');
+}
+
+function updateCommentCounts(reelId,count){
+ const reel=reels.find(item=>String(item.id)===String(reelId)) || archivedReels.find(item=>String(item.id)===String(reelId));
+ if(reel) reel.commentCount=count;
+ document.querySelectorAll('[data-reel-comment-count]').forEach(el=>{if(el.dataset.reelCommentCount===String(reelId)) el.textContent=Number(count).toLocaleString();});
+ document.querySelectorAll('[data-post-comment-count]').forEach(el=>{if(el.dataset.postCommentCount===String(reelId)) el.textContent=Number(count).toLocaleString();});
+}
+
+async function openCommentsDrawer(reelId){
+ if(!currentUser){ openAuthModal('login'); return; }
+ activeCommentReelId=String(reelId);
+ const token=++commentLoadToken;
+ const drawer=document.getElementById('commentsDrawer');
+ const list=document.getElementById('commentsList');
+ const input=document.getElementById('commentsInput');
+ const avatarPreview=document.getElementById('commentsAvatar');
+ if(!drawer || !list || !input || !avatarPreview) return;
+ const reel=reels.find(item=>String(item.id)===activeCommentReelId);
+ const localPost=posts.find(item=>String(item.id)===activeCommentReelId);
+ const initialCount=reel?.commentCount ?? localPost?.comments?.length ?? 0;
+ document.getElementById('commentsTotal').textContent=`(${Number(initialCount).toLocaleString()})`;
+ input.placeholder=`Add a comment as @${currentProfile || me.username || 'user'}...`;
+ input.value='';
+ avatarPreview.src=avatarSrc(me.pic);
+ list.innerHTML='<div class="comments-loading">Loading comments...</div>';
+ drawer.classList.add('open');
+ drawer.setAttribute('aria-hidden','false');
+ document.body.style.overflow='hidden';
+ try {
+  let {data,error}=await supabaseClient.from('post_comments')
+   .select('*, profiles(*)')
+   .eq('reel_id',reelId)
+   .order('created_at',{ascending:true});
+  if(error && (error.code==='PGRST200' || error.code==='PGRST201' || /relationship.*profiles|profiles.*relationship/i.test(error.message||''))){
+   const commentsResult=await supabaseClient.from('post_comments').select('*').eq('reel_id',reelId).order('created_at',{ascending:true});
+   if(commentsResult.error) throw commentsResult.error;
+   data=commentsResult.data||[];
+   const userIds=[...new Set(data.map(comment=>comment.user_id).filter(Boolean).map(String))];
+   if(userIds.length){
+    const profilesResult=await supabaseClient.from('profiles').select('*').in('id',userIds);
+    if(profilesResult.error) throw profilesResult.error;
+    const profilesById=new Map((profilesResult.data||[]).map(profile=>[String(profile.id),profile]));
+    data=data.map(comment=>({...comment,profiles:profilesById.get(String(comment.user_id))||null}));
+   }
+  }else if(error) throw error;
+  if(token!==commentLoadToken || activeCommentReelId!==String(reelId)) return;
+  const comments=data||[];
+  renderComments(comments);
+  document.getElementById('commentsTotal').textContent=`(${comments.length.toLocaleString()})`;
+  updateCommentCounts(reelId,comments.length);
+ } catch(error) {
+  if(token!==commentLoadToken || activeCommentReelId!==String(reelId)) return;
+  console.error('Comments fetch error:',error);
+  list.innerHTML='<div class="comments-error">Could not load comments. Please try again.</div>';
+  toast(error?.message || 'Unable to load comments.');
+ }
+}
+
+function closeCommentsDrawer(){
+ const drawer=document.getElementById('commentsDrawer');
+ if(!drawer) return;
+ drawer.classList.remove('open');
+ drawer.setAttribute('aria-hidden','true');
+ activeCommentReelId=null;
+ commentLoadToken++;
+ document.body.style.overflow='';
+}
+
+async function submitReelComment(event){
+ event?.preventDefault();
+ const input=document.getElementById('commentsInput');
+ const button=document.getElementById('commentsPostButton');
+ const text=input?.value.trim();
+ if(!text || activeCommentReelId===null || commentsSubmitting) return;
+ if(!currentUser){ openAuthModal('login'); return; }
+ commentsSubmitting=true;
+ if(button) button.disabled=true;
+ try {
+  const {data,error}=await supabaseClient.from('post_comments').insert({
+   reel_id:activeCommentReelId,
+   user_id:currentUser.id,
+   comment_text:text
+  }).select('*').single();
+  if(error) throw error;
+  if(!data) throw new Error('The comment was not returned after saving.');
+  if(activeCommentReelId===String(data.reel_id ?? activeCommentReelId)){
+   const list=document.getElementById('commentsList');
+   const empty=list?.querySelector('.comments-empty, .comments-error');
+   if(empty) empty.remove();
+   const row={...data,user_id:data.user_id||currentUser.id,comment_text:data.comment_text||text,created_at:data.created_at||new Date().toISOString(),username:currentProfile,full_name:me.name};
+   const author=commentAuthor(row);
+   list?.insertAdjacentHTML('beforeend',`<article class="comment-item"><img class="comment-avatar" src="${safe(avatarSrc(author.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'" alt=""><div class="comment-content"><span class="comment-author">${safe(author.username)}</span>${safe(row.comment_text)}<time class="comment-time">${safe(formatCommentTime(row.created_at))}</time></div></article>`);
+   if(list) list.scrollTop=list.scrollHeight;
+   input.value='';
+   const total=document.getElementById('commentsTotal');
+   const count=(Number(total?.textContent?.replace(/[^\d]/g,''))||0)+1;
+   if(total) total.textContent=`(${count.toLocaleString()})`;
+   updateCommentCounts(activeCommentReelId,count);
+  }
+ } catch(error) {
+  console.error('Comment insert error:',error);
+  toast(error?.message || 'Unable to post your comment.');
+ } finally {
+  commentsSubmitting=false;
+  if(button) button.disabled=false;
+ }
+}
+
+let commentsDragStartY=null;
+document.getElementById('commentsHandle')?.addEventListener('pointerdown',event=>{
+ commentsDragStartY=event.clientY;
+ event.currentTarget.setPointerCapture?.(event.pointerId);
+});
+document.getElementById('commentsHandle')?.addEventListener('pointerup',event=>{
+ if(commentsDragStartY!==null && event.clientY-commentsDragStartY>80) closeCommentsDrawer();
+ commentsDragStartY=null;
+});
+document.addEventListener('keydown',event=>{
+ if(event.key==='Escape' && document.getElementById('commentsDrawer')?.classList.contains('open')) closeCommentsDrawer();
+});
 
 function startVisibleReel(){
  const videos=[...document.querySelectorAll('#reelList video')];
