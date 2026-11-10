@@ -131,6 +131,7 @@ button{cursor:pointer;color:white}
 .story-avatar-button{display:block;width:62px;height:62px;flex:0 0 62px;padding:0;border:0;border-radius:50%;background:transparent}
 .story-avatar-wrap{position:relative;display:flex;align-items:center;justify-content:center;width:62px;height:62px;border-radius:50%;padding:2px;background:#262626}
 .story.has-unviewed .story-avatar-wrap{background:linear-gradient(135deg,#fff,#888)}
+.story.has-story .story-avatar-wrap{background:linear-gradient(135deg,#fff,#888)}
 .story img{display:block;width:100%;height:100%;object-fit:cover;border:2px solid #000;border-radius:50%}
 .story-plus{position:absolute;bottom:0;right:0;z-index:2;width:20px;height:20px;display:flex;align-items:center;justify-content:center;padding:0;border:2px solid #000;border-radius:50%;background:#000;color:#fff;font-size:13px;font-weight:bold;line-height:1}
 .story small{display:block;width:100%;margin-top:6px;overflow:hidden;color:#a8a8a8;font-size:11px;text-align:center;text-overflow:ellipsis;white-space:nowrap}
@@ -152,10 +153,38 @@ button{cursor:pointer;color:white}
 .story-viewer-author{min-width:0;flex:1;font-size:13px;font-weight:700}
 .story-viewer-time{margin-left:7px;color:#ddd;font-size:11px;font-weight:400}
 .story-viewer-close{width:36px;height:36px;border:0;border-radius:50%;background:#0005;color:#fff;font-size:23px}
+.story-delete{width:36px;height:36px;border:0;border-radius:50%;background:#0005;color:#fff;font-size:17px}
 .story-nav{position:absolute;z-index:3;top:76px;bottom:0;width:38%;border:0;background:transparent}
 .story-nav.previous{left:0}
 .story-nav.next{right:0}
 .story-viewer-empty{position:absolute;inset:0;display:grid;place-items:center;color:#ddd}
+.story-viewer-actions{position:absolute;z-index:7;right:14px;bottom:max(24px,env(safe-area-inset-bottom));left:14px;color:#fff}
+.story-viewer-actions [hidden]{display:none!important}
+.story-social-actions{display:flex;flex-direction:column;gap:12px}
+.story-reactions{display:flex;gap:12px;align-items:center}
+.story-reactions button,.story-seen-button{border:0;background:#ffffff20;color:#fff;border-radius:999px;padding:8px 11px;font-size:18px}
+.story-reply-form{display:flex;align-items:center;gap:8px}
+.story-reply-input{flex:1;min-width:0;height:42px;padding:0 15px;border:1px solid #ffffff80;border-radius:999px;background:#0006;color:#fff;font-size:14px;outline:none}
+.story-reply-input::placeholder{color:#ddd}
+.story-reply-send{height:40px;padding:0 15px;border:0;border-radius:999px;background:#fff;color:#111;font-weight:700}
+.story-seen-button{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:650}
+.story-seen-button svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8}
+.story-like-button{position:relative;margin-left:auto;border:0;background:transparent;color:#fff;font-size:26px}
+.story-like-button.liked{color:#ff4057}
+.story-like-count{display:block;color:#fff;font-size:11px}
+.story-floating-heart{position:absolute;z-index:8;top:50%;left:50%;width:92px;height:92px;pointer-events:none;transform:translate(-50%,-50%);animation:story-heart-pop .7s ease-out forwards}
+.story-floating-heart svg{width:100%;height:100%;fill:#ff304f;filter:drop-shadow(0 0 16px #ff304f99)}
+@keyframes story-heart-pop{0%{opacity:0;transform:translate(-50%,-50%) scale(0)}30%{opacity:1;transform:translate(-50%,-50%) scale(1.2)}55%{transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(1)}}
+.story-seen-drawer{position:absolute;z-index:9;right:0;bottom:0;left:0;max-height:70%;padding:16px 16px max(18px,env(safe-area-inset-bottom));overflow:auto;border-radius:20px 20px 0 0;background:#181818f5;transform:translateY(105%);transition:transform .25s ease;backdrop-filter:blur(20px)}
+.story-seen-drawer.open{transform:translateY(0)}
+.story-seen-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.story-seen-header h3{margin:0;font-size:16px}
+.story-seen-close{border:0;background:transparent;color:#fff;font-size:22px}
+.story-seen-person{display:flex;align-items:center;gap:10px;padding:9px 0;color:#fff;font-size:13px}
+.story-seen-person img{width:36px;height:36px;border-radius:50%;object-fit:cover}
+.story-seen-empty{padding:18px 0;color:#aaa;text-align:center;font-size:13px}
+.dm-story-preview{display:flex;align-items:center;gap:8px;margin-top:8px;padding:6px;border-radius:10px;background:#ffffff12;color:#ddd;font-size:11px}
+.dm-story-preview img,.dm-story-preview video{width:42px;height:54px;border-radius:6px;object-fit:cover}
 @media(max-width:600px){.story-stage{width:100vw;height:100dvh;max-height:100dvh}.story-viewer-header{top:26px}}
 .post{border-radius:20px;overflow:hidden;margin-bottom:24px}
 .posthead{display:flex;align-items:center;gap:12px;padding:16px}
@@ -603,10 +632,36 @@ button{cursor:pointer;color:white}
   <div class="story-viewer-header">
    <img id="storyViewerAvatar" class="story-viewer-avatar" src="" alt="">
    <div class="story-viewer-author"><span id="storyViewerUsername"></span><span id="storyViewerTime" class="story-viewer-time"></span></div>
+   <button id="storyDeleteButton" class="story-delete" type="button" aria-label="Delete story" onclick="deleteActiveStory()" hidden>🗑</button>
    <button class="story-viewer-close" type="button" aria-label="Close story" onclick="closeStoryViewer()">✕</button>
   </div>
   <button class="story-nav previous" type="button" aria-label="Previous story" onclick="previousStory()"></button>
   <button class="story-nav next" type="button" aria-label="Next story" onclick="nextStory()"></button>
+  <div class="story-viewer-actions" id="storyViewerActions">
+   <div class="story-social-actions" id="storySocialActions">
+    <div class="story-reactions" aria-label="Quick story reactions">
+     <button type="button" aria-label="React with fire" onclick="sendStoryReaction('🔥')">🔥</button>
+     <button type="button" aria-label="React with heart" onclick="sendStoryReaction('❤️')">❤️</button>
+     <button type="button" aria-label="React with laughter" onclick="sendStoryReaction('😂')">😂</button>
+     <button type="button" aria-label="React with applause" onclick="sendStoryReaction('👏')">👏</button>
+     <button id="storyLikeButton" class="story-like-button" type="button" aria-label="Like story" aria-pressed="false" onclick="toggleStoryLike()">
+      <span id="storyLikeIcon">♡</span><span id="storyLikeCount" class="story-like-count">0</span>
+     </button>
+    </div>
+    <form class="story-reply-form" onsubmit="sendStoryReply(event)">
+     <input id="storyReplyInput" class="story-reply-input" maxlength="1000" autocomplete="off" placeholder="Send a message..." aria-label="Reply to story">
+     <button class="story-reply-send" type="submit">Send</button>
+    </form>
+   </div>
+   <button id="storySeenButton" class="story-seen-button" type="button" onclick="toggleStorySeenDrawer()" hidden>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+    <span id="storySeenCount">Seen by 0</span>
+   </button>
+  </div>
+  <div class="story-seen-drawer" id="storySeenDrawer" aria-hidden="true">
+   <div class="story-seen-header"><h3>Seen by</h3><button class="story-seen-close" type="button" aria-label="Close viewers" onclick="toggleStorySeenDrawer(false)">✕</button></div>
+   <div id="storySeenList"></div>
+  </div>
  </section>
 </div>
 
@@ -619,7 +674,7 @@ button{cursor:pointer;color:white}
 </nav>
 
 <input type="file" id="mediaUploadInput" accept="video/*,image/*" style="display:none;">
-<input type="file" id="storyUploadInput" accept="video/*,image/*" style="display:none;">
+<input type="file" id="storyUploadInput" accept="image/*,video/mp4" style="display:none;">
 
 <div class="modal create-modal" id="createModal" onclick="if(event.target===this)cancelCreate()"><div class="modalbox glass create-drawer" role="dialog" aria-modal="true" aria-labelledby="createTitle">
  <div class="create-title-row"><h2 id="createTitle">Create New Post</h2><button class="close" id="cancelPostCloseButton" type="button" aria-label="Close create post" onclick="cancelCreate()">×</button></div>
@@ -734,7 +789,12 @@ let storyViewerGroupIndex=-1;
 let storyViewerItemIndex=0;
 let storyAdvanceTimer=null;
 const viewedStoryIds=new Set();
+const recordedStoryViewIds=new Set();
+const storyLikeCounts=new Map();
+const likedStoryIds=new Set();
+const pendingStoryLikes=new Set();
 let storyUploading=false;
+let pendingStoryReplyMetadata=null;
 let activityNotifications=[];
 let activityChannel=null;
 let bookmarkLoadToken=0;
@@ -929,6 +989,11 @@ function enterApp(user){
   dmMessages=[];
   storyGroups=[];
   viewedStoryIds.clear();
+  recordedStoryViewIds.clear();
+  storyLikeCounts.clear();
+  likedStoryIds.clear();
+  pendingStoryLikes.clear();
+  pendingStoryReplyMetadata=null;
   activityNotifications=[];
   activityRequestToken++;
   updateNotificationBadge();
@@ -1104,6 +1169,11 @@ function resetSignedOutState(){
  dmMessages=[];
  storyGroups=[];
  viewedStoryIds.clear();
+ recordedStoryViewIds.clear();
+ storyLikeCounts.clear();
+ likedStoryIds.clear();
+ pendingStoryLikes.clear();
+ pendingStoryReplyMetadata=null;
  activityNotifications=[];
  activityRequestToken++;
  updateNotificationBadge();
@@ -1264,32 +1334,39 @@ storyUploadInput?.addEventListener('change',async function(){
  if(!file) return;
  if(!currentUser){this.value='';openAuthModal('login');return;}
  if(storyUploading) return;
- if(!isVideoFile(file)&&!isImageFile(file)){
-  this.value='';
-  toast('Choose an image or video for your story.');
+ const isMp4=file.type==='video/mp4'||/\.mp4$/i.test(file.name);
+ const isImage=isImageFile(file);
+ if(!isImage&&!isMp4){
+  this.value='';toast('Choose an image or MP4 video for your story.');
   return;
  }
  storyUploading=true;
+ let uploadedStoryPath=null;
+ let storyInserted=false;
  try {
   const extension=(file.name.match(/\.([a-z0-9]{1,10})$/i)?.[1]||(file.type.split('/')[1]||'bin').replace(/[^a-z0-9]/gi,'')).toLowerCase();
   const uniqueId=window.crypto?.randomUUID?.()||Math.random().toString(36).slice(2,14);
   const filePath=`${currentUser.id}/stories/${Date.now()}_${uniqueId}.${extension||'bin'}`;
-  const {data:uploadData,error:uploadError}=await supabaseClient.storage.from('posts').upload(filePath,file,{upsert:false,contentType:file.type||undefined});
+  const {data:uploadData,error:uploadError}=await supabaseClient.storage.from('stories').upload(filePath,file,{upsert:false,contentType:isMp4?'video/mp4':file.type||undefined});
   if(uploadError) throw uploadError;
   if(!uploadData?.path) throw new Error('The story upload did not return a file path.');
-  const {data:urlData}=supabaseClient.storage.from('posts').getPublicUrl(uploadData.path);
+  uploadedStoryPath=uploadData.path;
+  const {data:urlData}=supabaseClient.storage.from('stories').getPublicUrl(uploadData.path);
   const mediaUrl=urlData?.publicUrl;
   if(!mediaUrl) throw new Error('Could not get a public URL for your story.');
-  const {data:story,error:insertError}=await supabaseClient.from('user_stories')
-   .insert({user_id:currentUser.id,media_url:mediaUrl})
+  const expiresAt=new Date(Date.now()+24*60*60*1000).toISOString();
+  const {data:story,error:insertError}=await supabaseClient.from('stories')
+   .insert({user_id:currentUser.id,media_url:mediaUrl,expires_at:expiresAt})
    .select('*').single();
   if(insertError) throw insertError;
+  storyInserted=true;
   const createdStory={
    ...(story||{}),
    id:story?.id||`${currentUser.id}-${Date.now()}`,
    user_id:currentUser.id,
    media_url:story?.media_url||mediaUrl,
-   media_type:file.type||(isVideoFile(file)?'video/unknown':'image/unknown'),
+   media_type:story?.media_type||file.type||(isMp4?'video/mp4':'image/unknown'),
+   expires_at:story?.expires_at||expiresAt,
    created_at:story?.created_at||new Date().toISOString()
   };
   const existingIndex=storyGroups.findIndex(group=>group.userId===String(currentUser.id));
@@ -1297,8 +1374,15 @@ storyUploadInput?.addEventListener('change',async function(){
   else storyGroups.push({userId:String(currentUser.id),profile:{id:currentUser.id,name:me.name||currentProfile||'You',username:currentProfile||me.username||'user',pic:me.pic},stories:[createdStory]});
   renderStories();
   toast('Your story was shared');
+  openOwnStory();
  } catch(error) {
   console.error('Story upload error:',error);
+  if(uploadedStoryPath&&!storyInserted){
+    try{
+     const {error:cleanupError}=await supabaseClient.storage.from('stories').remove([uploadedStoryPath]);
+     if(cleanupError) console.error('Failed to clean up incomplete story upload:',cleanupError);
+    }catch(cleanupError){console.error('Failed to clean up incomplete story upload:',cleanupError);}
+  }
   toast(error?.message||'Unable to upload your story.');
  } finally {
   storyUploading=false;
@@ -1394,7 +1478,7 @@ async function loadStories(){
  const userId=String(currentUser.id);
  try {
   const [storiesResult,followingResult]=await Promise.all([
-   supabaseClient.from('user_stories').select('*').order('created_at',{ascending:false}),
+   supabaseClient.from('stories').select('*').order('created_at',{ascending:false}),
    supabaseClient.from('user_follows').select('following_id').eq('follower_id',userId)
   ]);
   if(storiesResult.error) throw storiesResult.error;
@@ -1470,19 +1554,232 @@ function renderActiveStory(){
  const username=document.getElementById('storyViewerUsername');
  const time=document.getElementById('storyViewerTime');
  const progress=document.getElementById('storyProgressList');
+ const isOwner=String(group.userId)===String(currentUser?.id);
  if(!url){nextStory();return;}
  if(media){
-  media.innerHTML=storyIsVideo(story,url)
-   ?`<video src="${safe(url)}" autoplay muted playsinline></video>`
-   :`<img src="${safe(url)}" alt="Story">`;
+  media.querySelector('video')?.pause();
+  if(storyIsVideo(story,url)){
+   const video=document.createElement('video');
+   video.src=url;
+   video.autoplay=true;
+   video.muted=true;
+   video.playsInline=true;
+   video.addEventListener('loadedmetadata',()=>{
+    if(story===storyGroups[storyViewerGroupIndex]?.stories[storyViewerItemIndex]){
+     const durationMs=Number.isFinite(video.duration)?Math.max(1000,video.duration*1000):5000;
+     startStoryProgress(durationMs);
+    }
+   },{once:true});
+   video.addEventListener('ended',nextStory,{once:true});
+   media.replaceChildren(video);
+   video.play().catch(error=>console.error('Story video playback error:',error));
+  }else{
+   const image=document.createElement('img');
+   image.src=url;
+   image.alt='Story';
+   media.replaceChildren(image);
+  }
  }
  if(authorAvatar){authorAvatar.src=avatarSrc(group.profile.pic);authorAvatar.onerror=()=>{authorAvatar.onerror=null;authorAvatar.src=avatarPlaceholder;};}
  if(username) username.textContent=`@${group.profile.username||'user'}`;
  if(time) time.textContent=storyTimeAgo(story.created_at);
  if(progress) progress.innerHTML=group.stories.map((item,index)=>`<span class="story-progress-track"><i class="story-progress-fill ${index<storyViewerItemIndex?'done':index===storyViewerItemIndex?'active':''}"></i></span>`).join('');
+ const deleteButton=document.getElementById('storyDeleteButton');
+ const seenButton=document.getElementById('storySeenButton');
+ const socialActions=document.getElementById('storySocialActions');
+ if(deleteButton) deleteButton.hidden=!isOwner;
+ if(seenButton) seenButton.hidden=!isOwner;
+ if(socialActions) socialActions.hidden=isOwner;
+ const seenCount=document.getElementById('storySeenCount');
+ if(seenCount&&isOwner) seenCount.textContent='Seen by 0';
+ toggleStorySeenDrawer(false);
  viewedStoryIds.add(String(story.id));
  renderStories();
- storyAdvanceTimer=setTimeout(nextStory,5000);
+ startStoryProgress(5000);
+ if(isOwner) void loadStoryViewers(story);
+ else{
+  setStoryLikeUI(story.id);
+  void recordStoryView(story);
+  void loadStoryLikes(story);
+ }
+}
+
+function startStoryProgress(durationMs){
+ clearTimeout(storyAdvanceTimer);
+ const fill=document.querySelectorAll('#storyProgressList .story-progress-fill')[storyViewerItemIndex];
+ if(fill){
+  fill.style.animation='none';
+  void fill.offsetWidth;
+  fill.style.animation=`story-progress ${durationMs}ms linear forwards`;
+ }
+ storyAdvanceTimer=setTimeout(nextStory,durationMs);
+}
+
+async function recordStoryView(story){
+ const storyId=String(story?.id||'');
+ const viewerId=String(currentUser?.id||'');
+ if(!storyId||!viewerId||String(story.user_id)===viewerId||recordedStoryViewIds.has(storyId)) return;
+ try{
+  const {data:existing,error:lookupError}=await supabaseClient.from('story_views').select('story_id').eq('story_id',story.id).eq('viewer_id',currentUser.id).limit(1).maybeSingle();
+  if(lookupError) throw lookupError;
+  if(existing){recordedStoryViewIds.add(storyId);return;}
+  const {error}=await supabaseClient.from('story_views').insert({story_id:story.id,viewer_id:currentUser.id});
+  if(error) throw error;
+  recordedStoryViewIds.add(storyId);
+ }catch(error){
+  if(error?.code==='23505') recordedStoryViewIds.add(storyId);
+  else{console.error('Story view tracking error:',error);toast(error?.message||'Unable to record story view.');}
+ }
+}
+
+async function loadStoryViewers(story){
+ const list=document.getElementById('storySeenList');
+ const count=document.getElementById('storySeenCount');
+ if(!list||!count) return;
+ list.innerHTML='<div class="story-seen-empty">Loading viewers...</div>';
+ try{
+  const {data,error}=await supabaseClient.from('story_views').select('viewer_id').eq('story_id',story.id);
+  if(error) throw error;
+  const viewerIds=[...new Set((data||[]).map(row=>String(row.viewer_id)).filter(Boolean))];
+  count.textContent=`Seen by ${viewerIds.length}`;
+  if(!viewerIds.length){list.innerHTML='<div class="story-seen-empty">No views yet</div>';return;}
+  const {data:profiles,error:profileError}=await supabaseClient.from('profiles').select('*').in('id',viewerIds);
+  if(profileError) throw profileError;
+  const profileMap=new Map((profiles||[]).map(profile=>[String(profile.id),profile]));
+  list.innerHTML=viewerIds.map(id=>{
+   const profile=profileMap.get(id)||{};
+   const name=profile.full_name||profile.display_name||profile.name||profile.username||'VYBE user';
+   const username=profile.username||'user';
+   const avatar=profile.avatar_url||profile.profile_avatar_url||avatarPlaceholder;
+   return `<div class="story-seen-person"><img src="${safe(avatarSrc(avatar))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'" alt=""><span>${safe(name)} <span style="color:#aaa">@${safe(username)}</span></span></div>`;
+  }).join('');
+ }catch(error){
+  console.error('Story viewers fetch error:',error);
+  list.innerHTML='<div class="story-seen-empty">Could not load viewers.</div>';
+  toast(error?.message||'Unable to load story viewers.');
+ }
+}
+
+function toggleStorySeenDrawer(force){
+ const drawer=document.getElementById('storySeenDrawer');
+ if(!drawer) return;
+ const open=typeof force==='boolean'?force:!drawer.classList.contains('open');
+ drawer.classList.toggle('open',open);
+ drawer.setAttribute('aria-hidden',String(!open));
+}
+
+async function deleteActiveStory(){
+ const group=storyGroups[storyViewerGroupIndex];
+ const story=group?.stories[storyViewerItemIndex];
+ if(!currentUser||!story||String(group.userId)!==String(currentUser.id)) return;
+ if(!window.confirm('Delete this story?')) return;
+ try{
+  const {error}=await supabaseClient.from('stories').delete().eq('id',story.id).eq('user_id',currentUser.id);
+  if(error) throw error;
+  closeStoryViewer();
+  await loadStories();
+  toast('Story deleted');
+ }catch(error){
+  console.error('Story delete error:',error);
+  toast(error?.message||'Unable to delete story.');
+ }
+}
+
+function setStoryLikeUI(storyId){
+ const button=document.getElementById('storyLikeButton');
+ const icon=document.getElementById('storyLikeIcon');
+ const count=document.getElementById('storyLikeCount');
+ const key=String(storyId);
+ if(button){button.classList.toggle('liked',likedStoryIds.has(key));button.setAttribute('aria-pressed',String(likedStoryIds.has(key)));}
+ if(icon) icon.textContent=likedStoryIds.has(key)?'♥':'♡';
+ if(count) count.textContent=String(storyLikeCounts.get(key)||0);
+}
+
+async function loadStoryLikes(story){
+ const key=String(story?.id||'');
+ if(!key) return;
+ try{
+  const {data,error}=await supabaseClient.from('story_likes').select('user_id').eq('story_id',story.id);
+  if(error) throw error;
+  const rows=data||[];
+  storyLikeCounts.set(key,rows.length);
+  if(rows.some(row=>String(row.user_id)===String(currentUser?.id))) likedStoryIds.add(key);
+  else likedStoryIds.delete(key);
+  if(String(storyGroups[storyViewerGroupIndex]?.stories[storyViewerItemIndex]?.id)===key) setStoryLikeUI(key);
+ }catch(error){
+  console.error('Story likes fetch error:',error);
+  toast(error?.message||'Unable to load story likes.');
+ }
+}
+
+function showStoryLikeAnimation(){
+ const stage=document.querySelector('#storyViewer .story-stage');
+ if(!stage) return;
+ stage.querySelector('.story-floating-heart')?.remove();
+ const heart=document.createElement('div');
+ heart.className='story-floating-heart';
+ heart.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></svg>';
+ stage.appendChild(heart);
+ setTimeout(()=>heart.remove(),750);
+}
+
+async function toggleStoryLike(){
+ const story=storyGroups[storyViewerGroupIndex]?.stories[storyViewerItemIndex];
+ if(!currentUser){openAuthModal('login');return;}
+ if(!story||String(story.user_id)===String(currentUser.id)) return;
+ const key=String(story.id);
+ if(pendingStoryLikes.has(key)) return;
+ const wasLiked=likedStoryIds.has(key);
+ pendingStoryLikes.add(key);
+ if(wasLiked){likedStoryIds.delete(key);storyLikeCounts.set(key,Math.max(0,(storyLikeCounts.get(key)||0)-1));}
+ else{likedStoryIds.add(key);storyLikeCounts.set(key,(storyLikeCounts.get(key)||0)+1);showStoryLikeAnimation();}
+ setStoryLikeUI(key);
+ try{
+  const result=wasLiked
+   ?await supabaseClient.from('story_likes').delete().eq('story_id',story.id).eq('user_id',currentUser.id)
+   :await supabaseClient.from('story_likes').insert({story_id:story.id,user_id:currentUser.id});
+  if(result.error) throw result.error;
+ }catch(error){
+  if(wasLiked){likedStoryIds.add(key);storyLikeCounts.set(key,(storyLikeCounts.get(key)||0)+1);}
+  else{likedStoryIds.delete(key);storyLikeCounts.set(key,Math.max(0,(storyLikeCounts.get(key)||0)-1));}
+  setStoryLikeUI(key);
+  console.error('Story like update error:',error);
+  toast(error?.message||'Unable to update story like.');
+ }finally{
+  pendingStoryLikes.delete(key);
+ }
+}
+
+async function sendStoryMessage(text){
+ const group=storyGroups[storyViewerGroupIndex];
+ const story=group?.stories[storyViewerItemIndex];
+ const message=String(text||'').trim();
+ if(!currentUser){openAuthModal('login');return;}
+ if(!group||!story||!message||String(group.userId)===String(currentUser.id)) return;
+ pendingStoryReplyMetadata={id:story.id,url:storyMediaUrl(story)};
+ closeStoryViewer();
+ await openChat(group.userId);
+ const input=document.getElementById('messageText');
+ if(!input||String(activeChat)!==String(group.userId)){
+  pendingStoryReplyMetadata=null;
+  toast('Could not open the story creator’s conversation.');
+  return;
+ }
+ input.value=message;
+ await sendMessage();
+}
+
+function sendStoryReply(event){
+ event?.preventDefault();
+ const input=document.getElementById('storyReplyInput');
+ const text=input?.value.trim();
+ if(!text) return;
+ if(input) input.value='';
+ void sendStoryMessage(text);
+}
+
+function sendStoryReaction(emoji){
+ void sendStoryMessage(emoji);
 }
 
 function nextStory(){
@@ -1520,7 +1817,10 @@ function closeStoryViewer(){
  const viewer=document.getElementById('storyViewer');
  if(viewer){viewer.classList.remove('open');viewer.setAttribute('aria-hidden','true');}
  const media=document.getElementById('storyMedia');
- if(media) media.replaceChildren();
+ if(media){media.querySelector('video')?.pause();media.replaceChildren();}
+ toggleStorySeenDrawer(false);
+ const deleteButton=document.getElementById('storyDeleteButton');
+ if(deleteButton) deleteButton.hidden=true;
  storyViewerGroupIndex=-1;
  storyViewerItemIndex=0;
  document.body.style.overflow='';
@@ -1772,7 +2072,15 @@ async function resolveDMRecipient(target){
 }
 
 function dmMessageText(message){
- return message.message_text || message.content || message.text || '';
+ return String(message.message_text || message.content || message.text || '').replace(/\n?\[\[story-preview:[^:\]]+:[^\]]+\]\]$/,'');
+}
+
+function dmStoryPreview(message){
+ const raw=String(message.message_text||message.content||message.text||'');
+ const match=raw.match(/\n?\[\[story-preview:([^:\]]+):([^\]]+)\]\]$/);
+ if(!match) return null;
+ try{return {id:decodeURIComponent(match[1]),url:decodeURIComponent(match[2])};}
+ catch(error){console.error('Story reply metadata parse error:',error);return null;}
 }
 
 function dmPartnerId(message,userId=currentUser?.id){
@@ -1809,7 +2117,11 @@ function renderDMThread(){
   const mine=String(message.sender_id||message.from_user_id)===String(currentUser.id);
   const timestamp=message.created_at?new Date(message.created_at):null;
   const time=timestamp&&!Number.isNaN(timestamp.getTime())?timestamp.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):'';
-  return `<div class="dm-bubble ${mine?'mine':''}">${safe(dmMessageText(message))}${time?`<time class="dm-time">${safe(time)}</time>`:''}</div>`;
+  const preview=dmStoryPreview(message);
+  let previewUrl='';
+  try{const parsed=preview?.url?new URL(preview.url,location.href):null;if(parsed&&['http:','https:'].includes(parsed.protocol))previewUrl=parsed.href;}catch(error){console.error('Story preview URL error:',error);}
+  const previewMedia=previewUrl?(isVideoFile({type:'',name:previewUrl})?`<video src="${safe(previewUrl)}" muted playsinline preload="metadata"></video>`:`<img src="${safe(previewUrl)}" alt="Story preview">`):'';
+  return `<div class="dm-bubble ${mine?'mine':''}">${safe(dmMessageText(message))}${previewMedia?`<div class="dm-story-preview">${previewMedia}<span>Replied to your story</span></div>`:''}${time?`<time class="dm-time">${safe(time)}</time>`:''}</div>`;
  }).join('') || '<div class="dm-empty">Say hello to start the conversation.</div>';
  thread.scrollTop=thread.scrollHeight;
 }
@@ -2050,13 +2362,16 @@ async function sendMessage(event){
   return;
  }
  if(!text) return;
- const messagePayload={sender_id:senderId,receiver_id:receiverId,message_text:text.trim()};
+ const storyMetadata=pendingStoryReplyMetadata;
+ const messageText=storyMetadata?`${text.trim()}\n[[story-preview:${encodeURIComponent(String(storyMetadata.id))}:${encodeURIComponent(String(storyMetadata.url))}]]`:text.trim();
+ const messagePayload={sender_id:senderId,receiver_id:receiverId,message_text:messageText};
  dmSending=true;
  if(button) button.disabled=true;
  try {
   const {data,error}=await supabaseClient.from('direct_messages').insert(messagePayload).select('*').single();
   if(error) throw error;
   if(!data) throw new Error('The sent message was not returned.');
+  if(storyMetadata===pendingStoryReplyMetadata) pendingStoryReplyMetadata=null;
   if(String(activeChat)===String(receiverId)){
    if(!dmMessages.some(message=>String(message.id)===String(data.id))) dmMessages.push(data);
    renderDMThread();
@@ -2067,6 +2382,7 @@ async function sendMessage(event){
   console.error('Direct message send error:',error);
   toast(error?.message||'Unable to send message.');
  } finally {
+  if(storyMetadata===pendingStoryReplyMetadata) pendingStoryReplyMetadata=null;
   dmSending=false;
   if(button) button.disabled=false;
   input?.focus();
