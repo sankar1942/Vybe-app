@@ -305,25 +305,28 @@ button{cursor:pointer;color:white}
 .follow-line b{color:#fff}
 
 /* REELS */
-#reels{max-width:520px;margin:auto}
-.reels-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+#reels.page.active{position:fixed;inset:0;z-index:19;width:100vw;height:100vh;height:100dvh;max-width:none;margin:0;overflow:hidden;background:#000}
+.reels-top,.reel-note{display:none}
+#reelList{width:100%;height:100%;overflow-y:auto;overscroll-behavior-y:contain;scroll-snap-type:y mandatory;scrollbar-width:none;-ms-overflow-style:none}
+#reelList::-webkit-scrollbar{display:none}
 .reel{
- height:min(75vh,760px);min-height:430px;position:relative;
- overflow:hidden;border-radius:23px;background:#111;
- border:1px solid #ffffff20;margin-bottom:18px;
+ position:relative;width:100vw;height:100vh;height:100dvh;min-height:0;
+ overflow:hidden;scroll-snap-align:start;scroll-snap-stop:always;
+ display:flex;align-items:center;justify-content:center;background:#000;
 }
-.reel video{width:100%;height:100%;object-fit:cover}
-.reel>img{width:100%;height:100%;object-fit:cover}
-.reel-media{position:absolute;inset:0;cursor:pointer}
-.reel-media img,.reel-media video{display:block;width:100%;height:100%;object-fit:cover}
+.reel-media{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#000;cursor:pointer}
+.reel-media img{display:block;width:100%;height:100%;object-fit:cover}
+.reel-media video{display:block;width:100% !important;max-width:100vw;height:auto;max-height:100vh;max-height:100dvh;object-fit:contain;margin:auto}
 .reel-shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(transparent 45%,#000b)}
-.reel-info{position:absolute;bottom:22px;left:17px;right:65px;z-index:2}
+.reel-info{position:absolute;bottom:70px;left:16px;right:72px;z-index:10}
 .reel-user{display:flex;align-items:center;gap:10px;margin-bottom:13px}
 .reel-user img{width:38px;height:38px;border-radius:50%;cursor:pointer}
 .reel-user button{background:none;border:0;color:white;font-size:12px}
 .reel-info p{font-size:13px;line-height:1.6}
-.reel-side{position:absolute;right:12px;bottom:35px;z-index:3;display:flex;flex-direction:column;gap:19px;align-items:center}
+.reel-side{position:absolute;right:16px;bottom:90px;z-index:10;display:flex;flex-direction:column;gap:19px;align-items:center}
 .reel-side button{background:#0008;border:1px solid #ffffff40;border-radius:50%;width:43px;height:43px;font-size:20px}
+.reel-side .reel-share-button{display:grid;place-items:center}
+.reel-share-button svg{width:21px;height:21px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .reel-side .reel-like-button.active{color:#ff3040;border-color:#ff3040}
 .reel-side small{font-size:10px}
 .reel-comment-count{font-size:10px;color:#ddd;line-height:1;margin-top:-15px}
@@ -416,6 +419,13 @@ button{cursor:pointer;color:white}
  background:#222;padding:13px 22px;border:1px solid var(--line);
  border-radius:25px;z-index:90;font-size:13px;max-width:90%;text-align:center;
 }
+.pwa-install-button{
+ position:fixed;right:20px;bottom:20px;z-index:95;display:none;
+ padding:13px 18px;border:1px solid #ffffff35;border-radius:999px;
+ background:#fff;color:#111;font-size:13px;font-weight:750;
+ box-shadow:0 8px 28px #0009;
+}
+.pwa-install-button.visible{display:block}
 @media(max-width:800px){
  .sidebar{display:none}
  .main{margin:0;width:100%;padding:13px 12px 90px}
@@ -427,7 +437,6 @@ button{cursor:pointer;color:white}
  .profilepic{width:78px;height:78px}
  .stats{gap:12px}
  .stats b{font-size:15px}
- .reel{height:calc(100dvh - 155px);min-height:440px}
  .profile-header{padding:16px}
  .profile-top{gap:15px;align-items:flex-start}
  .profile-header .profilepic{width:82px;height:82px;flex-shrink:0}
@@ -451,6 +460,7 @@ button{cursor:pointer;color:white}
 </head>
 
 <body>
+<button id="installPwaButton" class="pwa-install-button" type="button" hidden>📲 Install VYBE App</button>
 <div class="app">
 <aside class="sidebar">
  <div class="brand">VYBE.<small>YOUR SOCIAL WORLD</small></div>
@@ -667,7 +677,7 @@ let posts=[
 let reels=[],archivedReels=[];
 
 let follows=new Set(),followStates=new Map(),pendingFollows=new Set(),loadingFollowStates=new Set(),saved=new Set(),savedReels=new Set(),likedReels=new Set(),likedReelItems=[],pendingReelLikes=new Set(),notifications=[],chats={};
-let nextId=10,activeChat=null,viewing=null,profileTab="posts",muted=true;
+let nextId=10,activeChat=null,viewing=null,profileTab="posts",muted=true,pendingReelShareDraft=null;
 let dmConversations=[],dmProfiles=new Map(),dmMessages=[],dmChannel=null,dmRequestToken=0,dmSending=false;
 let searchTerm="";
 let searchDebounceTimer=null;
@@ -1108,6 +1118,7 @@ function go(id){
  }
  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
  document.getElementById(id)?.classList.add('active');
+ if(id!=='reels') pauseReelVideos();
  document.querySelectorAll('.nav,.bottom button').forEach(x=>x.classList.remove('active'));
  document.querySelectorAll('.nav').forEach(x=>{if(x.dataset.page===id)x.classList.add('active')});
  let map={reels:0,home:1,explore:2,profile:4};
@@ -1945,7 +1956,12 @@ async function openChat(id){
  dmProfiles.set(activeChat,recipient);
  setDMView('thread');
  await loadDMConversation(activeChat);
- document.getElementById('messageText')?.focus();
+ const messageInput=document.getElementById('messageText');
+ if(pendingReelShareDraft&&messageInput){
+  messageInput.value=pendingReelShareDraft;
+  pendingReelShareDraft=null;
+ }
+ messageInput?.focus();
 }
 
 async function sendMessage(event){
@@ -2324,6 +2340,9 @@ function renderReels(){
  const reelList=document.getElementById('reelList');
  if(!reelList) return;
  if(!reels.length){
+   reelPlaybackObserver?.disconnect();
+   reelPlaybackObserver=null;
+   pauseReelVideos();
    reelList.innerHTML='<div class="empty">No reels available yet.</div>';
    return;
  }
@@ -2331,7 +2350,7 @@ function renderReels(){
    const author=user(reel.user);
    const authorUsername=reelAuthorName(reel);
    const media=reel.video
-    ? `<video id="reel-video-${index}" ${index===0?'autoplay':''} ${muted?'muted':''} loop playsinline src="${safe(reel.src)}"></video>`
+    ? `<video id="reel-video-${index}" ${muted?'muted':''} loop playsinline src="${safe(reel.src)}"></video>`
     : `<img src="${safe(reel.src)}" alt="Reel">`;
    const liked=likedReels.has(String(reel.id));
    return `
@@ -2351,9 +2370,11 @@ function renderReels(){
      <small>${savedReels.has(String(reel.id))?'Saved':'Save'}</small>
      <button aria-label="View comments" onclick="openCommentsDrawer('${safe(reel.id)}')">💬</button>
      <small class="reel-comment-count" data-reel-comment-count="${safe(reel.id)}">${Number(reel.commentCount||0).toLocaleString()}</small>
+     <button class="reel-share-button" aria-label="Share reel" onclick="shareReel('${safe(reel.id)}')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4Z"/></svg></button>
    </div>
   </div>`;
  }).join('');
+ observeReelPlayback();
 }
 
 function formatCommentTime(value){
@@ -2515,15 +2536,67 @@ document.addEventListener('keydown',event=>{
  if(event.key==='Escape' && document.getElementById('activityDrawer')?.classList.contains('open')) closeActivityDrawer();
 });
 
+let reelPlaybackObserver=null;
+let activeReelVideo=null;
+
+function pauseReelVideos(){
+ document.querySelectorAll('#reelList video').forEach(video=>{
+  video.pause();
+  try { video.currentTime=0; } catch(error) { console.info('Reel playback reset deferred:',error); }
+ });
+ activeReelVideo=null;
+}
+
+function syncActiveReelVideo(){
+ const reelList=document.getElementById('reelList');
+ const reelsPage=document.getElementById('reels');
+ if(!reelList||!reelsPage?.classList.contains('active')){
+  pauseReelVideos();
+  return;
+ }
+ const bounds=reelList.getBoundingClientRect();
+ let bestVideo=null;
+ let bestRatio=0;
+ reelList.querySelectorAll('.reel').forEach(card=>{
+  const rect=card.getBoundingClientRect();
+  const overlapWidth=Math.max(0,Math.min(rect.right,bounds.right)-Math.max(rect.left,bounds.left));
+  const overlapHeight=Math.max(0,Math.min(rect.bottom,bounds.bottom)-Math.max(rect.top,bounds.top));
+  const ratio=(overlapWidth*overlapHeight)/Math.max(1,rect.width*rect.height);
+  if(ratio>bestRatio){bestRatio=ratio;bestVideo=card.querySelector('video');}
+ });
+ if(bestRatio<.7) bestVideo=null;
+ reelList.querySelectorAll('video').forEach(video=>{
+  if(video!==bestVideo){
+   video.pause();
+   try { video.currentTime=0; } catch(error) { console.info('Reel playback reset deferred:',error); }
+  }
+ });
+ if(!bestVideo){activeReelVideo=null;return;}
+ activeReelVideo=bestVideo;
+ bestVideo.muted=muted;
+ bestVideo.play().catch(error=>console.info('Reel autoplay was blocked:',error));
+}
+
+function observeReelPlayback(){
+ const reelList=document.getElementById('reelList');
+ if(!reelList) return;
+ reelPlaybackObserver?.disconnect();
+ reelPlaybackObserver=null;
+ if('IntersectionObserver' in window){
+  reelPlaybackObserver=new IntersectionObserver(()=>syncActiveReelVideo(),{root:reelList,threshold:[0,.7,.8,1]});
+  reelList.querySelectorAll('.reel').forEach(card=>reelPlaybackObserver.observe(card));
+ }
+ syncActiveReelVideo();
+}
+
 function startVisibleReel(){
- const videos=[...document.querySelectorAll('#reelList video')];
- videos.forEach(v=>{v.muted = muted; v.play().catch(()=>{});});
+ syncActiveReelVideo();
 }
 
 function toggleMute(index){
  muted=!muted;
  const video=document.getElementById(`reel-video-${index}`);
- if(video) video.muted = muted;
+ if(video){video.muted=muted;if(video===activeReelVideo&&!muted)video.play().catch(error=>console.info('Reel playback was blocked:',error));}
  renderReels();
 }
 
@@ -2862,6 +2935,39 @@ function sharePost(postId){
  note(`Shared post ${postId}`); toast('Post shared');
 }
 
+async function shareReel(reelId){
+ const reel=reels.find(item=>String(item.id)===String(reelId));
+ if(!reel) return;
+ const shareUrl=new URL(window.location.href);
+ shareUrl.searchParams.set('reel',String(reel.id));
+ const shareData={title:`${reelAuthorName(reel)} on VYBE`,text:reel.caption||'Watch this reel on VYBE',url:shareUrl.href};
+ if(typeof navigator.share==='function'){
+  try{
+   await navigator.share(shareData);
+   return;
+  }catch(error){
+   if(error?.name==='AbortError') return;
+   console.error('Native reel sharing failed:',error);
+  }
+ }
+ const draft=`${shareData.text}\n${shareData.url}`;
+ if(currentUser){
+  pendingReelShareDraft=draft;
+  openDMDrawer();
+  toast('Choose a conversation to share this reel.');
+ }
+ try{
+  if(navigator.clipboard?.writeText){
+   await navigator.clipboard.writeText(shareUrl.href);
+   toast(currentUser?'Reel link copied. Choose a chat and paste it.':'Reel link copied to clipboard.');
+   return;
+  }
+ }catch(error){
+  console.error('Reel link copy failed:',error);
+ }
+ if(!currentUser) toast('Unable to share this reel from this browser.');
+}
+
 function addComment(postId){
  const input=document.getElementById(`comment-${postId}`);
  if(!input) return;
@@ -3101,6 +3207,55 @@ async function initializeApp(){
 }
 
 void initializeApp();
+let deferredInstallPrompt=null;
+const installPwaButton=document.getElementById('installPwaButton');
+const isStandalonePwa=()=>window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
+const hideInstallPwaButton=()=>{
+ if(!installPwaButton) return;
+ installPwaButton.classList.remove('visible');
+ installPwaButton.hidden=true;
+};
+if(installPwaButton){
+ if(isStandalonePwa()) hideInstallPwaButton();
+ window.addEventListener('beforeinstallprompt',event=>{
+  event.preventDefault();
+  if(isStandalonePwa()) return;
+  deferredInstallPrompt=event;
+  installPwaButton.hidden=false;
+  installPwaButton.classList.add('visible');
+ });
+ window.addEventListener('appinstalled',()=>{
+  deferredInstallPrompt=null;
+  hideInstallPwaButton();
+ });
+ window.matchMedia('(display-mode: standalone)').addEventListener?.('change',event=>{
+  if(event.matches){
+   deferredInstallPrompt=null;
+   hideInstallPwaButton();
+  }
+ });
+ installPwaButton.addEventListener('click',async()=>{
+  if(!deferredInstallPrompt||isStandalonePwa()){
+   deferredInstallPrompt=null;
+   hideInstallPwaButton();
+   return;
+  }
+  const promptEvent=deferredInstallPrompt;
+  deferredInstallPrompt=null;
+  installPwaButton.disabled=true;
+  try{
+   await promptEvent.prompt();
+   const choice=await promptEvent.userChoice;
+   if(choice?.outcome==='accepted'||isStandalonePwa()) hideInstallPwaButton();
+   else hideInstallPwaButton();
+  }catch(error){
+   console.error('PWA install prompt failed:',error);
+   hideInstallPwaButton();
+  }finally{
+   installPwaButton.disabled=false;
+  }
+ });
+}
 if ('serviceWorker' in navigator) {
  window.addEventListener('load', () => {
   navigator.serviceWorker.register('/sw.js')
