@@ -170,6 +170,38 @@ button{cursor:pointer;color:white}
 .bubble.mine{margin-left:auto;background:#fff;color:#000}
 .chatinput{display:flex;gap:10px;padding:12px}
 .chatinput input{flex:1;min-width:0;background:transparent;border:0;border-bottom:1px solid var(--line);color:white;padding:10px;outline:none}
+.dm-overlay{position:fixed;inset:0;z-index:75;background:#0009;display:flex;align-items:flex-end;justify-content:center;opacity:0;visibility:hidden;transition:opacity .25s ease,visibility .25s}
+.dm-overlay.open{opacity:1;visibility:visible}
+.dm-drawer{width:min(100%,560px);height:min(78vh,720px);min-height:360px;display:flex;flex-direction:column;overflow:hidden;border:1px solid #ffffff1c;border-bottom:0;border-radius:23px 23px 0 0;background:rgba(19,20,24,.97);backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px);box-shadow:0 -16px 55px #0008;transform:translateY(105%);transition:transform .32s cubic-bezier(.22,.75,.25,1);padding-bottom:env(safe-area-inset-bottom,0px)}
+.dm-overlay.open .dm-drawer{transform:translateY(0)}
+.dm-header{height:68px;display:flex;align-items:center;gap:12px;padding:0 17px;border-bottom:1px solid #ffffff16;flex-shrink:0}
+.dm-header-copy{flex:1;min-width:0}
+.dm-header-title{display:block;font-size:16px;font-weight:700}
+.dm-header-subtitle{display:block;margin-top:3px;color:#92939a;font-size:12px}
+.dm-header-avatar{width:39px;height:39px;border-radius:50%;object-fit:cover;background:#ddd}
+.dm-header-button{width:36px;height:36px;border:0;border-radius:50%;background:#ffffff10;color:#fff;font-size:20px}
+.dm-inbox,.dm-thread{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+.dm-inbox{padding:9px 14px}
+.dm-thread{display:flex;flex-direction:column;gap:9px;padding:17px}
+.dm-person{display:flex;align-items:center;gap:12px;width:100%;padding:12px 8px;border:0;border-bottom:1px solid #ffffff12;background:transparent;color:#fff;text-align:left;cursor:pointer}
+.dm-person:hover{background:#ffffff09}
+.dm-person-avatar{width:48px;height:48px;flex:0 0 48px;object-fit:cover;border-radius:50%;background:#ddd}
+.dm-person-copy{flex:1;min-width:0}
+.dm-person-name{display:block;font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dm-person-preview{display:block;margin-top:5px;color:#999;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dm-bubble{max-width:78%;align-self:flex-start;padding:10px 14px;border:1px solid #ffffff12;border-radius:18px 18px 18px 5px;background:#282a30;color:#f5f5f5;font-size:14px;line-height:1.45;overflow-wrap:anywhere;white-space:pre-wrap}
+.dm-bubble.mine{align-self:flex-end;border-color:#2283dc;background:#1685ed;color:#fff;border-radius:18px 18px 5px 18px}
+.dm-time{display:block;margin-top:5px;color:#ffffffa8;font-size:10px}
+.dm-composer{display:flex;align-items:center;gap:10px;padding:12px 14px;border-top:1px solid #ffffff16;background:rgba(17,18,22,.95);flex-shrink:0}
+.dm-composer input{flex:1;min-width:0;height:42px;padding:0 15px;border:1px solid #ffffff22;border-radius:24px;background:#ffffff0b;color:#fff;outline:none}
+.dm-composer input::placeholder{color:#898b91}
+.dm-composer input:focus{border-color:#ffffff55}
+.dm-send{min-width:62px;padding:10px 13px;border:0;border-radius:20px;background:#1685ed;color:#fff;font-weight:700}
+.dm-send:disabled{opacity:.5;cursor:wait}
+.dm-empty,.dm-loading,.dm-error{padding:42px 12px;color:#8f9097;text-align:center;font-size:13px}
+.dm-error{color:#ff9999}
+.dm-back{font-size:23px}
+@media(max-width:600px){.dm-drawer{width:100%;height:min(82vh,760px);border-radius:20px 20px 0 0}}
 
 /* PROFILE */
 .profile-header{padding:25px;border-radius:22px;margin-bottom:20px}
@@ -374,7 +406,7 @@ button{cursor:pointer;color:white}
  <input id="topSearchInput" class="search" placeholder="⌕  Search VYBE..." autocomplete="off">
  <div class="top-actions">
   <button class="icon-btn" onclick="go('notifications')">♧</button>
-  <button class="icon-btn" onclick="go('messages')">✉</button>
+  <button class="icon-btn" aria-label="Messages" onclick="openDMDrawer()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4Z"/></svg></button>
   <button id="authButton" class="secondary" onclick="currentUser ? go('profile') : openAuthModal('login')">Log In</button>
   <button id="headerLogoutButton" class="secondary logout-button" onclick="logoutUser()" style="display:none" aria-label="Logout">
    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5M15 12H3"/><path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/></svg>
@@ -399,13 +431,6 @@ button{cursor:pointer;color:white}
 <section id="profile" class="page"><div id="profileView"></div></section>
 <section id="other" class="page"><div id="otherView"></div></section>
 <section id="saved" class="page"><h2 class="heading">Saved Collections</h2><div id="savedGrid" class="grid"></div></section>
-<section id="messages" class="page"><h2 class="heading">Messages</h2><div id="chatList" class="chatbox glass"></div></section>
-<section id="chat" class="page">
- <button class="secondary" onclick="go('messages')">← Back</button>
- <h2 class="heading" id="chatName">Messages</h2>
- <div class="chatbox glass"><div class="messages" id="messageList"></div>
- <div class="chatinput"><input id="messageText" placeholder="Write something..." onkeydown="if(event.key==='Enter')sendMessage()"><button class="primary" onclick="sendMessage()">Send</button></div></div>
-</section>
 <section id="notifications" class="page"><h2 class="heading">Activity</h2><div id="notificationList" class="chatbox glass"></div></section>
 <section id="settings" class="page">
  <h2 class="heading">Settings</h2>
@@ -418,6 +443,23 @@ button{cursor:pointer;color:white}
 </section>
 </div>
 </main>
+</div>
+
+<div class="dm-overlay" id="dmDrawer" aria-hidden="true" onclick="if(event.target===this)closeDMDrawer()">
+ <section class="dm-drawer" role="dialog" aria-modal="true" aria-labelledby="dmTitle">
+  <header class="dm-header">
+   <button class="dm-header-button dm-back" id="dmBackButton" type="button" aria-label="Back to inbox" onclick="showDMInbox()" style="display:none">←</button>
+   <img class="dm-header-avatar" id="dmHeaderAvatar" src="" alt="" style="display:none">
+   <div class="dm-header-copy"><span class="dm-header-title" id="dmTitle">Messages</span><span class="dm-header-subtitle" id="dmSubtitle">Your conversations</span></div>
+   <button class="dm-header-button" type="button" aria-label="Close messages" onclick="closeDMDrawer()">✕</button>
+  </header>
+  <div class="dm-inbox" id="dmInbox"></div>
+  <div class="dm-thread" id="dmThread" style="display:none" aria-live="polite"></div>
+  <form class="dm-composer" id="dmComposer" onsubmit="sendMessage(event)" style="display:none">
+   <input id="messageText" type="text" maxlength="4000" autocomplete="off" placeholder="Message...">
+   <button class="dm-send" id="dmSendButton" type="submit">Send</button>
+  </form>
+ </section>
 </div>
 
 <nav class="bottom">
@@ -530,6 +572,7 @@ let reels=[],archivedReels=[];
 
 let follows=new Set(),followStates=new Map(),pendingFollows=new Set(),loadingFollowStates=new Set(),saved=new Set(),savedReels=new Set(),likedReels=new Set(),likedReelItems=[],pendingReelLikes=new Set(),notifications=[],chats={};
 let nextId=10,activeChat=null,viewing=null,profileTab="posts",muted=true;
+let dmConversations=[],dmProfiles=new Map(),dmMessages=[],dmChannel=null,dmRequestToken=0,dmSending=false;
 let searchTerm="";
 let searchDebounceTimer=null;
 let searchRequestToken=0;
@@ -701,6 +744,7 @@ function closeAuthModal(){
 function enterApp(user){
  if(!user) return;
  if(currentUser?.id !== user.id){
+  closeDMDrawer();
   currentProfile = null;
   hasCurrentProfile = false;
   me={id:user.id,name:'',username:'',bio:'',pic:avatar(),followers:0,following:0};
@@ -711,6 +755,10 @@ function enterApp(user){
   follows.clear();
   followStates.clear();
   pendingFollows.clear();
+  dmConversations=[];
+  dmProfiles.clear();
+  dmMessages=[];
+  activeChat=null;
   loadingFollowStates.clear();
   saved.clear();
  }
@@ -853,6 +901,7 @@ async function logoutUser(){
 
 function resetSignedOutState(){
  closeCommentsDrawer();
+ closeDMDrawer();
  currentUser=null;
  currentProfile=null;
  hasCurrentProfile=false;
@@ -869,6 +918,10 @@ function resetSignedOutState(){
  loadingFollowStates.clear();
  saved.clear();
  chats={};
+ dmConversations=[];
+ dmProfiles.clear();
+ dmMessages=[];
+ activeChat=null;
  notifications=[];
  activeChat=null;
  viewing=null;
@@ -922,7 +975,8 @@ function toast(s){
  clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>t.style.display='none',2200);
 }
 function go(id){
- const blockedPages = ['reels','home','saved','messages','notifications','profile','chat'];
+ if(id==='messages'){openDMDrawer();return;}
+ const blockedPages = ['reels','home','saved','notifications','profile'];
  if (blockedPages.includes(id) && !currentUser) {
    openAuthModal('login');
    return;
@@ -943,7 +997,6 @@ function go(id){
  if(id==='explore'){renderExplore();void loadExploreFeed();}
  if(id==='searchResults')renderSearchResults();
  if(id==='saved')renderSaved();
- if(id==='messages')renderChats();
  if(id==='notifications')renderNotifications();
 }
 function viewProfile(id){
@@ -1240,43 +1293,336 @@ function setProfileTab(tab){
 }
 
 function renderChats(){
- const chatList=document.getElementById('chatList');
- if(!chatList) return;
- const entries=Object.keys(chats).map(id=>{
-   const userData=user(Number(id));
-   const last = chats[id][chats[id].length-1];
-   return `<div class="person" onclick="openChat(${userData.id})"><img class="avatar" src="${safe(avatarSrc(userData.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'"><div><strong>${safe(userData.name)}</strong><p>${safe(last.text)}</p></div></div>`;
+ if(document.getElementById('dmDrawer')?.classList.contains('open') && !activeChat) renderDMInbox();
+}
+
+function dmProfile(id){
+ const key=String(id);
+ if(key===String(currentUser?.id)) return {id:currentUser.id,name:me.name||currentProfile||'You',username:currentProfile||me.username||'user',pic:me.pic};
+ return dmProfiles.get(key)||users.find(item=>String(item.id)===key)||{id,name:'VYBE user',username:'user',pic:avatarPlaceholder};
+}
+
+function isValidUserUuid(value){
+ return typeof value==='string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value.trim());
+}
+
+async function resolveDMRecipient(target){
+ const providedId=String(target??'').trim();
+ let known=dmProfiles.get(providedId)||users.find(item=>String(item.id)===providedId)||searchedProfiles.get(providedId);
+ if(isValidUserUuid(providedId)){
+  if(known && isValidUserUuid(String(known.id))) return {...known,id:String(known.id)};
+  const {data,error}=await supabaseClient.from('profiles').select('*').eq('id',providedId).maybeSingle();
+  if(error) throw error;
+  if(!data?.id || !isValidUserUuid(String(data.id))) throw new Error('The selected profile does not have a valid user ID.');
+  const profile={id:String(data.id),name:data.full_name||data.display_name||data.name||data.username||'VYBE user',username:data.username||'user',pic:data.avatar_url||data.profile_avatar_url||avatarPlaceholder};
+  dmProfiles.set(profile.id,profile);
+  return profile;
+ }
+ const username=normalizeUsername(known?.username||providedId.replace(/^@/,''));
+ if(!username) throw new Error('A username or valid user ID is required to start a conversation.');
+ const {data,error}=await supabaseClient.from('profiles').select('*').eq('username',username).maybeSingle();
+ if(error) throw error;
+ if(!data?.id || !isValidUserUuid(String(data.id))) throw new Error(`Could not find a valid account for @${username}.`);
+ const profile={id:String(data.id),name:data.full_name||data.display_name||data.name||data.username||username,username:data.username||username,pic:data.avatar_url||data.profile_avatar_url||avatarPlaceholder};
+ dmProfiles.set(profile.id,profile);
+ return profile;
+}
+
+function dmMessageText(message){
+ return message.message_text || message.content || message.text || '';
+}
+
+function dmPartnerId(message,userId=currentUser?.id){
+ const sender=String(message.sender_id||message.from_user_id||'');
+ const receiver=String(message.receiver_id||message.to_user_id||'');
+ const current=String(userId||'');
+ if(sender===current) return receiver;
+ if(receiver===current) return sender;
+ return null;
+}
+
+function renderDMInbox(){
+ const inbox=document.getElementById('dmInbox');
+ if(!inbox) return;
+ if(!dmConversations.length){
+  inbox.innerHTML='<div class="dm-empty">No conversations yet. Message someone from their profile to get started.</div>';
+  return;
+ }
+ inbox.innerHTML=dmConversations.map(conversation=>{
+  const person=dmProfile(conversation.userId);
+  const preview=conversation.lastMessage ? `${String(conversation.lastMessage.sender_id||conversation.lastMessage.from_user_id)===String(currentUser.id)?'You: ':''}${dmMessageText(conversation.lastMessage)}` : 'Start a conversation';
+  return `<button class="dm-person" type="button" data-chat-user="${safe(conversation.userId)}">
+   <img class="dm-person-avatar" src="${safe(avatarSrc(person.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'" alt="">
+   <span class="dm-person-copy"><span class="dm-person-name">${safe(person.name||person.username||'VYBE user')} <span class="meta">@${safe(person.username||'user')}</span></span><span class="dm-person-preview">${safe(preview)}</span></span>
+  </button>`;
  }).join('');
- chatList.innerHTML = entries || '<div class="empty">No conversations yet.</div>';
+ inbox.querySelectorAll('[data-chat-user]').forEach(button=>button.addEventListener('click',()=>openChat(button.dataset.chatUser)));
 }
 
-function renderMessages(){
- const list=document.getElementById('messageList');
- const title=document.getElementById('chatName');
- if(!list || !activeChat) return;
- const userData=user(activeChat);
- title.textContent=userData.name;
- list.innerHTML=(chats[activeChat]||[]).map(msg=>`<div class="bubble ${msg.from===0?'mine':''}">${safe(msg.text)}</div>`).join('');
- list.scrollTop = list.scrollHeight;
+function renderDMThread(){
+ const thread=document.getElementById('dmThread');
+ if(!thread || !currentUser || !activeChat) return;
+ thread.innerHTML=dmMessages.map(message=>{
+  const mine=String(message.sender_id||message.from_user_id)===String(currentUser.id);
+  const timestamp=message.created_at?new Date(message.created_at):null;
+  const time=timestamp&&!Number.isNaN(timestamp.getTime())?timestamp.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):'';
+  return `<div class="dm-bubble ${mine?'mine':''}">${safe(dmMessageText(message))}${time?`<time class="dm-time">${safe(time)}</time>`:''}</div>`;
+ }).join('') || '<div class="dm-empty">Say hello to start the conversation.</div>';
+ thread.scrollTop=thread.scrollHeight;
 }
 
-function openChat(id){
- activeChat=id;
- go('chat');
- renderMessages();
+function setDMView(view){
+ const inbox=document.getElementById('dmInbox');
+ const thread=document.getElementById('dmThread');
+ const composer=document.getElementById('dmComposer');
+ const back=document.getElementById('dmBackButton');
+ const avatar=document.getElementById('dmHeaderAvatar');
+ const title=document.getElementById('dmTitle');
+ const subtitle=document.getElementById('dmSubtitle');
+ const inConversation=view==='thread';
+ if(inbox) inbox.style.display=inConversation?'none':'block';
+ if(thread) thread.style.display=inConversation?'flex':'none';
+ if(composer) composer.style.display=inConversation?'flex':'none';
+ if(back) back.style.display=inConversation?'block':'none';
+ if(avatar) avatar.style.display=inConversation?'block':'none';
+ if(inConversation && activeChat){
+  const person=dmProfile(activeChat);
+  if(avatar){avatar.src=avatarSrc(person.pic);avatar.onerror=()=>{avatar.src=avatarPlaceholder;};}
+  if(title) title.textContent=person.name||person.username||'Conversation';
+  if(subtitle) subtitle.textContent=`@${person.username||'user'}`;
+ }else{
+  if(title) title.textContent='Messages';
+  if(subtitle) subtitle.textContent='Your conversations';
+ }
 }
 
-function sendMessage(){
- if(!activeChat) return;
+async function loadDMInbox(){
+ if(!currentUser) return;
+ const userId=currentUser.id;
+ const request=++dmRequestToken;
+ const inbox=document.getElementById('dmInbox');
+ if(inbox) inbox.innerHTML='<div class="dm-loading">Loading conversations...</div>';
+ try {
+  const [followingResult,messagesResult]=await Promise.all([
+   supabaseClient.from('user_follows').select('following_id').eq('follower_id',userId),
+   supabaseClient.from('direct_messages').select('*').or(`sender_id.eq.${userId},receiver_id.eq.${userId}`).order('created_at',{ascending:false}).limit(100)
+  ]);
+  if(followingResult.error) throw followingResult.error;
+  if(messagesResult.error) throw messagesResult.error;
+  if(request!==dmRequestToken||String(currentUser?.id)!==String(userId)) return;
+  const latestByUser=new Map();
+  (messagesResult.data||[]).forEach(message=>{
+   const partner=dmPartnerId(message,userId);
+   if(partner && !latestByUser.has(partner)) latestByUser.set(partner,message);
+  });
+  const userIds=[...new Set([...(followingResult.data||[]).map(row=>String(row.following_id)),...latestByUser.keys()])].filter(id=>id!==String(userId)&&isValidUserUuid(id));
+  if(userIds.length){
+   const {data:profiles,error:profileError}=await supabaseClient.from('profiles').select('*').in('id',userIds);
+   if(profileError) throw profileError;
+   (profiles||[]).forEach(profile=>dmProfiles.set(String(profile.id),{
+    id:profile.id,
+    name:profile.full_name||profile.display_name||profile.name||profile.username||'VYBE user',
+    username:profile.username||'user',
+    pic:profile.avatar_url||profile.profile_avatar_url||avatarPlaceholder
+   }));
+  }
+  const ids=new Set(userIds);
+  dmConversations=[...ids].map(id=>({userId:id,lastMessage:latestByUser.get(id)||null}))
+   .sort((a,b)=>new Date(b.lastMessage?.created_at||0)-new Date(a.lastMessage?.created_at||0));
+  renderDMInbox();
+ } catch(error) {
+  if(request!==dmRequestToken) return;
+  console.error('Direct message inbox error:',error);
+  if(inbox) inbox.innerHTML='<div class="dm-error">Could not load conversations. Please try again.</div>';
+  toast(error?.message||'Unable to load conversations.');
+ }
+}
+
+async function loadDMProfile(userId){
+ const key=String(userId);
+ if(!isValidUserUuid(key)) throw new Error('Cannot load a conversation for an invalid user ID.');
+ if(dmProfiles.has(key)) return dmProfiles.get(key);
+ const {data,error}=await supabaseClient.from('profiles').select('*').eq('id',userId).maybeSingle();
+ if(error) throw error;
+ if(!data?.id || !isValidUserUuid(String(data.id))) throw new Error('Could not resolve a valid user ID for this conversation.');
+ const profile={
+  id:String(data.id),
+  name:data?.full_name||data?.display_name||data?.name||data?.username||'VYBE user',
+  username:data?.username||'user',
+  pic:data?.avatar_url||data?.profile_avatar_url||avatarPlaceholder
+ };
+ dmProfiles.set(key,profile);
+ return profile;
+}
+
+async function loadDMConversation(targetUserId){
+ if(!currentUser) return;
+ const userId=currentUser.id;
+ const targetId=String(targetUserId);
+ const request=++dmRequestToken;
+ const thread=document.getElementById('dmThread');
+ if(thread) thread.innerHTML='<div class="dm-loading">Loading messages...</div>';
+ try {
+  await loadDMProfile(targetUserId);
+  const {data,error}=await supabaseClient.from('direct_messages').select('*')
+   .or(`and(sender_id.eq.${userId},receiver_id.eq.${targetId}),and(sender_id.eq.${targetId},receiver_id.eq.${userId})`)
+   .order('created_at',{ascending:true});
+  if(error) throw error;
+  if(request!==dmRequestToken||String(activeChat)!==targetId||String(currentUser?.id)!==String(userId)) return;
+  const messagesById=new Map((data||[]).map(message=>[String(message.id),message]));
+  dmMessages.forEach(message=>{if(message.id) messagesById.set(String(message.id),message);});
+  dmMessages=[...messagesById.values()].sort((a,b)=>new Date(a.created_at||0)-new Date(b.created_at||0));
+  setDMView('thread');
+  renderDMThread();
+ } catch(error) {
+  if(request!==dmRequestToken||String(activeChat)!==targetId) return;
+  console.error('Direct message history error:',error);
+  if(thread) thread.innerHTML='<div class="dm-error">Could not load this conversation.</div>';
+  toast(error?.message||'Unable to load messages.');
+ }
+}
+
+function handleDMRealtimeMessage(message){
+ if(!currentUser || !message) return;
+ const partner=dmPartnerId(message);
+ if(!partner) return;
+ const existing=dmConversations.find(item=>String(item.userId)===partner);
+ if(existing) existing.lastMessage=message;
+ else dmConversations.unshift({userId:partner,lastMessage:message});
+ renderDMInbox();
+ if(!dmProfiles.has(partner)){
+  void loadDMProfile(partner).then(renderDMInbox).catch(error=>{
+   console.error('Direct message sender profile error:',error);
+  });
+ }
+ if(String(activeChat)===partner&&!dmMessages.some(item=>String(item.id)===String(message.id))){
+  dmMessages.push(message);
+  dmMessages.sort((a,b)=>new Date(a.created_at||0)-new Date(b.created_at||0));
+  renderDMThread();
+ }
+}
+
+function subscribeToDirectMessages(){
+ if(dmChannel || !currentUser) return;
+ const userId=String(currentUser.id);
+ dmChannel=supabaseClient.channel(`direct-messages-${userId}-${Date.now()}`)
+  .on('postgres_changes',{event:'INSERT',schema:'public',table:'direct_messages'},payload=>{
+   const message=payload.new;
+   const sender=String(message.sender_id||message.from_user_id||'');
+   const receiver=String(message.receiver_id||message.to_user_id||'');
+   if(sender===userId||receiver===userId) handleDMRealtimeMessage(message);
+  })
+  .subscribe(status=>{
+   if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'){
+    console.error('Direct message realtime subscription status:',status);
+    toast('Live messages are temporarily unavailable.');
+   }
+  });
+}
+
+function openDMDrawer(targetUserId=null){
+ if(!currentUser){openAuthModal('login');return;}
+ const drawer=document.getElementById('dmDrawer');
+ if(!drawer) return;
+ drawer.classList.add('open');
+ drawer.setAttribute('aria-hidden','false');
+ document.body.style.overflow='hidden';
+ subscribeToDirectMessages();
+ if(targetUserId!==null&&targetUserId!==undefined) void openChat(targetUserId);
+ else showDMInbox();
+}
+
+async function showDMInbox(){
+ activeChat=null;
+ dmRequestToken++;
+ setDMView('inbox');
+ await loadDMInbox();
+}
+
+function closeDMDrawer(){
+ const drawer=document.getElementById('dmDrawer');
+ if(!drawer) return;
+ drawer.classList.remove('open');
+ drawer.setAttribute('aria-hidden','true');
+ document.body.style.overflow='';
+ activeChat=null;
+ dmRequestToken++;
+ dmMessages=[];
+ if(dmChannel){
+  const channel=dmChannel;
+  dmChannel=null;
+  void supabaseClient.removeChannel(channel).catch(error=>console.error('Direct message channel cleanup error:',error));
+ }
+}
+
+async function openChat(id){
+ if(!currentUser){openAuthModal('login');return;}
+ if(String(id)===String(currentUser.id)) return;
+ let recipient;
+ try {
+  recipient=await resolveDMRecipient(id);
+ } catch(error) {
+  console.error('Direct message recipient validation error:',error);
+  window.alert(error?.message||'Cannot open this conversation because the recipient user ID is invalid.');
+  return;
+ }
+ if(String(recipient.id)===String(currentUser.id)) return;
+ const drawer=document.getElementById('dmDrawer');
+ if(!drawer) return;
+ drawer.classList.add('open');
+ drawer.setAttribute('aria-hidden','false');
+ document.body.style.overflow='hidden';
+ subscribeToDirectMessages();
+ dmMessages=[];
+ activeChat=String(recipient.id);
+ dmProfiles.set(activeChat,recipient);
+ setDMView('thread');
+ await loadDMConversation(activeChat);
+ document.getElementById('messageText')?.focus();
+}
+
+async function sendMessage(event){
+ event?.preventDefault();
+ if(!currentUser||dmSending) return;
  const input=document.getElementById('messageText');
- if(!input) return;
- const text=input.value.trim();
+ const button=document.getElementById('dmSendButton');
+ const text=input?.value.trim();
+ const senderId=String(currentUser.id||'').trim();
+ const receiverId=String(activeChat||'').trim();
+ if(!isValidUserUuid(senderId)||String(senderId)!==String(currentUser.id)){
+  const error=new Error('The sender user ID is invalid. Please sign in again.');
+  console.error('Direct message payload validation error:',error,{senderId,receiverId});
+  window.alert(error.message);
+  return;
+ }
+ if(!isValidUserUuid(receiverId)){
+  const error=new Error('The recipient user ID is missing or invalid. Reopen this chat from the user profile and try again.');
+  console.error('Direct message payload validation error:',error,{senderId,receiverId});
+  window.alert(error.message);
+  return;
+ }
  if(!text) return;
- if(!chats[activeChat]) chats[activeChat]=[];
- chats[activeChat].push({from:0,text,time:'Now'});
- input.value='';
- renderMessages();
- note(`New message from ${user(activeChat).name}`);
+ const messagePayload={sender_id:senderId,receiver_id:receiverId,message_text:text.trim()};
+ dmSending=true;
+ if(button) button.disabled=true;
+ try {
+  const {data,error}=await supabaseClient.from('direct_messages').insert(messagePayload).select('*').single();
+  if(error) throw error;
+  if(!data) throw new Error('The sent message was not returned.');
+  if(String(activeChat)===String(receiverId)){
+   if(!dmMessages.some(message=>String(message.id)===String(data.id))) dmMessages.push(data);
+   renderDMThread();
+   input.value='';
+  }
+  handleDMRealtimeMessage(data);
+ } catch(error) {
+  console.error('Direct message send error:',error);
+  toast(error?.message||'Unable to send message.');
+ } finally {
+  dmSending=false;
+  if(button) button.disabled=false;
+  input?.focus();
+ }
 }
 
 function renderNotifications(){
@@ -1577,6 +1923,7 @@ document.getElementById('commentsHandle')?.addEventListener('pointerup',event=>{
 });
 document.addEventListener('keydown',event=>{
  if(event.key==='Escape' && document.getElementById('commentsDrawer')?.classList.contains('open')) closeCommentsDrawer();
+ if(event.key==='Escape' && document.getElementById('dmDrawer')?.classList.contains('open')) closeDMDrawer();
 });
 
 function startVisibleReel(){
