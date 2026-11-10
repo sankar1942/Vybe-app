@@ -92,6 +92,8 @@ button{cursor:pointer;color:white}
 }
 .search::placeholder{color:#888}
 .top-actions{display:flex;gap:10px}
+.logout-button{display:flex;align-items:center;gap:7px;white-space:nowrap}
+.logout-button svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8}
 .icon-btn{
  width:43px;height:43px;border:1px solid var(--line);
  background:var(--glass);border-radius:14px;display:grid;place-items:center;
@@ -297,6 +299,14 @@ button{cursor:pointer;color:white}
  .profile-stats b{font-size:16px}
  .profile-tabs{gap:35px}
 }
+@media(max-width:480px){
+ .top-actions{gap:4px}
+ .top-actions .icon-btn{width:34px;height:38px}
+ .top-actions #authButton{max-width:84px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:9px 8px}
+ .top-actions .logout-button{gap:4px;padding:9px 8px;font-size:11px}
+ .top-actions .logout-button svg{width:15px;height:15px}
+ .search{width:35%;max-width:35%;padding:11px 9px}
+}
  </style>
 </head>
 
@@ -323,6 +333,10 @@ button{cursor:pointer;color:white}
   <button class="icon-btn" onclick="go('notifications')">♧</button>
   <button class="icon-btn" onclick="go('messages')">✉</button>
   <button id="authButton" class="secondary" onclick="currentUser ? go('profile') : openAuthModal('login')">Log In</button>
+  <button id="headerLogoutButton" class="secondary logout-button" onclick="logoutUser()" style="display:none" aria-label="Logout">
+   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5M15 12H3"/><path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/></svg>
+   Logout
+  </button>
  </div>
 </header>
 
@@ -426,7 +440,8 @@ button{cursor:pointer;color:white}
 <div class="toast" id="toast"></div>
 
 <script>
-const avatar=n=>`https://i.pravatar.cc/150?img=${n}`;
+const avatarPlaceholder='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="#e5e5e5"/><circle cx="50" cy="38" r="17" fill="none" stroke="#888" stroke-width="6"/><path d="M18 88c3-18 15-28 32-28s29 10 32 28" fill="none" stroke="#888" stroke-width="6" stroke-linecap="round"/></svg>');
+const avatar=()=>avatarPlaceholder;
 const video1="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4";
 const video2="https://www.w3schools.com/html/mov_bbb.mp4";
 
@@ -435,12 +450,12 @@ const supabaseAnonKey = "sb_publishable_qSOZ_ABJcPhpcyNo0mY3Cw_gLEyMoB3";
 window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
 const supabaseClient = window.supabaseClient;
 
-let me={id:0,name:"Your Name",username:"",bio:"Creating my own world",pic:avatar(12),followers:120,following:85};
+let me={id:0,name:"",username:"",bio:"",pic:avatar(),followers:120,following:85};
 let users=[
- {id:1,name:"Alex",username:"alex.design",pic:avatar(47),bio:"Creative soul | Design & lifestyle",followers:2450,following:430},
- {id:2,name:"Sarah",username:"sarah.official",pic:avatar(32),bio:"Living beautifully | Everyday moments",followers:5200,following:610},
- {id:3,name:"John",username:"john.travel",pic:avatar(11),bio:"Explore more | Travel photography",followers:1800,following:390},
- {id:4,name:"Emma",username:"emma.life",pic:avatar(25),bio:"Photography | Little moments",followers:3400,following:720}
+ {id:1,name:"Alex",username:"alex.design",pic:avatar(),bio:"Creative soul | Design & lifestyle",followers:2450,following:430},
+ {id:2,name:"Sarah",username:"sarah.official",pic:avatar(),bio:"Living beautifully | Everyday moments",followers:5200,following:610},
+ {id:3,name:"John",username:"john.travel",pic:avatar(),bio:"Explore more | Travel photography",followers:1800,following:390},
+ {id:4,name:"Emma",username:"emma.life",pic:avatar(),bio:"Photography | Little moments",followers:3400,following:720}
 ];
 
 let posts=[
@@ -460,9 +475,11 @@ let authMode = 'login';
 let currentUser = null;
 let currentProfile = null;
 let hasCurrentProfile = false;
+let authInitialized = false;
 let mediaPreviewUrl = null;
 
 function safe(s){return String(s??"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function avatarSrc(pic){return pic || avatarPlaceholder}
 
 function normalizeUsername(value){
   return String(value||'').trim().replace(/\s+/g,'').replace(/[^a-zA-Z0-9_.-]/g,'').toLowerCase();
@@ -478,7 +495,7 @@ async function checkUsernameAvailable(username){
 }
 
 async function ensureProfileForUser(userId, username){
-  const clean = String(username || '').trim();
+  const clean = normalizeUsername(username);
   if(!userId || !clean) throw new Error('Username is required.');
   const { data, error } = await supabaseClient.from('profiles').upsert({ id: userId, username: clean }, { onConflict: 'id' }).select().maybeSingle();
   if (error) throw error;
@@ -491,16 +508,25 @@ async function ensureProfileForUser(userId, username){
 async function syncCurrentProfile(){
   if(!currentUser){ currentProfile = null; hasCurrentProfile = false; updateAuthUI(); return null; }
   const profileUser=currentUser;
-  const { data, error } = await supabaseClient.from('profiles').select('id, username').eq('id', profileUser.id).maybeSingle();
+  const { data, error } = await supabaseClient.from('profiles').select('*').eq('id', profileUser.id).maybeSingle();
   if (error && error.code !== 'PGRST116') {
     console.error('Profile sync error:', error);
-    return null;
   }
   if(currentUser?.id !== profileUser.id) return null;
-  hasCurrentProfile = Boolean(data);
-  currentProfile = data?.username || null;
+  const profile=data || {};
+  const metadata=profileUser.user_metadata || {};
+  const generatedUsername=`user_${normalizeUsername((profileUser.email || '').split('@')[0]).slice(0,18) || String(profileUser.id).replace(/-/g,'').slice(0,8)}`;
+  currentProfile=normalizeUsername(profile.username || metadata.username) || generatedUsername;
+  hasCurrentProfile=Boolean(data);
   me.id = profileUser.id;
-  me.username = currentProfile || '';
+  me.name=profile.full_name || profile.display_name || profile.name || metadata.full_name || metadata.name || (profileUser.email || '').split('@')[0] || 'User';
+  me.username = currentProfile;
+  me.bio=profile.bio || metadata.bio || '';
+  me.pic=profile.avatar_url || profile.profile_avatar_url || metadata.profile_avatar_url || avatar();
+  if(!profile.username){
+    const { error: saveError }=await supabaseClient.from('profiles').upsert({id:profileUser.id,username:currentProfile},{onConflict:'id'});
+    if(saveError) console.error('Generated profile username could not be saved:',saveError);
+  }
   updateAuthUI();
   renderStories();
   renderFeed();
@@ -515,10 +541,12 @@ function setAuthStatus(message, type='info'){ const el=document.getElementById('
 function updateAuthUI(){
  const authButton=document.getElementById('authButton');
  const logoutButton=document.getElementById('logoutButton');
+ const headerLogoutButton=document.getElementById('headerLogoutButton');
  const isLoggedIn=Boolean(currentUser);
- const displayName=currentProfile ? '@'+currentProfile : (isLoggedIn ? 'Account' : 'Log In');
+ const displayName=isLoggedIn ? (currentProfile ? '@'+currentProfile : 'Account') : 'Log In';
  if(authButton){ authButton.textContent = displayName; }
  if(logoutButton){ logoutButton.style.display = isLoggedIn ? 'block' : 'none'; }
+ if(headerLogoutButton){ headerLogoutButton.style.display = isLoggedIn ? 'flex' : 'none'; }
  if(!isLoggedIn && document.getElementById('authModal') && document.getElementById('authModal').classList.contains('show')) {
    document.getElementById('authSubmitBtn').textContent = authMode === 'signup' ? 'Sign Up' : 'Log In';
  }
@@ -556,6 +584,13 @@ function enterApp(user){
  if(currentUser?.id !== user.id){
   currentProfile = null;
   hasCurrentProfile = false;
+  me={id:user.id,name:'',username:'',bio:'',pic:avatar(),followers:0,following:0};
+  archivedReels=[];
+  savedReels.clear();
+  likedReels.clear();
+  likedReelItems=[];
+  follows.clear();
+  saved.clear();
  }
  currentUser = user;
  const app=document.querySelector('.app');
@@ -616,15 +651,15 @@ async function submitAuth(){
     if (userId) {
       const { error: profileError } = await supabaseClient.from('profiles').upsert({
         id: userId,
-        username: username.trim(),
+        username: cleanedUsername,
         email: email.trim().toLowerCase()
       }, { onConflict: 'id' });
       if (profileError) {
         setAuthStatus(profileError.message || 'Profile creation failed.', 'error');
         return;
       }
-      if(data?.user?.id===userId){
-        currentProfile=username.trim();
+      if(data?.session?.user?.id===userId){
+        currentProfile=cleanedUsername;
         hasCurrentProfile=true;
         me.id=userId;
         me.username=currentProfile;
@@ -685,39 +720,57 @@ async function submitAuth(){
 
 async function logoutUser(){
  try {
-  const { error } = await window.supabaseClient.auth.signOut();
+  const { error } = await supabaseClient.auth.signOut();
   if (error) throw error;
-  currentUser = null;
-  currentProfile = null;
-  hasCurrentProfile = false;
-  updateAuthUI();
+  resetSignedOutState();
   toast('Logged out successfully');
  } catch (error) {
   toast(error?.message || 'Logout failed');
  }
 }
 
+function resetSignedOutState(){
+ currentUser=null;
+ currentProfile=null;
+ hasCurrentProfile=false;
+ me={id:0,name:'',username:'',bio:'',pic:avatar(),followers:0,following:0};
+ reels=[];
+ archivedReels=[];
+ savedReels.clear();
+ likedReels.clear();
+ likedReelItems=[];
+ pendingReelLikes.clear();
+ follows.clear();
+ saved.clear();
+ chats={};
+ notifications=[];
+ activeChat=null;
+ viewing=null;
+ profileTab='posts';
+ searchTerm='';
+ posts.forEach(post=>{post.liked=false;});
+ closeAuthModal();
+ updateAuthUI();
+ renderStories();
+ renderFeed();
+ renderReels();
+ renderExplore();
+ renderSaved();
+ renderProfile();
+ document.querySelectorAll('.page').forEach(page=>page.classList.remove('active'));
+ document.getElementById('reels')?.classList.add('active');
+ openAuthModal('login');
+}
+
 window.supabaseClient.auth.onAuthStateChange((event, session)=>{
+ if(event==='INITIAL_SESSION' || !authInitialized) return;
  if(session?.user){
   enterApp(session.user);
   void syncCurrentProfile().catch(error=>console.error('Profile sync error:', error));
   void loadReels();
   void loadSavedReels();
  } else {
-  currentUser = null;
-  currentProfile = null;
-  hasCurrentProfile = false;
-  me.id = 0;
-  me.username = '';
-  savedReels.clear();
-  likedReels.clear();
-  likedReelItems=[];
-  reels.forEach(reel=>{reel.liked=false;});
-  renderReels();
-  renderProfile();
-  closeAuthModal();
-  updateAuthUI();
-  openAuthModal('login');
+  resetSignedOutState();
  }
  if (event === 'SIGNED_OUT') {
   setAuthStatus('');
@@ -727,10 +780,10 @@ window.supabaseClient.auth.onAuthStateChange((event, session)=>{
 function hide(id){const el=document.getElementById(id); if(el){ el.classList.remove('show'); el.classList.add('hidden'); el.style.display='none'; }}
 function show(id){const el=document.getElementById(id); if(el){ el.style.display=''; el.classList.remove('hidden'); el.classList.add('show'); }}
 
-function uName(u){return u?.username || (currentUser && String(u?.id)===String(currentUser.id) ? '' : 'user')}
+function uName(u){return u?.username || (currentUser && String(u?.id)===String(currentUser.id) ? currentProfile || me.username : 'user')}
 function user(id){
  if(id===0 || (currentUser && String(id)===String(currentUser.id))) return me;
- return users.find(x=>String(x.id)===String(id)) || {id,name:'VYBE user',username:'user',pic:avatar(12),bio:'',followers:0,following:0};
+ return users.find(x=>String(x.id)===String(id)) || {id,name:'VYBE user',username:'user',pic:avatar(),bio:'',followers:0,following:0};
 }
 function note(s){notifications.unshift(s);renderNotifications()}
 function toast(s){
@@ -770,7 +823,11 @@ function openCreate(){
 }
 function editProfile(){
  const userInput=document.getElementById('uname');
+ const nameInput=document.getElementById('name');
+ const bioInput=document.getElementById('bio');
  if(userInput){ userInput.value=currentProfile||''; userInput.readOnly=true; }
+ if(nameInput) nameInput.value=me.name || '';
+ if(bioInput) bioInput.value=me.bio || '';
  show('editModal');
 }
 
@@ -843,7 +900,7 @@ function renderStories(){
  const storyWrap=document.getElementById('stories');
  if(!storyWrap) return;
  const all=[me,...users];
- storyWrap.innerHTML=all.map((u,i)=>`<div class="story" onclick="${i===0?'openCreate()':`viewProfile(${u.id})`}"><img src="${u.pic}"><small>${safe(i===0?(currentProfile||'You'):uName(u))}</small></div>`).join('');
+ storyWrap.innerHTML=all.map((u,i)=>`<div class="story" onclick="${i===0?'openCreate()':`viewProfile(${u.id})`}"><img src="${safe(avatarSrc(u.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'"><small>${safe(i===0?(currentProfile||'You'):uName(u))}</small></div>`).join('');
 }
 
 function renderFeed(){
@@ -865,7 +922,7 @@ function renderFeed(){
    const comments=(post.comments||[]).slice(0,2).map(c=>`<div class="meta">${safe(user(c.user).name)}: ${safe(c.text)}</div>`).join('');
    return `<article class="post glass">
      <div class="posthead">
-       <img class="avatar" src="${author.pic}" onclick="viewProfile(${author.id})">
+       <img class="avatar" src="${safe(avatarSrc(author.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'" onclick="viewProfile(${author.id})">
        <div>
          <div class="username" onclick="viewProfile(${author.id})">${safe(author.name)}</div>
          <div class="meta">@${safe(uName(author))}</div>
@@ -916,7 +973,7 @@ function renderProfile(){
  const renderTiles=(items)=>items.map(item=>`<div class="profile-tile" onclick="${item.kind==='reel'?`openReel('${safe(item.id)}')`:`openPost(${item.id})`}">${item.kind==='reel'&&isOwnReel(item)?`<button class="profile-tile-menu" aria-label="Manage your post" onclick="event.stopPropagation();openReelMenu('${safe(item.id)}')">⋯</button>`:''}${item.video?`<video src="${safe(item.src)}" muted playsinline></video>`:`<img src="${safe(item.src)}" alt="Your post">`}</div>`).join('');
  const ownedReels=reels.filter(reel=>isOwnReel(reel));
  const ownedArchived=archivedReels.filter(reel=>isOwnReel(reel));
- const userPosts=[...posts.filter(post=>post.user===0),...ownedReels.filter(reel=>!reel.video)];
+ const userPosts=[...posts.filter(post=>post.user===0),...ownedReels];
  const tabItems={
    posts:userPosts,
    reels:ownedReels.filter(reel=>reel.video),
@@ -928,15 +985,15 @@ function renderProfile(){
  profileView.innerHTML=`
  <div class="profile-header glass">
   <div class="profile-top">
-   <img class="profilepic" src="${me.pic}">
+   <img class="profilepic" src="${safe(avatarSrc(me.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'">
    <div class="profile-details">
-    <div class="profile-username">${safe(me.name)} <span style="color:#aaa;font-size:12px">${currentProfile?`@${safe(currentProfile)}`:'Username unavailable'}</span></div>
+    <div class="profile-username">${safe(me.name)} <span style="color:#aaa;font-size:12px">@${safe(currentProfile || me.username)}</span></div>
     <div class="profile-buttons">
       <button class="secondary edit-profile-button" onclick="editProfile()">Edit profile</button>
     </div>
     <div class="profile-bio">${safe(me.bio)}</div>
     <div class="profile-stats">
-      <button><b>${userPosts.length+ownedReels.filter(reel=>reel.video).length}</b><span>Posts</span></button>
+      <button><b>${userPosts.length}</b><span>Posts</span></button>
       <button onclick="showPeopleList('Followers', [1,2,3])"><b>${me.followers}</b><span>Followers</span></button>
       <button onclick="showPeopleList('Following', [1,4])"><b>${me.following}</b><span>Following</span></button>
     </div>
@@ -961,7 +1018,7 @@ function renderOtherProfile(){
  otherView.innerHTML=`
  <div class="profile-header glass">
   <div class="profile-top">
-   <img class="profilepic" src="${userData.pic}">
+   <img class="profilepic" src="${safe(avatarSrc(userData.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'">
    <div class="profile-details">
     <div class="profile-username">${safe(userData.name)} <span style="color:#aaa;font-size:12px">@${safe(uName(userData))}</span></div>
     <div class="profile-buttons">
@@ -993,7 +1050,7 @@ function renderChats(){
  const entries=Object.keys(chats).map(id=>{
    const userData=user(Number(id));
    const last = chats[id][chats[id].length-1];
-   return `<div class="person" onclick="openChat(${userData.id})"><img class="avatar" src="${userData.pic}"><div><strong>${safe(userData.name)}</strong><p>${safe(last.text)}</p></div></div>`;
+   return `<div class="person" onclick="openChat(${userData.id})"><img class="avatar" src="${safe(avatarSrc(userData.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'"><div><strong>${safe(userData.name)}</strong><p>${safe(last.text)}</p></div></div>`;
  }).join('');
  chatList.innerHTML = entries || '<div class="empty">No conversations yet.</div>';
 }
@@ -1037,13 +1094,15 @@ function normalizeReel(reel, index) {
   const src = reel.video_url || reel.src || reel.url || reel.video || '';
   const id = reel.id ?? reel.reel_id ?? index + 1;
   const userId = reel.user_id ?? reel.user ?? '';
+  const isArchived=Boolean(reel.is_archived || String(reel.status||'').toLowerCase()==='archived');
   return {
     kind: 'reel',
     id,
     user: userId,
     username: reel.username || '',
     src,
-    status: reel.status || '',
+    status: isArchived ? 'archived' : (reel.status || ''),
+    isArchived,
     visibility: reel.visibility || reel.privacy || '',
     isPublic: reel.is_public,
     caption: reel.caption || reel.title || 'Discover something beautiful',
@@ -1060,12 +1119,12 @@ function isOwnReel(reel){
 function isPublicActiveReel(reel){
  const status=String(reel.status||'').toLowerCase();
  const visibility=String(reel.visibility||'').toLowerCase();
- return status!=='archived' && (!status || ['active','published','public'].includes(status))
+ return !reel.isArchived && status!=='archived' && (!status || ['active','published','public'].includes(status))
    && (!visibility || visibility==='public') && reel.isPublic!==false;
 }
 
 function reelAuthorName(reel){
- if(isOwnReel(reel)) return currentProfile || 'Username unavailable';
+ if(isOwnReel(reel)) return currentProfile || me.username;
  return reel.username || user(reel.user).username;
 }
 
@@ -1080,7 +1139,7 @@ async function loadReels(){
       ...reels.filter(reel=>!loadedIds.has(String(reel.id)) && isPublicActiveReel(reel))
     ];
     archivedReels=[
-      ...loadedReels.filter(reel=>String(reel.status).toLowerCase()==='archived' && isOwnReel(reel)),
+      ...loadedReels.filter(reel=>reel.isArchived && isOwnReel(reel)),
       ...archivedReels.filter(reel=>!loadedIds.has(String(reel.id)) && isOwnReel(reel))
     ];
     await loadReelLikes();
@@ -1154,7 +1213,7 @@ function renderReels(){
    <div class="reel-media" data-reel-media data-reel-id="${safe(reel.id)}">${media}<span class="reel-heart-burst" aria-hidden="true">♥</span></div>
    <div class="reel-shade"></div>
    <div class="reel-info">
-     <div class="reel-user"><img src="${author.pic}"><button onclick="viewProfile('${safe(reel.user)}')">@${safe(authorUsername)}</button></div>
+     <div class="reel-user"><img src="${safe(avatarSrc(author.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'"><button onclick="viewProfile('${safe(reel.user)}')">@${safe(authorUsername)}</button></div>
      <p>${safe(reel.caption)}</p>
    </div>
    <div class="reel-side">
@@ -1346,19 +1405,31 @@ function openReelMenu(id){
  if(!title||!content) return;
  title.textContent='Manage post';
  content.innerHTML=`
-  ${String(reel.status).toLowerCase()==='archived'?'':`<button class="secondary" style="width:100%;margin:8px 0" onclick="archiveReel('${safe(reel.id)}')">Archive</button>`}
+  ${reel.isArchived?`<button class="secondary" style="width:100%;margin:8px 0" onclick="unarchiveReel('${safe(reel.id)}')">Unarchive / Show on Profile</button>`:`<button class="secondary" style="width:100%;margin:8px 0" onclick="archiveReel('${safe(reel.id)}')">Archive</button>`}
   <button class="secondary" style="width:100%;margin:8px 0" onclick="deleteReel('${safe(reel.id)}')">Delete</button>`;
  show('listModal');
+}
+
+function isMissingArchivedColumn(error){
+ return error?.code==='42703' || error?.code==='PGRST204' || /is_archived.*(column|schema cache)|column.*is_archived/i.test(error?.message||'');
+}
+
+async function saveReelArchiveState(reel, archived){
+ const status=archived?'archived':'active';
+ let result=await supabaseClient.from('reels').update({status,is_archived:archived}).eq('id',reel.id).eq('user_id',currentUser.id).select('*').maybeSingle();
+ if(result.error && isMissingArchivedColumn(result.error)){
+  result=await supabaseClient.from('reels').update({status}).eq('id',reel.id).eq('user_id',currentUser.id).select('*').maybeSingle();
+ }
+ if(result.error) throw result.error;
+ if(!result.data) throw new Error(`The post could not be ${archived?'archived':'unarchived'}.`);
+ return normalizeReel({...reel,...result.data,status,is_archived:archived},0);
 }
 
 async function archiveReel(id){
  const reel=reels.find(item=>String(item.id)===String(id));
  if(!reel || !isOwnReel(reel)) return;
  try {
-  const { data, error }=await supabaseClient.from('reels').update({status:'archived'}).eq('id',reel.id).eq('user_id',currentUser.id).select('*').maybeSingle();
-  if(error) throw error;
-  if(!data) throw new Error('The reel could not be archived.');
-  const archived=normalizeReel({...reel,...data},0);
+  const archived=await saveReelArchiveState(reel,true);
   reels=reels.filter(item=>String(item.id)!==String(reel.id));
   archivedReels=[archived,...archivedReels.filter(item=>String(item.id)!==String(reel.id))];
   hide('listModal');
@@ -1367,6 +1438,22 @@ async function archiveReel(id){
  } catch(error) {
   console.error('Reel archive error:', error);
   toast(error?.message || 'Unable to archive this post.');
+ }
+}
+
+async function unarchiveReel(id){
+ const reel=archivedReels.find(item=>String(item.id)===String(id));
+ if(!reel || !isOwnReel(reel)) return;
+ try {
+  const restored=await saveReelArchiveState(reel,false);
+  archivedReels=archivedReels.filter(item=>String(item.id)!==String(reel.id));
+  reels=[restored,...reels.filter(item=>String(item.id)!==String(reel.id))];
+  hide('listModal');
+  renderReels(); renderExplore(); renderProfile(); renderSaved();
+  toast('Post restored to your profile');
+ } catch(error) {
+  console.error('Reel unarchive error:',error);
+  toast(error?.message || 'Unable to unarchive this post.');
  }
 }
 
@@ -1513,16 +1600,38 @@ try {
 }
 }
 
-function saveProfile(){
+async function saveProfile(){
+ if(!currentUser){ openAuthModal('login'); return; }
  const nameInput=document.getElementById('name');
- const userInput=document.getElementById('uname');
  const bioInput=document.getElementById('bio');
  const picInput=document.getElementById('pic');
- if(nameInput && nameInput.value.trim()) me.name=nameInput.value.trim();
- if(bioInput && bioInput.value.trim()) me.bio=bioInput.value.trim();
- if(picInput && picInput.files[0]) me.pic=URL.createObjectURL(picInput.files[0]);
- hide('editModal');
- renderStories(); renderProfile(); renderFeed(); toast('Profile updated');
+ const nextName=nameInput?.value.trim() || me.name;
+ const nextBio=bioInput?.value.trim() || '';
+ const metadata={...(currentUser.user_metadata||{}),full_name:nextName,name:nextName,bio:nextBio};
+ const photo=picInput?.files?.[0];
+ try {
+  if(photo){
+   const fileName=`${currentUser.id}/profile/avatar-${Date.now()}-${photo.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
+   const {data:uploadData,error:uploadError}=await supabaseClient.storage.from('media').upload(fileName,photo,{upsert:true,contentType:photo.type});
+   if(uploadError) throw uploadError;
+   if(!uploadData) throw new Error('The avatar upload did not return a file.');
+   const {data:urlData}=supabaseClient.storage.from('media').getPublicUrl(fileName);
+   if(!urlData?.publicUrl) throw new Error('Could not get a public URL for the uploaded avatar.');
+   metadata.profile_avatar_url=urlData.publicUrl;
+  }
+  const {data,error}=await supabaseClient.auth.updateUser({data:metadata});
+  if(error) throw error;
+  currentUser=data.user || {...currentUser,user_metadata:metadata};
+  me.name=nextName;
+  me.bio=nextBio;
+  if(photo) me.pic=metadata.profile_avatar_url;
+  hide('editModal');
+  renderStories(); renderProfile(); renderFeed();
+  toast('Profile updated');
+ } catch(error) {
+  console.error('Profile update error:',error);
+  toast(error?.message || 'Unable to update your profile.');
+ }
 }
 
 function showPeopleList(title, ids){
@@ -1530,7 +1639,7 @@ function showPeopleList(title, ids){
  const contentEl=document.getElementById('listContent');
  if(!titleEl||!contentEl) return;
  titleEl.textContent=title;
- contentEl.innerHTML=ids.map(id=>{ const u=user(id); return `<div class="people"><img class="avatar" src="${u.pic}"><div><strong>${safe(u.name)}</strong><div class="meta">@${safe(uName(u))}</div></div><button class="secondary" onclick="viewProfile(${u.id})">View</button></div>`; }).join('');
+ contentEl.innerHTML=ids.map(id=>{ const u=user(id); return `<div class="people"><img class="avatar" src="${safe(avatarSrc(u.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'"><div><strong>${safe(u.name)}</strong><div class="meta">@${safe(uName(u))}</div></div><button class="secondary" onclick="viewProfile(${u.id})">View</button></div>`; }).join('');
  show('listModal');
 }
 
@@ -1539,15 +1648,36 @@ function searchPosts(term){
  renderFeed();
 }
 
-renderStories();
-loadReels();
-renderFeed();
-renderExplore();
-renderSaved();
-renderChats();
-renderNotifications();
-renderProfile();
-go('reels');
+async function initializeApp(){
+ try {
+  const {data,error}=await supabaseClient.auth.getSession();
+  if(error) throw error;
+  const sessionUser=data?.session?.user;
+  if(sessionUser){
+   currentUser=sessionUser;
+   enterApp(sessionUser);
+   await syncCurrentProfile();
+   await loadReels();
+   await loadSavedReels();
+  }else{
+   openAuthModal('login');
+  }
+ } catch(error) {
+  console.error('Authentication session load error:',error);
+  toast(error?.message || 'Unable to restore your session.');
+  openAuthModal('login');
+ }
+ authInitialized=true;
+ renderStories();
+ renderFeed();
+ renderExplore();
+ renderSaved();
+ renderChats();
+ renderNotifications();
+ renderProfile();
+}
+
+void initializeApp();
 </script>
 <script>
   function killNetlify() {
