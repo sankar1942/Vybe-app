@@ -229,9 +229,40 @@ button{cursor:pointer;color:white}
 .reel-side button{background:#0008;border:1px solid #ffffff40;border-radius:50%;width:43px;height:43px;font-size:20px}
 .reel-side .reel-like-button.active{color:#ff3040;border-color:#ff3040}
 .reel-side small{font-size:10px}
+.reel-comment-count{font-size:10px;color:#ddd;line-height:1;margin-top:-15px}
 .sound-btn{position:absolute;right:15px;top:15px;z-index:4;border:1px solid #ffffff55;background:#0008;width:40px;height:40px;border-radius:50%}
 .reel-manage{position:absolute;left:15px;top:15px;z-index:4;border:1px solid #ffffff55;background:#0008;width:40px;height:40px;border-radius:50%;font-size:20px}
 .reel-note{text-align:center;color:#aaa;font-size:11px;margin:12px}
+
+/* COMMENTS DRAWER */
+.comments-overlay{position:fixed;inset:0;z-index:80;background:#0009;opacity:0;visibility:hidden;transition:opacity .28s ease,visibility .28s;display:flex;align-items:flex-end;justify-content:center}
+.comments-overlay.open{opacity:1;visibility:visible}
+.comments-sheet{width:min(100%,620px);height:min(76vh,680px);min-height:320px;display:flex;flex-direction:column;overflow:hidden;border:1px solid #ffffff1c;border-bottom:0;border-radius:24px 24px 0 0;background:rgba(19,20,24,.97);backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px);box-shadow:0 -16px 55px #0008;transform:translateY(105%);transition:transform .34s cubic-bezier(.22,.75,.25,1);padding-bottom:env(safe-area-inset-bottom,0px)}
+.comments-overlay.open .comments-sheet{transform:translateY(0)}
+.comments-handle-wrap{height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;touch-action:none;cursor:grab}
+.comments-handle{width:42px;height:4px;border-radius:9px;background:#777}
+.comments-header{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 18px 12px;border-bottom:1px solid #ffffff16;flex-shrink:0}
+.comments-header h2{font-size:16px;font-weight:700}
+.comments-close{width:34px;height:34px;border:0;border-radius:50%;background:#ffffff10;color:#fff;font-size:20px;line-height:1}
+.comments-list{flex:1;min-height:0;overflow-y:auto;padding:16px 18px;overscroll-behavior:contain}
+.comments-empty,.comments-loading,.comments-error{padding:42px 12px;text-align:center;color:#888;font-size:13px}
+.comments-error{color:#ff9999}
+.comment-item{display:flex;align-items:flex-start;gap:11px;margin:0 0 19px}
+.comment-avatar{width:36px;height:36px;flex:0 0 36px;border-radius:50%;object-fit:cover;background:#ddd}
+.comment-content{min-width:0;flex:1;font-size:13px;line-height:1.55;overflow-wrap:anywhere}
+.comment-author{font-weight:700;color:#fff;margin-right:6px}
+.comment-time{display:block;color:#888;font-size:11px;margin-top:4px}
+.comments-composer{display:flex;align-items:center;gap:10px;padding:12px 16px;border-top:1px solid #ffffff16;background:rgba(17,18,22,.95);flex-shrink:0}
+.comments-composer .comment-avatar{width:34px;height:34px;flex-basis:34px}
+.comments-input{flex:1;min-width:0;height:40px;padding:0 13px;border:1px solid #ffffff1a;border-radius:22px;background:#ffffff0b;color:#fff;outline:none}
+.comments-input::placeholder{color:#898b91}
+.comments-input:focus{border-color:#ffffff45}
+.comment-post-btn{border:0;background:transparent;color:#3797f0;font-weight:700;padding:10px 4px}
+.comment-post-btn:disabled{opacity:.45;cursor:default}
+.comment-feed-count{font-size:11px;color:#aaa}
+@media(max-width:600px){
+ .comments-sheet{width:100%;height:min(78vh,720px);border-radius:20px 20px 0 0}
+}
 
 /* MODALS */
 .hidden{display:none!important}
@@ -437,6 +468,22 @@ button{cursor:pointer;color:white}
  </div>
 </div></div>
 
+<div class="comments-overlay" id="commentsDrawer" aria-hidden="true" onclick="if(event.target===this)closeCommentsDrawer()">
+ <section class="comments-sheet" role="dialog" aria-modal="true" aria-labelledby="commentsTitle">
+  <div class="comments-handle-wrap" id="commentsHandle"><span class="comments-handle"></span></div>
+  <header class="comments-header">
+   <h2 id="commentsTitle">Comments <span id="commentsTotal">(0)</span></h2>
+   <button class="comments-close" type="button" aria-label="Close comments" onclick="closeCommentsDrawer()">×</button>
+  </header>
+  <div class="comments-list" id="commentsList" aria-live="polite"></div>
+  <form class="comments-composer" id="commentsComposer" onsubmit="submitReelComment(event)">
+   <img class="comment-avatar" id="commentsAvatar" src="" alt="Your avatar">
+   <input class="comments-input" id="commentsInput" maxlength="2000" autocomplete="off">
+   <button class="comment-post-btn" id="commentsPostButton" type="submit">Post</button>
+  </form>
+ </section>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -477,6 +524,9 @@ let currentProfile = null;
 let hasCurrentProfile = false;
 let authInitialized = false;
 let mediaPreviewUrl = null;
+let activeCommentReelId = null;
+let commentLoadToken = 0;
+let commentsSubmitting = false;
 
 function safe(s){return String(s??"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function avatarSrc(pic){return pic || avatarPlaceholder}
@@ -932,7 +982,8 @@ function renderFeed(){
      ${post.video?`<video class="postmedia" controls muted playsinline src="${post.src}"></video>`:`<img class="postmedia" src="${post.src}" alt="post">`}
      <div class="actions">
        <button class="action ${likedClass}" onclick="toggleLike(${post.id})">♥</button>
-       <button class="action" onclick="openPost(${post.id})">💬</button>
+       <button class="action" onclick="openCommentsDrawer('${safe(post.id)}')">💬</button>
+       <small class="comment-feed-count" data-post-comment-count="${safe(post.id)}">${(post.comments||[]).length}</small>
        <button class="action" onclick="sharePost(${post.id})">↗</button>
        <button class="action save ${savedClass}" onclick="toggleSave(${post.id})">★</button>
      </div>
@@ -1107,6 +1158,7 @@ function normalizeReel(reel, index) {
     isPublic: reel.is_public,
     caption: reel.caption || reel.title || 'Discover something beautiful',
     likes: Number(reel.likes ?? reel.likes_count ?? reel.like_count ?? 0),
+    commentCount: Number(reel.comment_count ?? reel.comments_count ?? reel.comments ?? 0),
     liked: Boolean(reel.liked),
     video: Boolean(reel.video ?? (reel.media_type ? reel.media_type.startsWith('video/') : src && /(\.mp4|\.webm|\.ogg|\.m4v|\.mov|\.mkv|\.3gp)(\?|$)/i.test(src)))
   };
@@ -1221,8 +1273,8 @@ function renderReels(){
      <small data-reel-like-count="${safe(reel.id)}">${Number(reel.likes || 0).toLocaleString()}</small>
      <button class="action ${savedReels.has(String(reel.id))?'saved':''}" aria-label="Save reel" onclick="toggleSaveReel('${safe(reel.id)}')">${savedReels.has(String(reel.id))?'★':'☆'}</button>
      <small>${savedReels.has(String(reel.id))?'Saved':'Save'}</small>
-     <button onclick="openReel('${safe(reel.id)}')">💬</button>
-     <small>Comment</small>
+     <button aria-label="View comments" onclick="openCommentsDrawer('${safe(reel.id)}')">💬</button>
+     <small class="reel-comment-count" data-reel-comment-count="${safe(reel.id)}">${Number(reel.commentCount||0).toLocaleString()}</small>
    </div>
   </div>`;
  }).join('');
