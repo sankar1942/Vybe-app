@@ -338,6 +338,12 @@ button{cursor:pointer;color:white}
 .highlight small{display:block;font-size:11px;color:#bbb;margin-top:6px}
 .profile-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
 .explore-grid-wrap{width:100%;container-type:inline-size}
+.explore-filter-bar{display:flex;gap:8px;overflow-x:auto;padding:8px 12px;margin:0 0 10px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.explore-filter-bar::-webkit-scrollbar{display:none}
+.explore-filter-chip{flex-shrink:0;border:1px solid #333;border-radius:20px;padding:6px 14px;background:transparent;color:#fff;font-size:13px;font-weight:600;white-space:nowrap;transition:background .18s ease,color .18s ease,border-color .18s ease}
+.explore-filter-chip.active{background:#fff;color:#000;border-color:#fff}
+.discover-grid.filter-fade-in{animation:explore-filter-fade .24s ease both}
+@keyframes explore-filter-fade{from{opacity:.35}to{opacity:1}}
 .discover-grid{grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:calc((100cqw - 4px)/3);gap:2px;align-items:stretch}
 .discover-grid .tile{height:auto;min-width:0;grid-row:span 1;border-radius:0}
 .discover-grid .tile:nth-child(6n + 3){grid-column:span 2;grid-row:span 2}
@@ -579,7 +585,17 @@ button{cursor:pointer;color:white}
  <div class="stories glass" id="stories"></div>
  <h2 class="heading">Your Feed</h2><div id="feed"></div>
 </section>
-<section id="explore" class="page"><h2 class="heading">Explore</h2><div class="explore-grid-wrap"><div id="exploreGrid" class="grid discover-grid"></div></div></section>
+<section id="explore" class="page">
+ <h2 class="heading">Explore</h2>
+ <div class="explore-filter-bar" id="exploreFilterBar" role="group" aria-label="Filter Explore media">
+  <button class="explore-filter-chip active" type="button" data-explore-filter="all" aria-pressed="true" onclick="setExploreFilter('all')">All</button>
+  <button class="explore-filter-chip" type="button" data-explore-filter="trending" aria-pressed="false" onclick="setExploreFilter('trending')">🔥 Trending</button>
+  <button class="explore-filter-chip" type="button" data-explore-filter="clips" aria-pressed="false" onclick="setExploreFilter('clips')">🎬 Clips</button>
+  <button class="explore-filter-chip" type="button" data-explore-filter="photos" aria-pressed="false" onclick="setExploreFilter('photos')">📸 Photos</button>
+  <button class="explore-filter-chip" type="button" data-explore-filter="recent" aria-pressed="false" onclick="setExploreFilter('recent')">✨ Recent</button>
+ </div>
+ <div class="explore-grid-wrap"><div id="exploreGrid" class="grid discover-grid"></div></div>
+</section>
 <section id="searchResults" class="page"><div class="search-results"><h2 class="heading">Search results</h2><div id="searchResultList" class="search-results-list"></div></div></section>
 <section id="profile" class="page"><div id="profileView"></div></section>
 <section id="other" class="page"><div id="otherView"></div></section>
@@ -785,6 +801,8 @@ let searchDebounceTimer=null;
 let searchRequestToken=0;
 const searchedProfiles=new Map();
 let storyGroups=[];
+window.allExploreMedia=window.allExploreMedia||[];
+let exploreFilter='all';
 let storyViewerGroupIndex=-1;
 let storyViewerItemIndex=0;
 let storyAdvanceTimer=null;
@@ -1875,14 +1893,59 @@ function renderFeed(){
 function renderExplore(){
  const exploreGrid=document.getElementById('exploreGrid');
  if(!exploreGrid) return;
- const publicItems=reels.filter(isPublicActiveReel);
- exploreGrid.innerHTML=publicItems.length ? publicItems.map((reel,index)=>`
-   <div class="tile" role="button" tabindex="0" aria-label="View ${reel.video?'video':'photo'} by @${safe(reelAuthorName(reel))}" onclick="openReel('${safe(reel.id)}')" onkeydown="if(event.target===event.currentTarget&&(event.key==='Enter'||event.key===' ')){event.preventDefault();openReel('${safe(reel.id)}')}">
+ window.allExploreMedia=reels.filter(isPublicActiveReel);
+ let publicItems=[...window.allExploreMedia];
+ if(exploreFilter==='trending'){
+  publicItems.sort(exploreTrendSort);
+ }else if(exploreFilter==='clips'){
+  publicItems=publicItems.filter(isExploreVideo);
+ }else if(exploreFilter==='photos'){
+  publicItems=publicItems.filter(reel=>!isExploreVideo(reel));
+ }else if(exploreFilter==='recent'){
+  publicItems.sort((a,b)=>exploreCreatedAt(b)-exploreCreatedAt(a));
+ }
+ document.querySelectorAll('[data-explore-filter]').forEach(button=>{
+  const active=button.dataset.exploreFilter===exploreFilter;
+  button.classList.toggle('active',active);
+  button.setAttribute('aria-pressed',String(active));
+ });
+ exploreGrid.innerHTML=publicItems.length ? publicItems.map((reel,index)=>{
+  const video=isExploreVideo(reel);
+  return `
+   <div class="tile" role="button" tabindex="0" aria-label="View ${video?'video':'photo'} by @${safe(reelAuthorName(reel))}" onclick="openReel('${safe(reel.id)}')" onkeydown="if(event.target===event.currentTarget&&(event.key==='Enter'||event.key===' ')){event.preventDefault();openReel('${safe(reel.id)}')}">
     ${isOwnReel(reel)?`<button class="reel-manage" aria-label="Manage your post" onclick="event.stopPropagation();openReelMenu('${safe(reel.id)}')">⋯</button>`:''}
-    ${reel.video?`<video src="${safe(reel.src)}" muted playsinline preload="metadata"></video>`:`<img src="${safe(reel.src)}" alt="Public post">`}
-    ${reel.video?'<span class="explore-video-badge" aria-label="Video"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5a1 1 0 0 1 1.5-.86l8 4.62a2 2 0 0 1 0 3.46l-8 4.62A1 1 0 0 1 4 13.48Z"/></svg></span>':''}
+    ${video?`<video src="${safe(reel.src)}" muted playsinline preload="metadata"></video>`:`<img src="${safe(reel.src)}" alt="Public post">`}
+    ${video?'<span class="explore-video-badge" aria-label="Video"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5a1 1 0 0 1 1.5-.86l8 4.62a2 2 0 0 1 0 3.46l-8 4.62A1 1 0 0 1 4 13.48Z"/></svg></span>':''}
     <span>@${safe(reelAuthorName(reel))}</span>
-   </div>`).join('') : '<div class="empty">No public posts or reels yet.</div>';
+   </div>`;
+ }).join('') : '<div class="empty">No public posts or reels match this filter.</div>';
+ exploreGrid.classList.remove('filter-fade-in');
+ void exploreGrid.offsetWidth;
+ exploreGrid.classList.add('filter-fade-in');
+}
+
+function isExploreVideo(reel){
+ const mediaType=String(reel.media_type||'').toLowerCase();
+ const url=String(reel.src||reel.media_url||reel.video_url||'').split(/[?#]/)[0];
+ return mediaType==='video'||mediaType.startsWith('video/')||Boolean(reel.video)||/\.(mp4|webm|ogg|m4v|mov|mkv|3gp)$/i.test(url);
+}
+
+function exploreTrendSort(a,b){
+ const likesDifference=(Number(b.likes_count??b.likes??b.like_count??0)||0)-(Number(a.likes_count??a.likes??a.like_count??0)||0);
+ if(likesDifference) return likesDifference;
+ return (Number(b.views_count??b.view_count??b.views??0)||0)-(Number(a.views_count??a.view_count??a.views??0)||0);
+}
+
+function exploreCreatedAt(reel){
+ const value=new Date(reel.created_at||0).getTime();
+ return Number.isFinite(value)?value:0;
+}
+
+function setExploreFilter(filter){
+ const supported=['all','trending','clips','photos','recent'];
+ if(!supported.includes(filter)) return;
+ exploreFilter=filter;
+ renderExplore();
 }
 
 async function loadExploreFeed(){
@@ -1895,6 +1958,7 @@ async function loadExploreFeed(){
   const loaded=(data||[]).map(normalizeReel).filter(isPublicActiveReel);
   const loadedIds=new Set(loaded.map(item=>String(item.id)));
   reels=[...loaded,...reels.filter(item=>!loadedIds.has(String(item.id))&&isPublicActiveReel(item))];
+  window.allExploreMedia=reels.filter(isPublicActiveReel);
   renderExplore();
  } catch(error) {
   console.error('Explore feed fetch error:',error);
@@ -2625,6 +2689,10 @@ function normalizeReel(reel, index) {
     user: userId,
     username: reel.username || '',
     src,
+    media_type: reel.media_type || reel.mime_type || '',
+    created_at: reel.created_at || '',
+    likes_count: Number(reel.likes_count ?? reel.like_count ?? reel.likes ?? 0),
+    views_count: Number(reel.views_count ?? reel.view_count ?? reel.views ?? 0),
     status: isArchived ? 'archived' : (reel.status || ''),
     isArchived,
     visibility: reel.visibility || reel.privacy || '',
