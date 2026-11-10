@@ -27,8 +27,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="VYBE">
 <title>VYBE — Social Experience</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -3355,9 +3357,9 @@ if(installPwaButton){
 }
 if ('serviceWorker' in navigator) {
  window.addEventListener('load', () => {
-  navigator.serviceWorker.register('/sw.js')
-   .then(reg => console.log('VYBE Service Worker Registered', reg))
-   .catch(err => console.error('SW registration failed:', err));
+  navigator.serviceWorker.register('/sw.js', { scope: '/' })
+   .then(reg => console.log('SW Registered', reg.scope))
+   .catch(err => console.error('SW Error:', err));
  });
 }
 </script>
