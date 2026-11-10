@@ -48,7 +48,7 @@
   .reel-skeleton-line{height:13px;width:min(70%,320px);border-radius:8px}
   .settings-overlay{position:fixed;inset:0;z-index:95;display:flex;align-items:flex-end;justify-content:center;background:#0009;opacity:0;visibility:hidden;transition:opacity .24s ease,visibility .24s}
   .settings-overlay.open{opacity:1;visibility:visible}
-  .settings-sheet{width:min(100%,560px);padding:12px 22px calc(22px + env(safe-area-inset-bottom,0px));border:1px solid #ffffff1c;border-bottom:0;border-radius:24px 24px 0 0;background:rgba(19,20,24,.98);transform:translateY(105%);transition:transform .32s cubic-bezier(.22,.75,.25,1)}
+  .settings-sheet{width:min(100%,560px);max-height:90vh;overflow-y:auto;padding:12px 22px calc(22px + env(safe-area-inset-bottom,0px));border:1px solid #ffffff1c;border-bottom:0;border-radius:24px 24px 0 0;background:rgba(19,20,24,.98);transform:translateY(105%);transition:transform .32s cubic-bezier(.22,.75,.25,1)}
   .settings-overlay.open .settings-sheet{transform:translateY(0)}
   .settings-handle{width:42px;height:4px;margin:0 auto 15px;border-radius:9px;background:#777}
   .settings-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
@@ -297,9 +297,9 @@ button{cursor:pointer;color:white}
 .bubble.mine{margin-left:auto;background:#fff;color:#000}
 .chatinput{display:flex;gap:10px;padding:12px}
 .chatinput input{flex:1;min-width:0;background:transparent;border:0;border-bottom:1px solid var(--line);color:white;padding:10px;outline:none}
-.dm-overlay{position:fixed;inset:0;z-index:75;background:#0009;display:flex;align-items:flex-end;justify-content:center;opacity:0;visibility:hidden;transition:opacity .25s ease,visibility .25s}
+.dm-overlay{position:fixed;inset:0;z-index:9999;background:#0009;display:flex;align-items:stretch;justify-content:center;opacity:0;visibility:hidden;transition:opacity .25s ease,visibility .25s}
 .dm-overlay.open{opacity:1;visibility:visible}
-.dm-drawer{width:min(100%,560px);height:min(78vh,720px);min-height:360px;display:flex;flex-direction:column;overflow:hidden;border:1px solid #ffffff1c;border-bottom:0;border-radius:23px 23px 0 0;background:rgba(19,20,24,.97);backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px);box-shadow:0 -16px 55px #0008;transform:translateY(105%);transition:transform .32s cubic-bezier(.22,.75,.25,1);padding-bottom:env(safe-area-inset-bottom,0px)}
+.dm-drawer{width:100%;height:100vh;height:100dvh;min-height:0;display:flex;flex-direction:column;overflow:hidden;border:0;border-radius:0;background:rgba(19,20,24,.97);backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px);box-shadow:0 0 55px #0008;transform:translateY(12px);transition:transform .32s cubic-bezier(.22,.75,.25,1);padding-bottom:env(safe-area-inset-bottom,0px)}
 .dm-overlay.open .dm-drawer{transform:translateY(0)}
 .dm-header{height:68px;display:flex;align-items:center;gap:12px;padding:0 17px;border-bottom:1px solid #ffffff16;flex-shrink:0}
 .dm-header-copy{flex:1;min-width:0}
@@ -328,7 +328,7 @@ button{cursor:pointer;color:white}
 .dm-empty,.dm-loading,.dm-error{padding:42px 12px;color:#8f9097;text-align:center;font-size:13px}
 .dm-error{color:#ff9999}
 .dm-back{font-size:23px}
-@media(max-width:600px){.dm-drawer{width:100%;height:min(82vh,760px);border-radius:20px 20px 0 0}}
+@media(max-width:600px){.dm-drawer{width:100%;height:100vh;height:100dvh;border-radius:0}}
 .activity-overlay{position:fixed;inset:0;z-index:85;display:flex;justify-content:flex-end;background:#0009;opacity:0;visibility:hidden;transition:opacity .24s ease,visibility .24s}
 .activity-overlay.open{opacity:1;visibility:visible}
 .activity-drawer{display:flex;flex-direction:column;width:min(100%,410px);height:100%;overflow:hidden;border-left:1px solid #ffffff20;background:rgba(17,18,22,.98);backdrop-filter:blur(24px);transform:translateX(100%);transition:transform .28s cubic-bezier(.22,.75,.25,1);box-shadow:-16px 0 55px #0008}
@@ -546,12 +546,33 @@ button{cursor:pointer;color:white}
  border:1px solid var(--line);border-radius:11px;color:white;outline:none;
 }
 .modalbox textarea{min-height:85px}
-.media-preview{width:100%;height:min(42vh,380px);min-height:190px;display:grid;place-items:center;overflow:hidden;border:1px solid #ffffff12;border-radius:14px;background:#080808;color:#85858b;text-align:center;transition:aspect-ratio .2s ease,height .2s ease}
-.media-preview[data-aspect="square"]{height:min(62vw,380px);min-height:190px;aspect-ratio:1}
-.media-preview[data-aspect="portrait"]{height:min(78vw,480px);min-height:240px;aspect-ratio:4/5}
-.media-preview[data-aspect="full"]{height:min(80vw,560px);min-height:280px;aspect-ratio:9/16}
-.media-preview img,.media-preview video{display:block;width:100%;height:100%;object-fit:contain}
-.media-preview[data-aspect="square"] img,.media-preview[data-aspect="square"] video,.media-preview[data-aspect="portrait"] img,.media-preview[data-aspect="portrait"] video{object-fit:cover}
+.media-preview{width:100%;height:auto;min-height:190px;max-height:62vh;display:grid;place-items:center;overflow:hidden;border:1px solid #ffffff12;border-radius:14px;background:#000;color:#85858b;text-align:center;transition:height .2s ease}
+.media-preview[data-aspect="square"],.media-preview[data-aspect="portrait"],.media-preview[data-aspect="full"]{height:auto;min-height:190px;aspect-ratio:auto}
+.media-preview img,.media-preview video{display:block;width:100%;height:auto;max-height:62vh;object-fit:contain;background:#000}
+.media-preview[data-aspect="square"] img,.media-preview[data-aspect="square"] video,.media-preview[data-aspect="portrait"] img,.media-preview[data-aspect="portrait"] video{object-fit:contain}
+.media-preview img,.media-preview video{height:auto;max-height:62vh;object-fit:contain;background:#000}
+.settings-menu{display:grid;gap:8px;margin-top:12px}
+.settings-menu button{width:100%;display:flex;align-items:center;justify-content:space-between;text-align:left;padding:13px 15px;border:1px solid #ffffff18;border-radius:12px;background:#ffffff08;color:#fff;font-size:14px}
+.settings-menu button span{color:#999;font-size:12px}
+.settings-toggle{accent-color:#fff;width:18px;height:18px}
+.settings-subview{display:none;margin-top:12px}
+.settings-subview.active{display:block}
+.settings-subview-list{display:grid;gap:10px;max-height:45vh;overflow:auto}
+.modal.saved-fullscreen{padding:0;align-items:stretch}
+.modal.saved-fullscreen .modalbox{width:100%;height:100%;max-width:none;max-height:none;overflow-y:auto;border:0;border-radius:0;background:#000;padding:18px}
+.modal.saved-fullscreen .postmedia{max-height:calc(100dvh - 140px);object-fit:contain}
+.notes-tray{display:flex;gap:14px;padding:12px 14px;overflow-x:auto;border-bottom:1px solid #ffffff12}
+.notes-item{flex:0 0 68px;display:flex;flex-direction:column;align-items:center;gap:5px;border:0;background:transparent;color:#aaa;font-size:11px}
+.notes-avatar{width:52px;height:52px;border-radius:50%;object-fit:cover;border:1px solid #ffffff30}
+.notes-bubble{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#fff;background:#ffffff12;border-radius:12px;padding:3px 6px;font-size:10px}
+.story-audience-options{display:grid;gap:10px;margin:12px 0}
+.story-audience-options label{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #ffffff20;border-radius:10px}
+.story-audience-followers{max-height:35vh;overflow:auto;display:grid;gap:8px}
+.story-audience-followers label{display:flex;align-items:center;gap:10px;padding:7px}
+.story-audience-followers img{width:34px;height:34px;border-radius:50%;object-fit:cover}
+.profile-photo-picker{width:100%;margin:4px 0 12px}
+.profile-username-switch{border:0;background:transparent;color:inherit;padding:0;text-align:left}
+@media(max-width:600px){.media-preview{max-height:52vh}}
 .media-preview[data-aspect="full"] img,.media-preview[data-aspect="full"] video{object-fit:contain}
 .create-media-tools{display:flex;gap:9px;margin:11px 0}
 .create-media-tools .media-picker{flex:1;width:auto;margin:0}
@@ -569,7 +590,7 @@ button{cursor:pointer;color:white}
 .create-actions button{flex:1}
 .upload-spinner{display:inline-block;width:14px;height:14px;margin-right:8px;vertical-align:-2px;border:2px solid #0005;border-top-color:#000;border-radius:50%;animation:upload-spin .7s linear infinite}
 @keyframes upload-spin{to{transform:rotate(360deg)}}
-@media(max-width:600px){.create-drawer{padding:18px 17px calc(18px + env(safe-area-inset-bottom,0px));max-height:92vh}.media-preview{height:min(38vh,330px)}}
+@media(max-width:600px){.create-drawer{padding:18px 17px calc(18px + env(safe-area-inset-bottom,0px));max-height:92vh}.media-preview{max-height:52vh}}
 .camera-overlay,.highlight-overlay{position:fixed;inset:0;z-index:11000;display:flex;align-items:center;justify-content:center;padding:18px;background:#000e;opacity:0;visibility:hidden;transition:opacity .2s ease,visibility .2s}
 .camera-overlay{padding:0}
 .camera-overlay.open,.highlight-overlay.open{opacity:1;visibility:visible}
@@ -833,11 +854,6 @@ button{cursor:pointer;color:white}
   <button class="media-picker" type="button" onclick="document.getElementById('mediaUploadInput')?.click()">Choose from Gallery</button>
   <button class="media-picker" type="button" onclick="openCameraView()">Open Camera</button>
  </div>
- <div class="aspect-ratio-tools" role="group" aria-label="Preview aspect ratio">
-  <button type="button" class="active" data-aspect-choice="square" onclick="setCreateAspect('square')">1:1 (Square)</button>
-  <button type="button" data-aspect-choice="portrait" onclick="setCreateAspect('portrait')">4:5 (Portrait)</button>
-  <button type="button" data-aspect-choice="full" onclick="setCreateAspect('full')">Full (9:16)</button>
- </div>
  <textarea id="caption" maxlength="2200" placeholder="Write a caption... Add hashtags with #"></textarea>
  <div id="createStatus" class="auth-status" role="status" aria-live="polite"></div>
  <div class="upload-progress" id="uploadProgress" hidden aria-live="polite">
@@ -876,7 +892,8 @@ button{cursor:pointer;color:white}
  <input id="name" placeholder="Display name">
  <input id="uname" placeholder="username (lowercase)">
  <textarea id="bio" placeholder="Bio"></textarea>
- <input id="pic" type="file" accept="image/*">
+ <input id="pic" type="file" accept="image/*" style="display:none">
+ <button class="secondary profile-photo-picker" type="button" onclick="document.getElementById('pic')?.click()">Change Profile Photo</button>
  <button class="primary" style="width:100%" onclick="saveProfile()">Save Changes</button>
 </div></div>
 
@@ -930,12 +947,36 @@ button{cursor:pointer;color:white}
 <div class="settings-overlay" id="settingsSheet" aria-hidden="true" onclick="if(event.target===this)closeSettingsSheet()">
  <section class="settings-sheet" role="dialog" aria-modal="true" aria-labelledby="settingsSheetTitle">
   <div class="settings-handle"></div>
-  <header class="settings-header"><h2 id="settingsSheetTitle">Settings</h2><button class="settings-close" type="button" aria-label="Close settings" onclick="closeSettingsSheet()">✕</button></header>
-  <div class="settings-version">VYBE v1.2</div>
-  <button class="secondary settings-action" type="button" onclick="clearCachedMedia()">Clear Cached Media</button>
-  <button class="primary settings-logout" type="button" onclick="logoutUser()">Log Out</button>
+  <header class="settings-header"><button id="settingsBackButton" class="settings-close" type="button" aria-label="Back to settings" onclick="showSettingsHome()" style="display:none">←</button><h2 id="settingsSheetTitle">Settings</h2><button class="settings-close" type="button" aria-label="Close settings" onclick="closeSettingsSheet()">✕</button></header>
+  <div id="settingsHome">
+   <div class="settings-version">VYBE v1.2</div>
+   <div class="settings-menu">
+    <button type="button" onclick="openSavedCollection()">Saved <span>›</span></button>
+    <button type="button" onclick="openArchiveCollection()">Archive <span>›</span></button>
+    <button type="button" onclick="showSettingsSubview('activity')">Your Activity / Time Management <span id="dailyTimeSpent">Today: 0 min</span></button>
+    <button type="button" onclick="toggleAccountPrivacy()">Account Privacy <span id="privacySettingLabel">Public</span><input id="privacySettingToggle" class="settings-toggle" type="checkbox" aria-label="Private account" onclick="event.stopPropagation();toggleAccountPrivacy(this.checked)"></button>
+    <button type="button" onclick="showSettingsSubview('blocked')">Blocked Accounts <span>›</span></button>
+    <button type="button" onclick="toggleHighQualityUploads()">Data Usage &amp; Media Quality <span><input id="highQualityToggle" class="settings-toggle" type="checkbox" aria-label="High quality uploads" onclick="event.stopPropagation();toggleHighQualityUploads(this.checked)"></span></button>
+    <button type="button" onclick="openAccountSwitcher()">Log In / Switch Account <span>›</span></button>
+    <button type="button" onclick="clearCachedMedia()">Clear Cached Media <span>›</span></button>
+    <button type="button" onclick="logoutUser()">Log Out <span>›</span></button>
+   </div>
+  </div>
+  <div id="settingsSubview" class="settings-subview"></div>
  </section>
 </div>
+
+<div class="modal" id="storyAudienceModal" aria-hidden="true" onclick="if(event.target===this)cancelStoryAudience()"><div class="modalbox glass">
+ <button class="close" type="button" aria-label="Close story audience selection" onclick="cancelStoryAudience()">×</button>
+ <h2>Share your story</h2>
+ <div id="storyAudiencePreview" class="story-audience-preview"></div>
+ <div class="story-audience-options">
+  <label><input type="radio" name="storyAudience" value="public" checked onchange="toggleStoryAudienceOptions()"> Your Story <span>Followers</span></label>
+  <label><input type="radio" name="storyAudience" value="close_friends" onchange="toggleStoryAudienceOptions()"> Close Friends / Selected</label>
+ </div>
+ <div id="storyAudienceFollowerList" class="story-audience-followers" hidden></div>
+ <button class="primary" type="button" style="width:100%;margin-top:12px" onclick="confirmStoryAudience()">Share Story</button>
+</div></div>
 
 <div class="people-drawer-overlay" id="peopleDrawer" aria-hidden="true" onclick="if(event.target===this)closePeopleDrawer()">
  <section class="people-drawer" role="dialog" aria-modal="true" aria-labelledby="peopleDrawerTitle">
@@ -958,7 +999,7 @@ const supabaseAnonKey = "sb_publishable_qSOZ_ABJcPhpcyNo0mY3Cw_gLEyMoB3";
 window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
 const supabaseClient = window.supabaseClient;
 
-let me={id:0,name:"",username:"",bio:"",pic:avatar(),followers:0,following:0};
+let me={id:0,name:"",username:"",bio:"",pic:avatar(),followers:0,following:0,statusNote:"",isPrivate:false};
 let users=[
  {id:1,name:"Alex",username:"alex.design",pic:avatar(),bio:"Creative soul | Design & lifestyle",followers:2450,following:430},
  {id:2,name:"Sarah",username:"sarah.official",pic:avatar(),bio:"Living beautifully | Everyday moments",followers:5200,following:610},
@@ -978,6 +1019,7 @@ let reels=[],archivedReels=[];
 
 let follows=new Set(),followStates=new Map(),pendingFollows=new Set(),loadingFollowStates=new Set(),saved=new Set(),savedReels=new Set(),savedReelItems=[],pendingBookmarks=new Set(),savedBookmarksLoading=false,likedReels=new Set(),likedReelItems=[],pendingReelLikes=new Set(),notifications=[],chats={};
 let nextId=10,activeChat=null,viewing=null,profileTab="posts",muted=true,pendingReelShareDraft=null;
+window.isReelsMuted=muted;
 let homeFeedMode='forYou',exploreHashtagQuery='',peopleDrawerPreviousOverflow='';
 let dmConversations=[],dmProfiles=new Map(),dmMessages=[],dmChannel=null,dmRequestToken=0,dmSending=false;
 let searchTerm="";
@@ -1022,6 +1064,19 @@ let feedPullStartY=null;
 let feedPullDistance=0;
 let audioContext=null;
 let settingsSheetPreviousOverflow='';
+let settingsSubviewName='';
+let pendingStoryAudienceFile=null;
+let storyAudiencePreviousOverflow='';
+let appVisibleSince=Date.now();
+let dailyAppUsageMs=0;
+const localToday=new Date();
+const dailyAppUsageKey=`vybe:daily-usage:${localToday.getFullYear()}-${String(localToday.getMonth()+1).padStart(2,'0')}-${String(localToday.getDate()).padStart(2,'0')}`;
+const accountListKey='vybe:known-accounts';
+let currentAccountPrivate=false;
+let highQualityUploads=false;
+let blockedAccounts=[];
+try{dailyAppUsageMs=Number(localStorage.getItem(dailyAppUsageKey))||0;highQualityUploads=localStorage.getItem('vybe:high-quality-uploads')==='true';}catch(error){console.error('Local settings read error:',error);}
+try{blockedAccounts=JSON.parse(localStorage.getItem('vybe:blocked-accounts')||'[]');if(!Array.isArray(blockedAccounts))blockedAccounts=[];}catch(error){console.error('Blocked-account state read error:',error);blockedAccounts=[];}
 
 function safe(s){return String(s??"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function avatarSrc(pic){return pic || avatarPlaceholder}
@@ -1116,6 +1171,9 @@ async function syncCurrentProfile(){
   me.username = currentProfile;
   me.bio=profile.bio || metadata.bio || '';
   me.pic=profile.avatar_url || profile.profile_avatar_url || metadata.profile_avatar_url || avatar();
+  me.statusNote=profile.status_note || '';
+  me.isPrivate=Boolean(profile.is_private);
+  currentAccountPrivate=me.isPrivate;
   if(!profile.username){
     const { error: saveError }=await supabaseClient.from('profiles').upsert({id:profileUser.id,username:currentProfile},{onConflict:'id'});
     if(saveError) console.error('Generated profile username could not be saved:',saveError);
@@ -1234,7 +1292,8 @@ function enterApp(user){
   closeStoryViewer();
   currentProfile = null;
   hasCurrentProfile = false;
-  me={id:user.id,name:'',username:'',bio:'',pic:avatar(),followers:0,following:0};
+  currentAccountPrivate=false;
+  me={id:user.id,name:'',username:'',bio:'',pic:avatar(),followers:0,following:0,statusNote:'',isPrivate:false};
   archivedReels=[];
   savedReels.clear();
   savedReelItems=[];
@@ -1266,6 +1325,7 @@ function enterApp(user){
   saved.clear();
  }
  currentUser = user;
+ rememberLoginAccount(user);
  const app=document.querySelector('.app');
  const main=document.querySelector('.main');
  const reelsPage=document.getElementById('reels');
@@ -1412,6 +1472,11 @@ function openSettingsSheet(){
  if(!currentUser){openAuthModal('login');return;}
  const sheet=document.getElementById('settingsSheet');
  if(!sheet) return;
+ showSettingsHome();
+ document.getElementById('privacySettingToggle').checked=currentAccountPrivate;
+ document.getElementById('privacySettingLabel').textContent=currentAccountPrivate?'Private':'Public';
+ document.getElementById('highQualityToggle').checked=highQualityUploads;
+ updateDailyUsageLabel();
  settingsSheetPreviousOverflow=document.body.style.overflow;
  sheet.classList.add('open');
  sheet.setAttribute('aria-hidden','false');
@@ -1426,6 +1491,160 @@ function closeSettingsSheet(){
  document.body.style.overflow=settingsSheetPreviousOverflow;
  settingsSheetPreviousOverflow='';
 }
+
+function showSettingsHome(){
+ settingsSubviewName='';
+ const home=document.getElementById('settingsHome');
+ const subview=document.getElementById('settingsSubview');
+ const back=document.getElementById('settingsBackButton');
+ if(home) home.style.display='block';
+ if(subview){subview.classList.remove('active');subview.innerHTML='';}
+ if(back) back.style.display='none';
+ document.getElementById('settingsSheetTitle').textContent='Settings';
+}
+
+function showSettingsSubview(name){
+ const subview=document.getElementById('settingsSubview');
+ if(!subview) return;
+ settingsSubviewName=name;
+ document.getElementById('settingsHome').style.display='none';
+ document.getElementById('settingsBackButton').style.display='block';
+ subview.classList.add('active');
+ const title=name==='blocked'?'Blocked Accounts':name==='accounts'?'Accounts':'Your Activity';
+ document.getElementById('settingsSheetTitle').textContent=title;
+ if(name==='blocked'){
+  renderBlockedAccounts();
+ }else if(name==='activity'){
+  subview.innerHTML=`<div class="settings-version">Today you've spent <strong>${formatUsageTime(dailyAppUsageMs)}</strong> on VYBE.</div><p class="meta">Time is tracked locally on this device while the app is visible.</p>`;
+ }else if(name==='accounts'){
+  renderAccountSwitcher();
+ }
+}
+
+function openSavedCollection(){
+ closeSettingsSheet();
+ go('saved');
+ if(currentUser) void loadSavedReels();
+}
+
+function openArchiveCollection(){
+ closeSettingsSheet();
+ profileTab='archived';
+ go('profile');
+ renderProfile();
+}
+
+async function toggleAccountPrivacy(value){
+ if(!currentUser) return;
+ const next=value===undefined?!currentAccountPrivate:Boolean(value);
+ try{
+  const {error}=await supabaseClient.from('profiles').update({is_private:next}).eq('id',currentUser.id);
+  if(error) throw error;
+  currentAccountPrivate=next;
+  me.isPrivate=next;
+  document.getElementById('privacySettingToggle').checked=next;
+  document.getElementById('privacySettingLabel').textContent=next?'Private':'Public';
+  toast(`Account is now ${next?'private':'public'}`);
+ }catch(error){
+  console.error('Account privacy update error:',error);
+  document.getElementById('privacySettingToggle').checked=currentAccountPrivate;
+  toast(error?.message||'Unable to update account privacy.');
+ }
+}
+
+function toggleHighQualityUploads(value){
+ highQualityUploads=value===undefined?!highQualityUploads:Boolean(value);
+ try{
+  localStorage.setItem('vybe:high-quality-uploads',String(highQualityUploads));
+  document.getElementById('highQualityToggle').checked=highQualityUploads;
+  toast(highQualityUploads?'High quality uploads enabled':'Data-saving upload preference enabled');
+ }catch(error){
+  console.error('Upload quality preference save error:',error);
+  highQualityUploads=!highQualityUploads;
+  document.getElementById('highQualityToggle').checked=highQualityUploads;
+  toast(error?.message||'Unable to save media quality preference.');
+ }
+}
+
+function renderBlockedAccounts(){
+ const subview=document.getElementById('settingsSubview');
+ if(!subview) return;
+ subview.innerHTML=`<button class="secondary settings-action" type="button" onclick="addBlockedAccount()">Block a username</button><div class="settings-subview-list">${blockedAccounts.length?blockedAccounts.map((item,index)=>`<div class="person"><span>@${safe(item.username||item)}</span><button class="secondary" type="button" onclick="removeBlockedAccount(${index})">Unblock</button></div>`).join(''):'<p class="meta">No blocked accounts on this device.</p>'}</div>`;
+}
+
+function persistBlockedAccounts(){
+ try{localStorage.setItem('vybe:blocked-accounts',JSON.stringify(blockedAccounts));}
+ catch(error){console.error('Blocked accounts save error:',error);toast(error?.message||'Unable to save blocked accounts.');}
+}
+
+function addBlockedAccount(){
+ const username=normalizeUsername(window.prompt('Enter the username to block:')||'');
+ if(!username) return;
+ if(blockedAccounts.some(item=>String(item.username||item)===username)){toast('That account is already blocked.');return;}
+ blockedAccounts.push({username});
+ persistBlockedAccounts();
+ renderBlockedAccounts();
+}
+
+function removeBlockedAccount(index){
+ blockedAccounts.splice(index,1);
+ persistBlockedAccounts();
+ renderBlockedAccounts();
+}
+
+function rememberLoginAccount(user){
+ if(!user?.id) return;
+ try{
+  const accounts=JSON.parse(localStorage.getItem(accountListKey)||'[]');
+  const next=Array.isArray(accounts)?accounts.filter(item=>String(item.id)!==String(user.id)):[];
+  next.unshift({id:String(user.id),email:user.email||'',username:user.user_metadata?.username||'',lastUsedAt:Date.now()});
+  localStorage.setItem(accountListKey,JSON.stringify(next.slice(0,8)));
+ }catch(error){console.error('Account list save error:',error);}
+}
+
+function openAccountSwitcher(){
+ if(!document.getElementById('settingsSheet')?.classList.contains('open')) openSettingsSheet();
+ showSettingsSubview('accounts');
+}
+
+function renderAccountSwitcher(){
+ const subview=document.getElementById('settingsSubview');
+ if(!subview) return;
+ let accounts=[];
+ try{const parsed=JSON.parse(localStorage.getItem(accountListKey)||'[]');if(Array.isArray(parsed))accounts=parsed;}catch(error){console.error('Account list read error:',error);}
+ subview.innerHTML=`<div class="settings-subview-list">${accounts.map(account=>`<button class="secondary" type="button" onclick="beginAccountSwitch(${safe(JSON.stringify(account.email||''))})">${safe(account.email||account.username||'Saved account')}${String(account.id)===String(currentUser?.id)?' · Current':''}</button>`).join('')||'<p class="meta">No saved account details.</p>'}<button class="primary" type="button" onclick="beginAccountSwitch('')">+ Add Account</button></div><p class="meta">For your security, switching accounts requires signing in again.</p>`;
+}
+
+function beginAccountSwitch(email){
+ closeSettingsSheet();
+ openAuthModal('login');
+ const field=document.getElementById('authEmail');
+ if(field) field.value=email||'';
+ document.getElementById('authPassword')?.focus();
+}
+
+function formatUsageTime(milliseconds){
+ const minutes=Math.floor(Math.max(0,milliseconds)/60000);
+ const hours=Math.floor(minutes/60);
+ return hours?`${hours}h ${minutes%60}m`:`${minutes} min`;
+}
+
+function updateDailyUsageLabel(){
+ const label=document.getElementById('dailyTimeSpent');
+ if(label) label.textContent=`Today: ${formatUsageTime(dailyAppUsageMs)}`;
+}
+
+window.setInterval(()=>{
+ const now=Date.now();
+ if(!document.hidden&&now-appVisibleSince<60000){
+  dailyAppUsageMs+=now-appVisibleSince;
+  try{localStorage.setItem(dailyAppUsageKey,String(dailyAppUsageMs));}
+  catch(error){console.error('Daily usage save error:',error);}
+  updateDailyUsageLabel();
+ }
+ appVisibleSince=now;
+},15000);
+document.addEventListener('visibilitychange',()=>{appVisibleSince=Date.now();});
 
 async function clearCachedMedia(){
  if(!('caches' in window)){
@@ -1465,7 +1684,7 @@ function resetSignedOutState(){
  hasCurrentProfile=false;
  homeFeedMode='forYou';
  exploreHashtagQuery='';
- me={id:0,name:'',username:'',bio:'',pic:avatar(),followers:0,following:0};
+ me={id:0,name:'',username:'',bio:'',pic:avatar(),followers:0,following:0,statusNote:'',isPrivate:false};
  reels=[];
  archivedReels=[];
  savedReels.clear();
@@ -1540,7 +1759,7 @@ window.supabaseClient.auth.onAuthStateChange((event, session)=>{
  }
 });
 
-function hide(id){const el=document.getElementById(id); if(el){ el.classList.remove('show'); el.classList.add('hidden'); el.style.display='none'; }}
+function hide(id){const el=document.getElementById(id); if(el){ el.classList.remove('show'); el.classList.add('hidden'); el.style.display='none'; if(id==='postModal')el.classList.remove('saved-fullscreen'); }}
 function show(id){const el=document.getElementById(id); if(el){ el.style.display=''; el.classList.remove('hidden'); el.classList.add('show'); }}
 
 function uName(u){return u?.username || (currentUser && String(u?.id)===String(currentUser.id) ? currentProfile || me.username : 'user')}
@@ -1789,6 +2008,8 @@ function editProfile(){
  if(userInput){ userInput.value=currentProfile||''; userInput.readOnly=true; }
  if(nameInput) nameInput.value=me.name || '';
  if(bioInput) bioInput.value=me.bio || '';
+ const photoInput=document.getElementById('pic');
+ if(photoInput) photoInput.value='';
  show('editModal');
 }
 
@@ -1816,13 +2037,25 @@ if (mediaUploadInput) {
     const preview=document.getElementById('mediaPreview');
     if(!preview) return;
     preview.dataset.aspect=createAspectRatio;
+    preview.style.aspectRatio='auto';
     const media=document.createElement(video ? 'video' : 'img');
     media.src=mediaPreviewUrl;
+    const applyNaturalDimensions=()=>{
+      const width=video?media.videoWidth:media.naturalWidth;
+      const height=video?media.videoHeight:media.naturalHeight;
+      if(width>0&&height>0) preview.style.aspectRatio=`${width} / ${height}`;
+      media.style.width='100%';
+      media.style.height='auto';
+      media.style.maxHeight='62vh';
+      media.style.objectFit='contain';
+    };
     if(video){
       media.controls=true;
       media.playsInline=true;
+      media.addEventListener('loadedmetadata',applyNaturalDimensions,{once:true});
     }else{
       media.alt='Selected media preview';
+      media.addEventListener('load',applyNaturalDimensions,{once:true});
     }
     preview.replaceChildren(media);
     setCreateStatus('');
@@ -1831,7 +2064,7 @@ if (mediaUploadInput) {
 }
 
 const storyUploadInput=document.getElementById('storyUploadInput');
-storyUploadInput?.addEventListener('change',async function(){
+storyUploadInput?.addEventListener('change',function(){
  const file=this.files?.[0];
  if(!file) return;
  if(!currentUser){this.value='';openAuthModal('login');return;}
@@ -1843,7 +2076,73 @@ storyUploadInput?.addEventListener('change',async function(){
   this.value='';toast('Choose an image or MP4/WebM video for your story.');
   return;
  }
+ openStoryAudience(file);
+});
+
+async function openStoryAudience(file){
+ pendingStoryAudienceFile=file;
+ const modal=document.getElementById('storyAudienceModal');
+ const preview=document.getElementById('storyAudiencePreview');
+ const list=document.getElementById('storyAudienceFollowerList');
+ if(!modal||!preview||!list) return;
+ if(modal.dataset.previewUrl) URL.revokeObjectURL(modal.dataset.previewUrl);
+ const url=URL.createObjectURL(file);
+ preview.innerHTML=isVideoFile(file)?`<video src="${safe(url)}" controls muted playsinline style="width:100%;max-height:30vh;object-fit:contain"></video>`:`<img src="${safe(url)}" alt="Story preview" style="width:100%;max-height:30vh;object-fit:contain">`;
+ modal.dataset.previewUrl=url;
+ document.querySelector('input[name="storyAudience"][value="public"]').checked=true;
+ list.hidden=true;
+ list.innerHTML='<div class="meta">Loading your followers...</div>';
+ storyAudiencePreviousOverflow=document.body.style.overflow;
+ show('storyAudienceModal');
+ modal.setAttribute('aria-hidden','false');
+ document.body.style.overflow='hidden';
+ try{
+  const {data:followRows,error:followError}=await supabaseClient.from('user_follows').select('follower_id').eq('following_id',currentUser.id);
+  if(followError) throw followError;
+  const followerIds=[...new Set((followRows||[]).map(row=>String(row.follower_id)).filter(id=>id!==String(currentUser.id)))];
+  if(!followerIds.length){list.innerHTML='<div class="meta">No followers are available to select.</div>';return;}
+  const {data:profiles,error:profileError}=await supabaseClient.from('profiles').select('id,username,full_name,display_name,avatar_url,profile_avatar_url').in('id',followerIds);
+  if(profileError) throw profileError;
+  list.innerHTML=(profiles||[]).map(profile=>`<label><input type="checkbox" value="${safe(profile.id)}"><img src="${safe(avatarSrc(profile.avatar_url||profile.profile_avatar_url))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'" alt=""><span>${safe(profile.full_name||profile.display_name||profile.username||'VYBE user')} <small>@${safe(profile.username||'user')}</small></span></label>`).join('')||'<div class="meta">No follower profiles are available to select.</div>';
+ }catch(error){
+  console.error('Story audience followers error:',error);
+  list.innerHTML='<div class="meta">Followers could not be loaded. Please try again.</div>';
+  toast(error?.message||'Unable to load story audience.');
+ }
+}
+
+function toggleStoryAudienceOptions(){
+ const audience=document.querySelector('input[name="storyAudience"]:checked')?.value;
+ const list=document.getElementById('storyAudienceFollowerList');
+ if(list) list.hidden=audience!=='close_friends';
+}
+
+function cancelStoryAudience(){
+ const modal=document.getElementById('storyAudienceModal');
+ const url=modal?.dataset.previewUrl;
+ if(url) URL.revokeObjectURL(url);
+ if(modal){hide('storyAudienceModal');modal.setAttribute('aria-hidden','true');}
+ document.body.style.overflow=storyAudiencePreviousOverflow;
+ storyAudiencePreviousOverflow='';
+ pendingStoryAudienceFile=null;
+ if(storyUploadInput) storyUploadInput.value='';
+}
+
+async function confirmStoryAudience(){
+ const file=pendingStoryAudienceFile;
+ if(!file||!currentUser)return;
+ const audience=document.querySelector('input[name="storyAudience"]:checked')?.value||'public';
+ const selectedIds=[...document.querySelectorAll('#storyAudienceFollowerList input:checked')].map(input=>input.value);
+ if(audience==='close_friends'&&!selectedIds.length){toast('Select at least one follower for a private story.');return;}
+ await uploadStoryFile(file,audience,selectedIds);
+}
+
+async function uploadStoryFile(file,audience='public',audienceUserIds=[]){
+ if(storyUploading)return;
+ const isMp4=file.type==='video/mp4'||/\.mp4$/i.test(file.name);
  storyUploading=true;
+ const shareButton=document.querySelector('#storyAudienceModal .primary');
+ if(shareButton)shareButton.disabled=true;
  let uploadedStoryPath=null;
  let storyInserted=false;
  try {
@@ -1858,8 +2157,13 @@ storyUploadInput?.addEventListener('change',async function(){
   const mediaUrl=urlData?.publicUrl;
   if(!mediaUrl) throw new Error('Could not get a public URL for your story.');
   const expiresAt=new Date(Date.now()+24*60*60*1000).toISOString();
+  const storyPayload={user_id:currentUser.id,media_url:mediaUrl,expires_at:expiresAt};
+  if(audience==='close_friends'){
+   storyPayload.audience='close_friends';
+   storyPayload.audience_user_ids=audienceUserIds;
+  }
   const {data:story,error:insertError}=await supabaseClient.from('stories')
-   .insert({user_id:currentUser.id,media_url:mediaUrl,expires_at:expiresAt})
+   .insert(storyPayload)
    .select('*').single();
   if(insertError) throw insertError;
   storyInserted=true;
@@ -1869,6 +2173,8 @@ storyUploadInput?.addEventListener('change',async function(){
    user_id:currentUser.id,
    media_url:story?.media_url||mediaUrl,
    media_type:story?.media_type||file.type||(isMp4?'video/mp4':'image/unknown'),
+   audience:story?.audience||audience,
+   audience_user_ids:story?.audience_user_ids||audienceUserIds,
    expires_at:story?.expires_at||expiresAt,
    created_at:story?.created_at||new Date().toISOString()
   };
@@ -1877,6 +2183,7 @@ storyUploadInput?.addEventListener('change',async function(){
   if(existingIndex>=0) storyGroups[existingIndex].stories.unshift(createdStory);
   else storyGroups.push({userId:String(currentUser.id),profile:{id:currentUser.id,name:me.name||currentProfile||'You',username:currentProfile||me.username||'user',pic:me.pic},stories:[createdStory]});
   renderStories();
+  cancelStoryAudience();
   toast('Your story was shared');
   openOwnStory();
  } catch(error) {
@@ -1890,9 +2197,10 @@ storyUploadInput?.addEventListener('change',async function(){
   toast(error?.message||'Unable to upload your story.');
  } finally {
   storyUploading=false;
-  this.value='';
+  if(shareButton)shareButton.disabled=false;
+  if(storyUploadInput) storyUploadInput.value='';
  }
-});
+}
 
 function setCreateStatus(message, type='info'){
  const status=document.getElementById('createStatus');
@@ -1906,7 +2214,7 @@ function cancelCreate(){
  const caption=document.getElementById('caption');
  if(caption) caption.value='';
  const preview=document.getElementById('mediaPreview');
- if(preview){preview.dataset.aspect='square';preview.innerHTML='<div class="media-preview-empty"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="m21 15-5-5L5 21"></path></svg><span>Select a photo or video to preview it here</span></div>';}
+ if(preview){preview.dataset.aspect='square';preview.style.aspectRatio='auto';preview.innerHTML='<div class="media-preview-empty"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="m21 15-5-5L5 21"></path></svg><span>Select a photo or video to preview it here</span></div>';}
  setCreateAspect('square');
  if(mediaPreviewUrl){ URL.revokeObjectURL(mediaPreviewUrl); mediaPreviewUrl=null; }
  setCreateStatus('');
@@ -2013,7 +2321,10 @@ async function loadStories(){
    const mediaUrl=storyMediaUrl(story);
    const createdAt=new Date(story.created_at||0).getTime();
    const expiresAt=story.expires_at?new Date(story.expires_at).getTime():null;
-   return Boolean(story.user_id&&mediaUrl)&&(!Number.isFinite(createdAt)||createdAt>=cutoff)&&(!expiresAt||expiresAt>Date.now());
+   const audience=String(story.audience||'public');
+   const audienceUsers=Array.isArray(story.audience_user_ids)?story.audience_user_ids.map(String):[];
+   const canView=audience!=='close_friends'||String(story.user_id)===userId||audienceUsers.includes(userId);
+   return canView&&Boolean(story.user_id&&mediaUrl)&&(!Number.isFinite(createdAt)||createdAt>=cutoff)&&(!expiresAt||expiresAt>Date.now());
   });
   const userIds=[...new Set(active.map(story=>String(story.user_id)))];
   const profileById=new Map();
@@ -2614,12 +2925,24 @@ function renderSaved(){
  if(!savedGrid) return;
  const savedPosts=posts.filter(p=>saved.has(String(p.id))||saved.has(p.id));
  const items=[
-   ...savedPosts.map(post=>`<div class="tile" role="button" tabindex="0" onclick="openPost(${post.id})"><img src="${safe(post.src)}" alt="Saved post"></div>`),
-   ...savedReelItems.map(reel=>`<div class="tile" role="button" tabindex="0" onclick="openReel('${safe(reel.id)}')">${reel.video?`<video src="${safe(reel.src)}" muted playsinline></video>`:`<img src="${safe(reel.src)}" alt="Saved reel">`}</div>`)
+   ...savedPosts.map(post=>`<div class="tile" role="button" tabindex="0" onclick="openSavedPost(${post.id})"><img src="${safe(post.src)}" alt="Saved post"></div>`),
+   ...savedReelItems.map(reel=>`<div class="tile" role="button" tabindex="0" onclick="openSavedReel('${safe(reel.id)}')">${reel.video?`<video src="${safe(reel.src)}" muted playsinline></video>`:`<img src="${safe(reel.src)}" alt="Saved reel">`}</div>`)
  ];
  savedGrid.innerHTML=savedBookmarksLoading&&!items.length
   ? '<div class="empty">Loading saved items...</div>'
   : items.length ? items.join('') : '<div class="empty">No saved posts or reels yet.</div>';
+}
+
+function openSavedPost(id){
+ openPost(id);
+ document.getElementById('postModal')?.classList.add('saved-fullscreen');
+}
+
+function openSavedReel(id){
+ const reel=[...savedReelItems,...reels,...archivedReels].find(item=>String(item.id)===String(id));
+ if(reel?.video){void playReelInPlayer(id);return;}
+ openReel(id);
+ document.getElementById('postModal')?.classList.add('saved-fullscreen');
 }
 
 function storyHighlightsStorageKey(userId){
@@ -2710,7 +3033,7 @@ function openStoryHighlight(highlightId){
 function renderProfile(){
  const profileView=document.getElementById('profileView');
  if(!profileView) return;
- const renderTiles=(items)=>items.map(item=>`<div class="profile-tile" onclick="${item.kind==='reel'?`openReel('${safe(item.id)}')`:`openPost(${item.id})`}">${item.kind==='reel'&&isOwnReel(item)?`<button class="profile-tile-menu" aria-label="Manage your post" onclick="event.stopPropagation();openReelMenu('${safe(item.id)}')">⋯</button>`:''}${item.video?`<video src="${safe(item.src)}" muted playsinline></video>`:`<img src="${safe(item.src)}" alt="Your post">`}</div>`).join('');
+ const renderTiles=(items)=>items.map(item=>`<div class="profile-tile" onclick="${item.video?`playReelInPlayer('${safe(item.id)}')`:item.kind==='reel'?`openReel('${safe(item.id)}')`:`openPost(${item.id})`}">${item.kind==='reel'&&isOwnReel(item)?`<button class="profile-tile-menu" aria-label="Manage your post" onclick="event.stopPropagation();openReelMenu('${safe(item.id)}')">⋯</button>`:''}${item.video?`<video src="${safe(item.src)}" muted playsinline></video>`:`<img src="${safe(item.src)}" alt="Your post">`}</div>`).join('');
  const ownedReels=reels.filter(reel=>isOwnReel(reel));
  const ownedArchived=archivedReels.filter(reel=>isOwnReel(reel));
  const userPosts=[...posts.filter(post=>post.user===0),...ownedReels];
@@ -2733,7 +3056,7 @@ function renderProfile(){
   <div class="profile-top">
    <img class="profilepic" src="${safe(avatarSrc(me.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'">
    <div class="profile-details">
-    <div class="profile-username">${safe(me.name)} <span style="color:#aaa;font-size:12px">@${safe(currentProfile || me.username)}</span></div>
+    <button class="profile-username profile-username-switch" type="button" onclick="openAccountSwitcher()">${safe(me.name)} <span style="color:#aaa;font-size:12px">@${safe(currentProfile || me.username)}</span></button>
     <div class="profile-buttons">
       <button class="secondary edit-profile-button" onclick="editProfile()">Edit profile</button>
     </div>
@@ -2768,7 +3091,7 @@ function renderOtherProfile(){
  const isOwnProfile=String(currentUser?.id)===String(userData.id);
  const profileTiles=[
   ...relevantPosts.map(post=>`<div class="profile-tile" onclick="openPost(${post.id})">${post.video?`<video src="${safe(post.src)}"></video>`:`<img src="${safe(post.src)}">`}</div>`),
-  ...relevantReels.map(reel=>`<div class="profile-tile" onclick="openReel('${safe(reel.id)}')">${reel.video?`<video src="${safe(reel.src)}" muted playsinline></video>`:`<img src="${safe(reel.src)}">`}</div>`)
+  ...relevantReels.map(reel=>`<div class="profile-tile" onclick="${reel.video?`playReelInPlayer('${safe(reel.id)}')`:`openReel('${safe(reel.id)}')`}">${reel.video?`<video src="${safe(reel.src)}" muted playsinline></video>`:`<img src="${safe(reel.src)}">`}</div>`)
  ];
  otherView.innerHTML=`
  <div class="profile-header glass">
@@ -2859,19 +3182,37 @@ function dmPartnerId(message,userId=currentUser?.id){
 function renderDMInbox(){
  const inbox=document.getElementById('dmInbox');
  if(!inbox) return;
- if(!dmConversations.length){
-  inbox.innerHTML='<div class="dm-empty">No conversations yet. Message someone from their profile to get started.</div>';
-  return;
- }
- inbox.innerHTML=dmConversations.map(conversation=>{
+ const notes=renderNotesTray();
+ const conversations=dmConversations.length?dmConversations.map(conversation=>{
   const person=dmProfile(conversation.userId);
   const preview=conversation.lastMessage ? `${String(conversation.lastMessage.sender_id||conversation.lastMessage.from_user_id)===String(currentUser.id)?'You: ':''}${dmMessageText(conversation.lastMessage)}` : 'Start a conversation';
   return `<button class="dm-person" type="button" data-chat-user="${safe(conversation.userId)}">
    <img class="dm-person-avatar" src="${safe(avatarSrc(person.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'" alt="">
    <span class="dm-person-copy"><span class="dm-person-name">${safe(person.name||person.username||'VYBE user')} <span class="meta">@${safe(person.username||'user')}</span></span><span class="dm-person-preview">${safe(preview)}</span></span>
   </button>`;
- }).join('');
+ }).join(''):'<div class="dm-empty">No conversations yet. Message someone from their profile to get started.</div>';
+ inbox.innerHTML=notes+conversations;
  inbox.querySelectorAll('[data-chat-user]').forEach(button=>button.addEventListener('click',()=>openChat(button.dataset.chatUser)));
+ inbox.querySelectorAll('[data-note-user]').forEach(button=>button.addEventListener('click',()=>button.dataset.noteUser==='self'?editStatusNote():openChat(button.dataset.noteUser)));
+}
+
+function renderNotesTray(){
+ const ownNote=me.statusNote||'Share a thought...';
+ const current=`<button class="notes-item" type="button" data-note-user="self"><span class="notes-bubble">${safe(ownNote)}</span><img class="notes-avatar" src="${safe(avatarSrc(me.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'" alt=""><span>Your note</span></button>`;
+ const followers=dmConversations.map(({userId})=>({userId,profile:dmProfile(userId)})).filter(({profile})=>profile.statusNote);
+ return `<div class="notes-tray" aria-label="Notes">${current}${followers.map(({userId,profile})=>`<button class="notes-item" type="button" data-note-user="${safe(userId)}"><span class="notes-bubble">${safe(profile.statusNote)}</span><img class="notes-avatar" src="${safe(avatarSrc(profile.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'" alt=""><span>@${safe(profile.username)}</span></button>`).join('')}</div>`;
+}
+
+async function editStatusNote(){
+ const next=(window.prompt('Share a thought (up to 60 characters):',me.statusNote||'')||'').trim().slice(0,60);
+ if(!next)return;
+ try{
+ const {error}=await supabaseClient.from('profiles').update({status_note:next}).eq('id',currentUser.id);
+ if(error)throw error;
+ me.statusNote=next;
+ renderDMInbox();
+ toast('Note updated');
+ }catch(error){console.error('Status note update error:',error);toast(error?.message||'Unable to update your note.');}
 }
 
 function renderDMThread(){
@@ -2942,7 +3283,8 @@ async function loadDMInbox(){
     id:profile.id,
     name:profile.full_name||profile.display_name||profile.name||profile.username||'VYBE user',
     username:profile.username||'user',
-    pic:profile.avatar_url||profile.profile_avatar_url||avatarPlaceholder
+    pic:profile.avatar_url||profile.profile_avatar_url||avatarPlaceholder,
+    statusNote:profile.status_note||''
    }));
   }
   const ids=new Set(userIds);
@@ -3534,11 +3876,11 @@ function renderReels(){
    const audioLabel=reel.audioTitle || `Original Audio • ${authorUsername}`;
    const creatorAvatar=avatarSrc(author.pic);
    const media=reel.video
-    ? `<video id="reel-video-${index}" ${muted?'muted':''} loop playsinline src="${safe(reel.src)}"></video>`
+    ? `<video id="reel-video-${index}" ${window.isReelsMuted?'muted':''} loop playsinline src="${safe(reel.src)}"></video>`
     : `<img src="${safe(reel.src)}" alt="Reel">`;
    const liked=likedReels.has(String(reel.id));
    return `
-  <div class="reel">
+  <div class="reel" data-reel-card="${safe(reel.id)}">
     ${isOwnReel(reel)?`<button class="reel-manage" aria-label="Manage your post" onclick="openReelMenu('${safe(reel.id)}')">⋯</button>`:''}
     ${reel.video?`<button class="sound-btn" aria-label="${muted?'Unmute':'Mute'} reel" onclick="toggleMute(${index},this.closest('.reel'))">${muted?'🔇':'🔊'}</button>`:''}
    <div class="reel-media" data-reel-media data-like-media data-like-kind="reel" data-like-id="${safe(reel.id)}" data-reel-id="${safe(reel.id)}">${media}<span class="reel-sound-indicator" aria-hidden="true"></span>${reel.video?`<div class="reel-progress-track" data-reel-progress role="slider" tabindex="0" aria-label="Video progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span class="reel-progress-fill"></span></div>`:''}<span class="reel-long-press-indicator" aria-hidden="true">Paused</span></div>
@@ -3820,6 +4162,7 @@ function syncActiveReelVideo(){
  });
  if(!bestVideo){activeReelVideo=null;return;}
  activeReelVideo=bestVideo;
+ muted=Boolean(window.isReelsMuted);
  bestVideo.muted=muted;
  bestVideo.play().catch(error=>console.info('Reel autoplay was blocked:',error));
 }
@@ -3853,12 +4196,17 @@ function showReelSoundIndicator(reelCard){
 
 function toggleReelsMute(reelCard){
  muted=!muted;
+ window.isReelsMuted=muted;
  document.querySelectorAll('#reelList video').forEach(video=>{video.muted=muted;});
  document.querySelectorAll('#reelList .sound-btn').forEach(button=>{
   button.textContent=muted?'🔇':'🔊';
   button.setAttribute('aria-label',muted?'Unmute':'Mute');
  });
  showReelSoundIndicator(reelCard);
+ if(activeReelVideo){
+  activeReelVideo.muted=muted;
+  if(!muted) activeReelVideo.play().catch(error=>console.info('Unmuted reel playback was blocked:',error));
+ }
 }
 
 function toggleMute(index,reelCard){
@@ -4492,6 +4840,30 @@ function openReel(id){
  if(video) void video.play().catch(error=>console.info('Post video autoplay was blocked:',error));
 }
 
+async function playReelInPlayer(id){
+ let reel=reels.find(item=>String(item.id)===String(id));
+ if(!reel){
+  await loadReels();
+  reel=reels.find(item=>String(item.id)===String(id));
+ }
+ if(!reel){toast('This reel is no longer available.');return;}
+ go('reels');
+ requestAnimationFrame(()=>{
+  const card=[...document.querySelectorAll('#reelList [data-reel-card]')].find(item=>item.dataset.reelCard===String(id));
+  if(!card){
+   toast('This reel could not be opened in the player.');
+   return;
+  }
+  card.scrollIntoView({behavior:'smooth',block:'start'});
+  const video=card.querySelector('video');
+  if(video){
+   video.muted=Boolean(window.isReelsMuted);
+   activeReelVideo=video;
+   video.play().catch(error=>console.info('Profile reel playback was blocked:',error));
+  }
+ });
+}
+
 async function createPost(){
 if(creatingPost) return;
 const file=document.getElementById('mediaUploadInput')?.files?.[0];
@@ -4639,6 +5011,15 @@ async function saveProfile(){
   const {data,error}=await supabaseClient.auth.updateUser({data:metadata});
   if(error) throw error;
   currentUser=data.user || {...currentUser,user_metadata:metadata};
+  const profileUpdate={
+   id:currentUser.id,
+   username:currentProfile||me.username,
+   full_name:nextName,
+   bio:nextBio,
+   ...(photo?{avatar_url:metadata.profile_avatar_url}:{})
+  };
+  const {error:profileError}=await supabaseClient.from('profiles').upsert(profileUpdate,{onConflict:'id'});
+  if(profileError) throw profileError;
   me.name=nextName;
   me.bio=nextBio;
   if(photo) me.pic=metadata.profile_avatar_url;
