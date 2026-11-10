@@ -144,11 +144,20 @@ button{cursor:pointer;color:white}
 .username{font-size:13px;font-weight:750;cursor:pointer}
 .meta{font-size:11px;color:var(--muted);margin-top:4px}
 .more{margin-left:auto;border:0;background:none;font-size:22px}
+.post-media-stage{position:relative;overflow:hidden;background:#050505}
 .postmedia{display:block;width:100%;max-height:570px;object-fit:contain;background:#050505}
+.double-tap-heart{position:absolute;left:50%;top:50%;z-index:6;width:clamp(96px,24vw,180px);height:clamp(96px,24vw,180px);pointer-events:none;transform:translate(-50%,-50%);animation:double-tap-heart-pop 700ms cubic-bezier(.18,.89,.32,1.18) forwards}
+.double-tap-heart svg{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 0 10px #fff9) drop-shadow(0 5px 22px #ff3040b8)}
+@keyframes double-tap-heart-pop{
+ 0%{opacity:0;transform:translate(-50%,-50%) scale(0)}
+ 24%{opacity:1;transform:translate(-50%,-50%) scale(1.2)}
+ 44%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+ 100%{opacity:0;transform:translate(-50%,-50%) scale(1)}
+}
 .actions{display:flex;align-items:center;gap:17px;padding:14px 16px}
 .action{border:0;background:transparent;color:#ddd;font-size:23px;transition:.2s}
 .action:hover{transform:scale(1.12);color:white}
-.action.liked{color:#fff}
+.action.liked{color:#ff3040}
 .action.saved{color:#fff}
 .action.save{margin-left:auto}
 .likes{padding:0 16px;font-size:13px;font-weight:700}
@@ -304,15 +313,6 @@ button{cursor:pointer;color:white}
 .reel>img{width:100%;height:100%;object-fit:cover}
 .reel-media{position:absolute;inset:0;cursor:pointer}
 .reel-media img,.reel-media video{display:block;width:100%;height:100%;object-fit:cover}
-.reel-heart-burst{position:absolute;left:50%;top:50%;z-index:5;pointer-events:none;color:#ff3040;font-size:clamp(90px,22vw,170px);line-height:1;text-shadow:0 6px 26px #0008;opacity:0;transform:translate(-50%,-50%) scale(.2)}
-.reel-heart-burst.animate{animation:reel-heart-pop .85s cubic-bezier(.18,.89,.32,1.28) forwards}
-@keyframes reel-heart-pop{
-  0%{opacity:0;transform:translate(-50%,-50%) scale(.2)}
-  22%{opacity:1;transform:translate(-50%,-50%) scale(1.2)}
-  42%{opacity:1;transform:translate(-50%,-50%) scale(.92)}
-  60%{opacity:1;transform:translate(-50%,-50%) scale(1)}
-  100%{opacity:0;transform:translate(-50%,-58%) scale(1.35)}
-}
 .reel-shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(transparent 45%,#000b)}
 .reel-info{position:absolute;bottom:22px;left:17px;right:65px;z-index:2}
 .reel-user{display:flex;align-items:center;gap:10px;margin-bottom:13px}
@@ -1486,14 +1486,14 @@ function renderFeed(){
        </div>
        <button class="more" onclick="openPost(${post.id})">⋯</button>
      </div>
-     ${post.video?`<video class="postmedia" controls muted playsinline src="${post.src}"></video>`:`<img class="postmedia" src="${post.src}" alt="post">`}
+     <div class="post-media-stage" data-like-media data-like-kind="post" data-like-id="${safe(post.id)}">${post.video?`<video class="postmedia" controls muted playsinline src="${safe(post.src)}"></video>`:`<img class="postmedia" src="${safe(post.src)}" alt="post">`}</div>
      <div class="actions">
-       <button class="action ${likedClass}" onclick="toggleLike(${post.id})">♥</button>
+       <button class="action ${likedClass}" data-post-like="${safe(post.id)}" aria-label="${post.liked?'Unlike post':'Like post'}" aria-pressed="${Boolean(post.liked)}" onclick="toggleLike(${post.id})">♥</button>
        <span class="post-comment-action"><button class="action" onclick="openCommentsDrawer('${safe(post.id)}')">💬</button><small class="comment-feed-count" data-post-comment-count="${safe(post.id)}">${(post.comments||[]).length}</small></span>
        <button class="action" onclick="sharePost(${post.id})">↗</button>
        <button class="action save ${savedClass}" onclick="toggleSave(${post.id})">★</button>
      </div>
-     <div class="likes">${Number(post.likes).toLocaleString()} likes</div>
+     <div class="likes"><span data-post-like-count="${safe(post.id)}">${Number(post.likes).toLocaleString()}</span> likes</div>
      <div class="caption"><b>${safe(author.username)}</b> ${safe(post.caption)}</div>
      <div class="commentlist">${comments || '<div class="meta">No comments yet.</div>'}</div>
      <div class="commentrow"><input id="comment-${post.id}" placeholder="Add a comment..." onkeydown="if(event.key==='Enter') addComment(${post.id})"><button class="smallbtn" onclick="addComment(${post.id})">Post</button></div>
@@ -2335,7 +2335,7 @@ function renderReels(){
   <div class="reel">
     ${isOwnReel(reel)?`<button class="reel-manage" aria-label="Manage your post" onclick="openReelMenu('${safe(reel.id)}')">⋯</button>`:''}
     ${reel.video?`<button class="sound-btn" onclick="toggleMute(${index})">${muted?'🔇':'🔊'}</button>`:''}
-   <div class="reel-media" data-reel-media data-reel-id="${safe(reel.id)}">${media}<span class="reel-heart-burst" aria-hidden="true">♥</span></div>
+   <div class="reel-media" data-reel-media data-like-media data-like-kind="reel" data-like-id="${safe(reel.id)}" data-reel-id="${safe(reel.id)}">${media}</div>
    <div class="reel-shade"></div>
    <div class="reel-info">
      <div class="reel-user"><img src="${safe(avatarSrc(author.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'"><button onclick="viewProfile('${safe(reel.user)}')">@${safe(authorUsername)}</button></div>
@@ -2605,40 +2605,56 @@ async function toggleReelLike(id){
  }
 }
 
-function showReelHeartBurst(media){
- const burst=media.querySelector('.reel-heart-burst');
- if(!burst) return;
- burst.classList.remove('animate');
- void burst.offsetWidth;
- burst.classList.add('animate');
+function spawnLikeHeart(media){
+ const heart=document.createElement('span');
+ heart.className='double-tap-heart';
+ heart.setAttribute('aria-hidden','true');
+ heart.innerHTML='<svg viewBox="0 0 100 100" focusable="false"><path d="M50 86 15 53C-8 29 9 5 30 9c9 2 15 8 20 16 5-8 11-14 20-16 21-4 38 20 15 44L50 86Z" fill="#ff3040" stroke="#fff" stroke-width="3" stroke-linejoin="round"/></svg>';
+ media.appendChild(heart);
+ const removeHeart=()=>heart.remove();
+ heart.addEventListener('animationend',removeHeart,{once:true});
+ window.setTimeout(removeHeart,700);
 }
 
-function handleReelDoubleTap(media){
- const reelId=media?.dataset.reelId;
- if(!reelId) return;
- showReelHeartBurst(media);
- if(!likedReels.has(String(reelId))) void toggleReelLike(reelId);
-}
-
-const reelTouchTaps=new WeakMap();
-document.addEventListener('dblclick',event=>{
- const media=event.target.closest('[data-reel-media]');
- if(media) handleReelDoubleTap(media);
-});
-document.addEventListener('pointerup',event=>{
- if(event.pointerType!=='touch') return;
- const media=event.target.closest('[data-reel-media]');
- if(!media) return;
- const now=Date.now();
- const previous=reelTouchTaps.get(media);
- if(previous && now-previous.time<320 && Math.hypot(event.clientX-previous.x,event.clientY-previous.y)<36){
-  reelTouchTaps.delete(media);
-  event.preventDefault();
-  handleReelDoubleTap(media);
+function handleMediaDoubleTap(media){
+ const id=media?.dataset.likeId;
+ if(!id) return;
+ spawnLikeHeart(media);
+ if(media.dataset.likeKind==='reel'){
+  if(!likedReels.has(String(id))) void toggleReelLike(id);
  }else{
-  reelTouchTaps.set(media,{time:now,x:event.clientX,y:event.clientY});
+  const post=posts.find(item=>String(item.id)===String(id));
+  if(post&&!post.liked) toggleLike(post.id);
  }
+}
+
+const mediaTouchTaps=new WeakMap();
+const mediaDoubleTapHandled=new WeakMap();
+document.addEventListener('dblclick',event=>{
+ const media=event.target.closest('[data-like-media]');
+ if(!media) return;
+ event.preventDefault();
+ const now=Date.now();
+ if(now-(mediaDoubleTapHandled.get(media)||0)<500) return;
+ mediaDoubleTapHandled.set(media,now);
+ handleMediaDoubleTap(media);
 });
+document.addEventListener('touchstart',event=>{
+ const media=event.target.closest('[data-like-media]');
+ if(!media||event.target.closest('button,input,textarea,select')) return;
+ const touch=event.changedTouches[0];
+ if(!touch) return;
+ const now=Date.now();
+ const previous=mediaTouchTaps.get(media);
+ if(previous&&now-previous.time<320&&Math.hypot(touch.clientX-previous.x,touch.clientY-previous.y)<36){
+  mediaTouchTaps.delete(media);
+  event.preventDefault();
+  mediaDoubleTapHandled.set(media,now);
+  handleMediaDoubleTap(media);
+ }else{
+  mediaTouchTaps.set(media,{time:now,x:touch.clientX,y:touch.clientY});
+ }
+},{passive:false});
 
 async function loadSavedReels(){
  if(!currentUser){ savedReels.clear(); renderSaved(); renderProfile(); return; }
@@ -2764,7 +2780,15 @@ async function deleteReel(id){
 function toggleLike(postId){
  const post=posts.find(p=>p.id===postId); if(!post) return;
  post.liked=!post.liked; post.likes += post.liked?1:-1;
- renderFeed();
+ document.querySelectorAll('[data-post-like]').forEach(button=>{
+  if(button.dataset.postLike!==String(post.id)) return;
+  button.classList.toggle('liked',post.liked);
+  button.setAttribute('aria-pressed',String(post.liked));
+  button.setAttribute('aria-label',post.liked?'Unlike post':'Like post');
+ });
+ document.querySelectorAll('[data-post-like-count]').forEach(counter=>{
+  if(counter.dataset.postLikeCount===String(post.id)) counter.textContent=Number(post.likes).toLocaleString();
+ });
  renderExplore();
  renderProfile();
 }
@@ -2852,8 +2876,8 @@ function openPost(id){
  const postDetail=document.getElementById('postDetail');
  if(!postDetail) return;
  const author=user(post.user);
- const media = post.video ? `<video class="postmedia" controls src="${safe(post.src)}"></video>` : `<img class="postmedia" src="${safe(post.src)}">`;
- postDetail.innerHTML=`<div class="post glass">${media}<div class="caption"><b>${safe(author.name)}</b> ${safe(post.caption)}</div></div>`;
+ const media = post.video ? `<video class="postmedia" controls playsinline src="${safe(post.src)}"></video>` : `<img class="postmedia" src="${safe(post.src)}" alt="Post">`;
+ postDetail.innerHTML=`<div class="post glass"><div class="post-media-stage" data-like-media data-like-kind="post" data-like-id="${safe(post.id)}">${media}</div><div class="caption"><b>${safe(author.name)}</b> ${safe(post.caption)}</div></div>`;
  show('postModal');
 }
 
@@ -2863,7 +2887,7 @@ function openReel(id){
  const postDetail=document.getElementById('postDetail');
  if(!postDetail) return;
  const media=reel.video?`<video class="postmedia" controls autoplay playsinline src="${safe(reel.src)}"></video>`:`<img class="postmedia" src="${safe(reel.src)}" alt="Post">`;
- postDetail.innerHTML=`<div class="post glass">${media}<div class="caption"><b>@${safe(reelAuthorName(reel))}</b> ${safe(reel.caption)}</div></div>`;
+ postDetail.innerHTML=`<div class="post glass"><div class="post-media-stage" data-like-media data-like-kind="reel" data-like-id="${safe(reel.id)}">${media}</div><div class="caption"><b>@${safe(reelAuthorName(reel))}</b> ${safe(reel.caption)}</div></div>`;
  show('postModal');
  const video=postDetail.querySelector('video');
  if(video) void video.play().catch(error=>console.info('Post video autoplay was blocked:',error));
