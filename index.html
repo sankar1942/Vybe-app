@@ -2328,8 +2328,7 @@ try {
  const { data: insertedReel, error: insertError } = await supabaseClient.from('reels').insert({
    media_url: publicUrl,
    caption: captionText,
-   user_id: postingUser.id,
-   is_archived: false
+   user_id: postingUser.id
  }).select().single();
  if(insertError) throw insertError;
 
