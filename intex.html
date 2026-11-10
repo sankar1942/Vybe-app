@@ -1,0 +1,1566 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<style>
+  [data-netlify-badge],
+  .netlify-badge,
+  #netlify-badge,
+  netlify-drawer,
+  iframe[src*="netlify"],
+  div[class*="netlify"],
+  div[id*="netlify"],
+  div[class*="feedback"],
+  div:has(> a[href*="netlify.com"]),
+  a[href*="netlify.com"] {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    height: 0 !important;
+    width: 0 !important;
+    position: absolute !important;
+    z-index: -99999 !important;
+  }
+</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080808">
+<title>VYBE — Social Experience</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+ --bg:#080808;
+ --panel:rgba(255,255,255,.055);
+ --glass:rgba(255,255,255,.075);
+ --line:rgba(255,255,255,.14);
+ --muted:#999;
+ --white:#fff;
+}
+body{
+ background:radial-gradient(ellipse at 50% -20%,#333 0%,transparent 48%),var(--bg);
+ color:#fff;font-family:Inter,Arial,sans-serif;min-height:100vh;
+}
+button,input,textarea{font:inherit}
+button{cursor:pointer;color:white}
+.glass{
+ background:var(--glass);
+ border:1px solid var(--line);
+ backdrop-filter:blur(24px);
+ -webkit-backdrop-filter:blur(24px);
+ box-shadow:0 12px 35px #0005;
+}
+.app{display:flex;min-height:100vh}
+.sidebar{
+ width:245px;position:fixed;inset:0 auto 0 0;
+ background:rgba(10,10,10,.88);
+ border-right:1px solid var(--line);
+ padding:27px 17px;z-index:20;
+ backdrop-filter:blur(25px);
+}
+.brand{
+ font-size:34px;font-weight:950;letter-spacing:5px;
+ color:white;margin:10px 12px 40px;
+}
+.brand small{
+ display:block;font-size:9px;letter-spacing:5px;
+ color:#999;margin-top:5px;font-weight:500;
+}
+.nav{
+ width:100%;display:flex;align-items:center;gap:15px;
+ padding:13px 14px;margin:5px 0;border-radius:15px;
+ background:transparent;border:1px solid transparent;
+ color:#aaa;text-align:left;transition:.2s;
+}
+.nav svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.7}
+.nav:hover,.nav.active{
+ color:white;background:rgba(255,255,255,.09);
+ border-color:var(--line);
+}
+.sidebar-bottom{position:absolute;bottom:22px;left:17px;right:17px}
+.main{margin-left:245px;width:calc(100% - 245px);padding:23px 4% 40px}
+.topbar{
+ max-width:1050px;margin:0 auto 22px;display:flex;
+ justify-content:space-between;align-items:center;gap:12px;
+}
+.search{
+ width:300px;max-width:45%;padding:13px 17px;
+ border-radius:14px;background:var(--glass);
+ border:1px solid var(--line);color:white;outline:none;
+}
+.search::placeholder{color:#888}
+.top-actions{display:flex;gap:10px}
+.icon-btn{
+ width:43px;height:43px;border:1px solid var(--line);
+ background:var(--glass);border-radius:14px;display:grid;place-items:center;
+}
+.icon-btn svg{width:21px;stroke:white;fill:none;stroke-width:1.7}
+.content{max-width:1000px;margin:auto}
+.page{display:none;animation:appear .25s}
+.page.active{display:block}
+@keyframes appear{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.heading{font-size:24px;font-weight:750;margin:17px 0 22px}
+.subheading{color:var(--muted);font-size:13px;margin-top:7px}
+.stories{display:flex;gap:19px;padding:19px;overflow-x:auto;border-radius:20px;margin-bottom:25px}
+.story{text-align:center;min-width:66px;cursor:pointer}
+.story img{width:62px;height:62px;object-fit:cover;border-radius:50%;padding:3px;border:2px solid #aaa}
+.story small{display:block;margin-top:7px;color:#ccc;font-size:11px}
+.post{border-radius:20px;overflow:hidden;margin-bottom:24px}
+.posthead{display:flex;align-items:center;gap:12px;padding:16px}
+.avatar{width:42px;height:42px;object-fit:cover;border-radius:50%;cursor:pointer}
+.username{font-size:13px;font-weight:750;cursor:pointer}
+.meta{font-size:11px;color:var(--muted);margin-top:4px}
+.more{margin-left:auto;border:0;background:none;font-size:22px}
+.postmedia{display:block;width:100%;max-height:570px;object-fit:contain;background:#050505}
+.actions{display:flex;align-items:center;gap:17px;padding:14px 16px}
+.action{border:0;background:transparent;color:#ddd;font-size:23px;transition:.2s}
+.action:hover{transform:scale(1.12);color:white}
+.action.liked{color:#fff}
+.action.saved{color:#fff}
+.action.save{margin-left:auto}
+.likes{padding:0 16px;font-size:13px;font-weight:700}
+.caption{padding:10px 16px;font-size:13px;line-height:1.7;overflow-wrap:anywhere}
+.commentlist{padding:0 16px;font-size:12px;color:#ccc}
+.commentrow{display:flex;gap:10px;padding:12px 16px}
+.commentrow input{
+ flex:1;min-width:0;background:transparent;border:0;
+ border-bottom:1px solid var(--line);padding:9px;color:white;outline:none;
+}
+.smallbtn{border:0;background:none;color:white;font-weight:bold}
+.primary{
+ border:1px solid #fff;background:#fff;color:#000;
+ padding:11px 19px;border-radius:12px;font-weight:750;
+}
+.secondary{
+ padding:10px 15px;border-radius:11px;
+ border:1px solid var(--line);background:var(--glass);color:white;
+}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tile{height:240px;overflow:hidden;border-radius:12px;cursor:pointer;position:relative;background:#171717}
+.tile img,.tile video{width:100%;height:100%;object-fit:cover}
+.tile span{position:absolute;bottom:12px;left:12px;text-shadow:0 2px 6px black}
+.profilebox{display:flex;align-items:center;gap:25px;padding:25px;border-radius:22px}
+.profilepic{width:105px;height:105px;border-radius:50%;object-fit:cover;border:2px solid #aaa}
+.stats{display:flex;gap:25px;margin:17px 0;text-align:center}
+.stats button{border:0;background:none;color:white;cursor:pointer}
+.stats b{font-size:19px}
+.stats small{display:block;color:var(--muted);margin-top:5px}
+.people{display:flex;align-items:center;gap:12px;padding:15px;border-radius:15px;margin:10px 0}
+.people button{margin-left:auto}
+.chatbox{padding:15px;border-radius:18px}
+.person{display:flex;align-items:center;gap:12px;padding:14px;border-bottom:1px solid var(--line);cursor:pointer}
+.person p{color:var(--muted);font-size:12px;margin-top:5px}
+.messages{height:300px;overflow:auto;padding:12px}
+.bubble{padding:11px 15px;border-radius:15px;background:#ffffff16;margin:8px 0;width:fit-content;max-width:80%;font-size:13px}
+.bubble.mine{margin-left:auto;background:#fff;color:#000}
+.chatinput{display:flex;gap:10px;padding:12px}
+.chatinput input{flex:1;min-width:0;background:transparent;border:0;border-bottom:1px solid var(--line);color:white;padding:10px;outline:none}
+
+/* PROFILE */
+.profile-header{padding:25px;border-radius:22px;margin-bottom:20px}
+.profile-top{display:flex;align-items:center;gap:35px}
+.profile-details{flex:1;min-width:0}
+.profile-username{font-size:22px;font-weight:700;overflow-wrap:anywhere}
+.profile-buttons{display:flex;gap:9px;flex-wrap:wrap;margin-top:17px}
+.profile-buttons button{min-width:105px}
+.profile-buttons .edit-profile-button{width:100%;padding:13px 18px}
+.profile-bio{font-size:13px;line-height:1.7;margin-top:14px;white-space:pre-line}
+.profile-stats{display:flex;gap:35px;margin-top:20px}
+.profile-stats button{background:none;border:0;color:white;text-align:center}
+.profile-stats b{font-size:19px}
+.profile-stats span{display:block;font-size:12px;color:#aaa;margin-top:4px}
+.profile-tabs{display:flex;justify-content:center;gap:55px;border-bottom:1px solid var(--line);margin:22px 0 15px}
+.profile-tabs button{
+ background:none;border:0;color:#888;padding:15px 8px;
+ border-bottom:2px solid transparent;font-size:12px;letter-spacing:1px;
+}
+.profile-tabs button.active{color:white;border-color:white}
+.highlight-row{display:flex;gap:20px;overflow:auto;padding:15px 0 22px}
+.highlight{text-align:center;min-width:70px;cursor:pointer}
+.highlight img{width:65px;height:65px;border-radius:50%;border:1px solid #888;padding:4px;object-fit:cover}
+.highlight small{display:block;font-size:11px;color:#bbb;margin-top:6px}
+.profile-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.discover-grid{grid-auto-rows:10px;align-items:stretch}
+.discover-grid .tile{height:auto;grid-row:span 18}
+.discover-grid .tile:nth-child(3n){grid-row:span 25}
+.discover-grid .tile:nth-child(4n){grid-row:span 22}
+.profile-tabs{flex-wrap:wrap;gap:24px}
+.profile-tile{aspect-ratio:1;position:relative;overflow:hidden;cursor:pointer;background:#181818}
+.profile-tile img,.profile-tile video{width:100%;height:100%;object-fit:cover}
+.profile-tile-menu{position:absolute;top:7px;right:7px;z-index:2;width:34px;height:34px;border:1px solid #ffffff50;border-radius:50%;background:#0009;font-size:19px}
+.profile-tile:hover:after{content:"";position:absolute;inset:0;background:#0005}
+.profile-empty{text-align:center;color:#888;padding:55px 10px}
+.profile-empty button{margin-top:15px}
+.follow-line{font-size:12px;color:#aaa;margin-top:12px}
+.follow-line b{color:#fff}
+
+/* REELS */
+#reels{max-width:520px;margin:auto}
+.reels-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.reel{
+ height:min(75vh,760px);min-height:430px;position:relative;
+ overflow:hidden;border-radius:23px;background:#111;
+ border:1px solid #ffffff20;margin-bottom:18px;
+}
+.reel video{width:100%;height:100%;object-fit:cover}
+.reel>img{width:100%;height:100%;object-fit:cover}
+.reel-media{position:absolute;inset:0;cursor:pointer}
+.reel-media img,.reel-media video{display:block;width:100%;height:100%;object-fit:cover}
+.reel-heart-burst{position:absolute;left:50%;top:50%;z-index:5;pointer-events:none;color:#ff3040;font-size:clamp(90px,22vw,170px);line-height:1;text-shadow:0 6px 26px #0008;opacity:0;transform:translate(-50%,-50%) scale(.2)}
+.reel-heart-burst.animate{animation:reel-heart-pop .85s cubic-bezier(.18,.89,.32,1.28) forwards}
+@keyframes reel-heart-pop{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.2)}
+  22%{opacity:1;transform:translate(-50%,-50%) scale(1.2)}
+  42%{opacity:1;transform:translate(-50%,-50%) scale(.92)}
+  60%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  100%{opacity:0;transform:translate(-50%,-58%) scale(1.35)}
+}
+.reel-shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(transparent 45%,#000b)}
+.reel-info{position:absolute;bottom:22px;left:17px;right:65px;z-index:2}
+.reel-user{display:flex;align-items:center;gap:10px;margin-bottom:13px}
+.reel-user img{width:38px;height:38px;border-radius:50%;cursor:pointer}
+.reel-user button{background:none;border:0;color:white;font-size:12px}
+.reel-info p{font-size:13px;line-height:1.6}
+.reel-side{position:absolute;right:12px;bottom:35px;z-index:3;display:flex;flex-direction:column;gap:19px;align-items:center}
+.reel-side button{background:#0008;border:1px solid #ffffff40;border-radius:50%;width:43px;height:43px;font-size:20px}
+.reel-side .reel-like-button.active{color:#ff3040;border-color:#ff3040}
+.reel-side small{font-size:10px}
+.sound-btn{position:absolute;right:15px;top:15px;z-index:4;border:1px solid #ffffff55;background:#0008;width:40px;height:40px;border-radius:50%}
+.reel-manage{position:absolute;left:15px;top:15px;z-index:4;border:1px solid #ffffff55;background:#0008;width:40px;height:40px;border-radius:50%;font-size:20px}
+.reel-note{text-align:center;color:#aaa;font-size:11px;margin:12px}
+
+/* MODALS */
+.hidden{display:none!important}
+.modal{position:fixed;inset:0;background:#000c;z-index:50;display:none;align-items:center;justify-content:center;padding:15px}
+.modal.show{display:flex}
+.modal.hidden{display:none!important}
+.modalbox{width:100%;max-width:430px;padding:24px;border-radius:22px;background:rgba(25,25,25,.94);border:1px solid var(--line);backdrop-filter:blur(25px);max-height:85vh;overflow:auto}
+.modalbox input,.modalbox textarea{
+ width:100%;padding:13px;margin:11px 0;background:#ffffff0c;
+ border:1px solid var(--line);border-radius:11px;color:white;outline:none;
+}
+.modalbox textarea{min-height:85px}
+.media-preview{width:100%;max-height:55vh;min-height:180px;display:grid;place-items:center;overflow:hidden;border-radius:14px;background:#080808}
+.media-preview img,.media-preview video{display:block;width:100%;max-height:55vh;object-fit:contain}
+.create-actions{display:flex;gap:10px}
+.create-actions button{flex:1}
+.upload-spinner{display:inline-block;width:14px;height:14px;margin-right:8px;vertical-align:-2px;border:2px solid #0005;border-top-color:#000;border-radius:50%;animation:upload-spin .7s linear infinite}
+@keyframes upload-spin{to{transform:rotate(360deg)}}
+.auth-box{display:flex;flex-direction:column;gap:16px}
+.auth-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:4px}
+.auth-header h2{font-size:28px}
+.auth-subtitle{font-size:12px;color:var(--muted);margin-top:4px}
+.auth-status{min-height:20px;margin-top:8px;font-size:12px;line-height:1.5}
+.auth-status.error{color:#ff8b8b}
+.auth-status.success{color:#94f7b7}
+.auth-status.info{color:#dfe7ff}
+.auth-toggle{display:flex;justify-content:center;gap:8px;margin-top:8px;font-size:13px;color:#ddd}
+.auth-toggle button{background:none;border:0;color:#fff;opacity:.8;text-decoration:underline}
+.auth-submit{width:100%}
+.close{float:right;background:none;border:0;font-size:24px}
+.empty{text-align:center;color:#999;padding:45px}
+.bottom{
+ display:none;position:fixed;bottom:0;left:0;right:0;height:68px;
+ background:#101010ed;border-top:1px solid var(--line);
+ justify-content:space-around;align-items:center;z-index:30;backdrop-filter:blur(20px);
+}
+.bottom button{border:0;background:none;padding:10px;color:#aaa}
+.bottom button svg{width:23px;height:23px;stroke:currentColor;fill:none;stroke-width:1.7}
+.bottom button.active{color:white;background:#ffffff16;border-radius:13px}
+.toast{
+ display:none;position:fixed;bottom:85px;left:50%;transform:translateX(-50%);
+ background:#222;padding:13px 22px;border:1px solid var(--line);
+ border-radius:25px;z-index:90;font-size:13px;max-width:90%;text-align:center;
+}
+@media(max-width:800px){
+ .sidebar{display:none}
+ .main{margin:0;width:100%;padding:13px 12px 90px}
+ .bottom{display:flex}
+ .topbar{gap:8px}
+ .search{width:65%;max-width:65%}
+ .grid .tile{height:155px}
+ .profilebox{padding:15px;gap:13px}
+ .profilepic{width:78px;height:78px}
+ .stats{gap:12px}
+ .stats b{font-size:15px}
+ .reel{height:calc(100dvh - 155px);min-height:440px}
+ .profile-header{padding:16px}
+ .profile-top{gap:15px;align-items:flex-start}
+ .profile-header .profilepic{width:82px;height:82px;flex-shrink:0}
+ .profile-username{font-size:18px}
+ .profile-buttons{gap:6px}
+ .profile-buttons button{min-width:0;flex:1;padding:9px 7px;font-size:12px}
+ .profile-buttons .edit-profile-button{flex-basis:100%;padding:12px}
+ .profile-stats{justify-content:space-around;gap:5px}
+ .profile-stats b{font-size:16px}
+ .profile-tabs{gap:35px}
+}
+ </style>
+</head>
+
+<body>
+<div class="app">
+<aside class="sidebar">
+ <div class="brand">VYBE.<small>YOUR SOCIAL WORLD</small></div>
+ <button class="nav active" data-page="reels" onclick="go('reels')">▷ Reels</button>
+ <button class="nav" data-page="home" onclick="go('home')">⌂ Home Feed</button>
+ <button class="nav" data-page="explore" onclick="go('explore')">⌕ Discover</button>
+ <button class="nav" data-page="messages" onclick="go('messages')">▢ Messages</button>
+ <button class="nav" onclick="openCreate()">＋ Create</button>
+ <button class="nav" data-page="saved" onclick="go('saved')">♧ Saved</button>
+ <button class="nav" data-page="notifications" onclick="go('notifications')">♧ Notifications</button>
+ <button class="nav" data-page="profile" onclick="go('profile')">◎ Profile</button>
+ <div class="sidebar-bottom"><button class="nav" data-page="settings" onclick="go('settings')">⚙ Settings</button></div>
+</aside>
+
+<main class="main">
+<header class="topbar">
+ <div class="brand" style="display:none;font-size:25px;margin:0" id="mobileBrand">VYBE.</div>
+ <input class="search" placeholder="⌕  Search VYBE..." oninput="searchPosts(this.value)">
+ <div class="top-actions">
+  <button class="icon-btn" onclick="go('notifications')">♧</button>
+  <button class="icon-btn" onclick="go('messages')">✉</button>
+  <button id="authButton" class="secondary" onclick="currentUser ? go('profile') : openAuthModal('login')">Log In</button>
+ </div>
+</header>
+
+<div class="content">
+<section id="reels" class="page active">
+ <div class="reels-top"><div><h2>For You</h2><p class="subheading">Discover your next vibe</p></div><span style="color:#aaa;font-size:12px">VYBE ORIGINALS</span></div>
+ <div id="reelList"></div>
+ <p class="reel-note">Videos start muted. Tap sound to listen.</p>
+</section>
+
+<section id="home" class="page">
+ <div class="stories glass" id="stories"></div>
+ <h2 class="heading">Your Feed</h2><div id="feed"></div>
+</section>
+<section id="explore" class="page"><h2 class="heading">Discover</h2><div id="exploreGrid" class="grid discover-grid"></div></section>
+<section id="profile" class="page"><div id="profileView"></div></section>
+<section id="other" class="page"><div id="otherView"></div></section>
+<section id="saved" class="page"><h2 class="heading">Saved Collections</h2><div id="savedGrid" class="grid"></div></section>
+<section id="messages" class="page"><h2 class="heading">Messages</h2><div id="chatList" class="chatbox glass"></div></section>
+<section id="chat" class="page">
+ <button class="secondary" onclick="go('messages')">← Back</button>
+ <h2 class="heading" id="chatName">Messages</h2>
+ <div class="chatbox glass"><div class="messages" id="messageList"></div>
+ <div class="chatinput"><input id="messageText" placeholder="Write something..." onkeydown="if(event.key==='Enter')sendMessage()"><button class="primary" onclick="sendMessage()">Send</button></div></div>
+</section>
+<section id="notifications" class="page"><h2 class="heading">Activity</h2><div id="notificationList" class="chatbox glass"></div></section>
+<section id="settings" class="page">
+ <h2 class="heading">Settings</h2>
+ <div class="chatbox glass">
+  <div class="person">Account settings</div><div class="person">Privacy</div>
+  <div class="person">Notifications</div><div class="person">Appearance · Monochrome glass</div>
+  <button class="primary" onclick="editProfile()">Edit Profile</button>
+  <button class="secondary" style="margin-top:12px;width:100%" id="logoutButton" onclick="logoutUser()">Logout</button>
+ </div>
+</section>
+</div>
+</main>
+</div>
+
+<nav class="bottom">
+ <button class="active" onclick="go('reels')">▷</button>
+ <button onclick="go('home')">⌂</button>
+ <button onclick="go('explore')">⌕</button>
+ <button onclick="openCreate()">＋</button>
+ <button onclick="go('profile')">◎</button>
+</nav>
+
+<input type="file" id="mediaUploadInput" accept="video/*,image/*" style="display:none;">
+
+<div class="modal" id="createModal"><div class="modalbox glass">
+ <button class="close" id="cancelPostCloseButton" onclick="cancelCreate()">×</button><h2>New Post</h2>
+ <div class="media-preview" id="mediaPreview"></div>
+ <textarea id="caption" placeholder="Write a caption..."></textarea>
+ <div id="createStatus" class="auth-status" role="status" aria-live="polite"></div>
+ <div class="create-actions">
+  <button class="secondary" id="cancelPostButton" type="button" onclick="cancelCreate()">Cancel</button>
+  <button class="primary" id="sharePostButton" type="button" onclick="createPost()"><span class="upload-spinner hidden" id="uploadSpinner"></span><span id="sharePostLabel">Share / Post</span></button>
+ </div>
+</div></div>
+
+<div class="modal" id="editModal"><div class="modalbox glass">
+ <button class="close" onclick="hide('editModal')">×</button><h2>Edit Profile</h2>
+ <input id="name" placeholder="Display name">
+ <input id="uname" placeholder="username (lowercase)">
+ <textarea id="bio" placeholder="Bio"></textarea>
+ <input id="pic" type="file" accept="image/*">
+ <button class="primary" style="width:100%" onclick="saveProfile()">Save Changes</button>
+</div></div>
+
+<div class="modal" id="listModal"><div class="modalbox glass">
+ <button class="close" onclick="hide('listModal')">×</button>
+ <h2 id="listTitle">People</h2><div id="listContent"></div>
+</div></div>
+
+<div class="modal" id="postModal"><div class="modalbox glass">
+ <button class="close" onclick="hide('postModal')">×</button>
+ <div id="postDetail"></div>
+</div></div>
+
+<div class="modal" id="authModal"><div class="modalbox glass">
+ <button class="close" onclick="hide('authModal')">×</button>
+ <div class="auth-box">
+  <div class="auth-header">
+   <div>
+    <h2>VYBE</h2>
+    <div class="auth-subtitle" id="authSubtitle">Welcome back</div>
+   </div>
+  </div>
+  <input id="authUsername" type="text" placeholder="Username" autocomplete="username" style="display:none;">
+  <input id="authEmail" type="text" placeholder="Username or Email" autocomplete="username" aria-label="Username or Email">
+  <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password">
+  <div id="authStatus" class="auth-status"></div>
+  <button id="authSubmitBtn" class="primary auth-submit" onclick="submitAuth()">Log In</button>
+  <div class="auth-toggle">
+   <span id="authModeText">Need an account?</span>
+   <button id="authToggleBtn" onclick="toggleAuthMode()">Sign Up</button>
+  </div>
+ </div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const avatar=n=>`https://i.pravatar.cc/150?img=${n}`;
+const video1="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4";
+const video2="https://www.w3schools.com/html/mov_bbb.mp4";
+
+const supabaseUrl = "https://tpppqqvnjovoealfepfk.supabase.co";
+const supabaseAnonKey = "sb_publishable_qSOZ_ABJcPhpcyNo0mY3Cw_gLEyMoB3";
+window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+const supabaseClient = window.supabaseClient;
+
+let me={id:0,name:"Your Name",username:"",bio:"Creating my own world",pic:avatar(12),followers:120,following:85};
+let users=[
+ {id:1,name:"Alex",username:"alex.design",pic:avatar(47),bio:"Creative soul | Design & lifestyle",followers:2450,following:430},
+ {id:2,name:"Sarah",username:"sarah.official",pic:avatar(32),bio:"Living beautifully | Everyday moments",followers:5200,following:610},
+ {id:3,name:"John",username:"john.travel",pic:avatar(11),bio:"Explore more | Travel photography",followers:1800,following:390},
+ {id:4,name:"Emma",username:"emma.life",pic:avatar(25),bio:"Photography | Little moments",followers:3400,following:720}
+];
+
+let posts=[
+ {id:1,user:1,src:"https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=900",video:false,caption:"Find your own beautiful world",likes:2450,liked:false,comments:[]},
+ {id:2,user:2,src:"https://images.unsplash.com/photo-1517841905240-472988babdf9?w=900",video:false,caption:"Every moment is special",likes:5821,liked:false,comments:[]},
+ {id:3,user:3,src:"https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=900",video:false,caption:"Travel. Explore. Repeat.",likes:912,liked:false,comments:[]},
+ {id:4,user:1,src:"https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=900",video:false,caption:"Nature is home.",likes:720,liked:false,comments:[]},
+ {id:5,user:4,src:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=900",video:false,caption:"A little sunshine.",likes:1600,liked:false,comments:[]}
+];
+
+let reels=[],archivedReels=[];
+
+let follows=new Set(),saved=new Set(),savedReels=new Set(),likedReels=new Set(),likedReelItems=[],pendingReelLikes=new Set(),notifications=[],chats={};
+let nextId=10,activeChat=null,viewing=null,profileTab="posts",muted=true;
+let searchTerm="";
+let authMode = 'login';
+let currentUser = null;
+let currentProfile = null;
+let hasCurrentProfile = false;
+let mediaPreviewUrl = null;
+
+function safe(s){return String(s??"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+function normalizeUsername(value){
+  return String(value||'').trim().replace(/\s+/g,'').replace(/[^a-zA-Z0-9_.-]/g,'').toLowerCase();
+}
+
+async function checkUsernameAvailable(username){
+  const clean = normalizeUsername(username);
+  if(!clean){ return { available:false, error:'Username is required.'}; }
+  if(clean.length < 3){ return { available:false, error:'Username must be at least 3 characters long.'}; }
+  const { data, error } = await supabaseClient.from('profiles').select('username').eq('username', clean).maybeSingle();
+  if (error && error.code !== 'PGRST116') throw error;
+  return { available: !data, error: data ? 'Username already taken, please choose another' : null };
+}
+
+async function ensureProfileForUser(userId, username){
+  const clean = String(username || '').trim();
+  if(!userId || !clean) throw new Error('Username is required.');
+  const { data, error } = await supabaseClient.from('profiles').upsert({ id: userId, username: clean }, { onConflict: 'id' }).select().maybeSingle();
+  if (error) throw error;
+  currentProfile = data?.username || clean;
+  me.id = userId;
+  me.username = currentProfile;
+  return currentProfile;
+}
+
+async function syncCurrentProfile(){
+  if(!currentUser){ currentProfile = null; hasCurrentProfile = false; updateAuthUI(); return null; }
+  const profileUser=currentUser;
+  const { data, error } = await supabaseClient.from('profiles').select('id, username').eq('id', profileUser.id).maybeSingle();
+  if (error && error.code !== 'PGRST116') {
+    console.error('Profile sync error:', error);
+    return null;
+  }
+  if(currentUser?.id !== profileUser.id) return null;
+  hasCurrentProfile = Boolean(data);
+  currentProfile = data?.username || null;
+  me.id = profileUser.id;
+  me.username = currentProfile || '';
+  updateAuthUI();
+  renderStories();
+  renderFeed();
+  renderReels();
+  renderExplore();
+  renderProfile();
+  return hasCurrentProfile;
+}
+
+function setAuthStatus(message, type='info'){ const el=document.getElementById('authStatus'); if(!el) return; el.textContent=message; el.className='auth-status '+type; }
+
+function updateAuthUI(){
+ const authButton=document.getElementById('authButton');
+ const logoutButton=document.getElementById('logoutButton');
+ const isLoggedIn=Boolean(currentUser);
+ const displayName=currentProfile ? '@'+currentProfile : (isLoggedIn ? 'Account' : 'Log In');
+ if(authButton){ authButton.textContent = displayName; }
+ if(logoutButton){ logoutButton.style.display = isLoggedIn ? 'block' : 'none'; }
+ if(!isLoggedIn && document.getElementById('authModal') && document.getElementById('authModal').classList.contains('show')) {
+   document.getElementById('authSubmitBtn').textContent = authMode === 'signup' ? 'Sign Up' : 'Log In';
+ }
+}
+
+function openAuthModal(mode='login', preserveStatus=false){ authMode=mode; const modal=document.getElementById('authModal'); const subtitle=document.getElementById('authSubtitle'); const submitBtn=document.getElementById('authSubmitBtn'); const modeText=document.getElementById('authModeText'); const toggleBtn=document.getElementById('authToggleBtn'); const usernameField=document.getElementById('authUsername'); const emailField=document.getElementById('authEmail');
+ if(subtitle){ subtitle.textContent = authMode === 'signup' ? 'Create your VYBE account' : 'Welcome back'; }
+ if(submitBtn){ submitBtn.textContent = authMode === 'signup' ? 'Sign Up' : 'Log In'; }
+ if(modeText){ modeText.textContent = authMode === 'signup' ? 'Already have an account?' : 'Need an account?'; }
+ if(toggleBtn){ toggleBtn.textContent = authMode === 'signup' ? 'Log In' : 'Sign Up'; }
+ if(usernameField){ usernameField.style.display = authMode === 'signup' ? 'block' : 'none'; }
+ if(emailField){
+   emailField.placeholder = authMode === 'signup' ? 'Email address' : 'Username or Email';
+   emailField.setAttribute('autocomplete', authMode === 'signup' ? 'email' : 'username');
+ }
+ if(!preserveStatus){ setAuthStatus(''); }
+ const email=document.getElementById('authEmail'); const password=document.getElementById('authPassword');
+ if(email){email.value='';} if(password){password.value='';}
+ if(usernameField){usernameField.value='';}
+ if(modal){ modal.style.display=''; modal.classList.remove('hidden'); modal.classList.add('show'); }
+}
+
+function toggleAuthMode(){ authMode = authMode === 'login' ? 'signup' : 'login'; openAuthModal(authMode); }
+
+function closeAuthModal(){
+ document.querySelectorAll('.modal, .auth-overlay, .login-container, .signup-container, #loginContainer, #signupContainer').forEach(modal=>{
+  modal.style.display='none';
+  modal.classList.remove('show');
+  modal.classList.add('hidden');
+ });
+}
+
+function enterApp(user){
+ if(!user) return;
+ if(currentUser?.id !== user.id){
+  currentProfile = null;
+  hasCurrentProfile = false;
+ }
+ currentUser = user;
+ const app=document.querySelector('.app');
+ const main=document.querySelector('.main');
+ const reelsPage=document.getElementById('reels');
+ if(app){ app.style.display='flex'; app.classList.remove('hidden'); }
+ if(main){ main.style.display='block'; main.classList.remove('hidden'); }
+ if(reelsPage) reelsPage.classList.remove('hidden');
+ document.querySelectorAll('.bottom, .sidebar').forEach(nav=>nav.classList.remove('hidden'));
+ closeAuthModal();
+ updateAuthUI();
+ go('reels');
+}
+
+async function submitAuth(){
+ const emailField=document.getElementById('authEmail');
+ const email = authMode === 'signup' ? emailField?.value.trim() : emailField?.value.trim();
+ const password=document.getElementById('authPassword')?.value;
+ const username=document.getElementById('authUsername')?.value || '';
+ const cleanedUsername = normalizeUsername(username);
+
+ if(!email || !password){
+   setAuthStatus('Please enter both email and password.', 'error');
+   return;
+ }
+ if(password.length < 6){
+   setAuthStatus('Password must be at least 6 characters long.', 'error');
+   return;
+ }
+ if(authMode === 'signup'){
+   if(!cleanedUsername){
+     setAuthStatus('Username is required.', 'error');
+     return;
+   }
+   const availability = await checkUsernameAvailable(cleanedUsername).catch(err => { throw err; });
+   if(!availability.available){
+     setAuthStatus(availability.error, 'error');
+     return;
+   }
+ }
+
+ setAuthStatus('Please wait...', 'info');
+
+ try {
+  if(authMode === 'signup'){
+    const { data, error } = await supabaseClient.auth.signUp({
+      email,
+      password,
+      options: { data: { username: cleanedUsername } }
+    });
+
+    if (error) {
+      setAuthStatus(error.message || 'Sign up failed.', 'error');
+      return;
+    }
+
+    const userId = data?.user ? data.user.id : (crypto?.randomUUID ? crypto.randomUUID() : undefined);
+    if (userId) {
+      const { error: profileError } = await supabaseClient.from('profiles').upsert({
+        id: userId,
+        username: username.trim(),
+        email: email.trim().toLowerCase()
+      }, { onConflict: 'id' });
+      if (profileError) {
+        setAuthStatus(profileError.message || 'Profile creation failed.', 'error');
+        return;
+      }
+      if(data?.user?.id===userId){
+        currentProfile=username.trim();
+        hasCurrentProfile=true;
+        me.id=userId;
+        me.username=currentProfile;
+        updateAuthUI();
+      }
+    }
+
+    const signupSuccessMessage = 'Sign up successful! Please check your email to verify, or Log In directly if email confirmation is disabled.';
+    if(data?.session?.user || currentUser){
+      enterApp(data?.session?.user || currentUser);
+      toast('Sign up successful');
+    }else{
+      authMode = 'login';
+      openAuthModal('login', true);
+      setAuthStatus(signupSuccessMessage, 'success');
+    }
+    return;
+  }
+
+  const identifier = emailField?.value || '';
+  const input = identifier.trim();
+  let loginEmail = input;
+  if (!input.includes('@')) {
+    const { data, error } = await supabaseClient
+      .from('profiles')
+      .select('email')
+      .ilike('username', input)
+      .maybeSingle();
+    console.log("Found profile email:", data?.email);
+
+    if (error || !data?.email) {
+      setAuthStatus('Username not found. Please check your username or use Email.', 'error');
+      return;
+    }
+
+    loginEmail = data.email;
+  }
+
+  const { data, error } = await supabaseClient.auth.signInWithPassword({ email: loginEmail, password });
+  if (error) {
+    setAuthStatus(error.message || 'Login failed.', 'error');
+    return;
+  }
+
+  const signedInUser = data?.user;
+  if (!signedInUser) {
+    setAuthStatus('Login succeeded but no user data was returned.', 'error');
+    return;
+  }
+
+  enterApp(signedInUser);
+  toast('Logged in successfully');
+  void syncCurrentProfile().catch(error=>console.error('Profile sync error:', error));
+ } catch (error) {
+  setAuthStatus(error?.message || 'Authentication failed.', 'error');
+ }
+}
+
+async function logoutUser(){
+ try {
+  const { error } = await window.supabaseClient.auth.signOut();
+  if (error) throw error;
+  currentUser = null;
+  currentProfile = null;
+  hasCurrentProfile = false;
+  updateAuthUI();
+  toast('Logged out successfully');
+ } catch (error) {
+  toast(error?.message || 'Logout failed');
+ }
+}
+
+window.supabaseClient.auth.onAuthStateChange((event, session)=>{
+ if(session?.user){
+  enterApp(session.user);
+  void syncCurrentProfile().catch(error=>console.error('Profile sync error:', error));
+  void loadReels();
+  void loadSavedReels();
+ } else {
+  currentUser = null;
+  currentProfile = null;
+  hasCurrentProfile = false;
+  me.id = 0;
+  me.username = '';
+  savedReels.clear();
+  likedReels.clear();
+  likedReelItems=[];
+  reels.forEach(reel=>{reel.liked=false;});
+  renderReels();
+  renderProfile();
+  closeAuthModal();
+  updateAuthUI();
+  openAuthModal('login');
+ }
+ if (event === 'SIGNED_OUT') {
+  setAuthStatus('');
+ }
+});
+
+function hide(id){const el=document.getElementById(id); if(el){ el.classList.remove('show'); el.classList.add('hidden'); el.style.display='none'; }}
+function show(id){const el=document.getElementById(id); if(el){ el.style.display=''; el.classList.remove('hidden'); el.classList.add('show'); }}
+
+function uName(u){return u?.username || (currentUser && String(u?.id)===String(currentUser.id) ? '' : 'user')}
+function user(id){
+ if(id===0 || (currentUser && String(id)===String(currentUser.id))) return me;
+ return users.find(x=>String(x.id)===String(id)) || {id,name:'VYBE user',username:'user',pic:avatar(12),bio:'',followers:0,following:0};
+}
+function note(s){notifications.unshift(s);renderNotifications()}
+function toast(s){
+ let t=document.getElementById('toast');t.textContent=s;t.style.display='block';
+ clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>t.style.display='none',2200);
+}
+function go(id){
+ const blockedPages = ['reels','home','explore','saved','messages','notifications','profile','other','chat'];
+ if (blockedPages.includes(id) && !currentUser) {
+   openAuthModal('login');
+   return;
+ }
+ document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+ document.getElementById(id)?.classList.add('active');
+ document.querySelectorAll('.nav,.bottom button').forEach(x=>x.classList.remove('active'));
+ document.querySelectorAll('.nav').forEach(x=>{if(x.dataset.page===id)x.classList.add('active')});
+ let map={reels:0,home:1,explore:2,profile:4};
+ if(map[id]!==undefined)document.querySelectorAll('.bottom button')[map[id]]?.classList.add('active');
+ if(id==='reels'){ void loadReelLikes(); startVisibleReel(); }
+ if(id==='home')renderFeed();
+ if(id==='profile')renderProfile();
+ if(id==='explore')renderExplore();
+ if(id==='saved')renderSaved();
+ if(id==='messages')renderChats();
+ if(id==='notifications')renderNotifications();
+}
+function viewProfile(id){
+ if(id===0 || (currentUser && String(id)===String(currentUser.id))){go('profile');return}
+ viewing=id;profileTab="posts";renderOtherProfile();go('other');
+}
+function openCreate(){
+ if (!currentUser) {
+   openAuthModal('login');
+   return;
+ }
+ document.getElementById('mediaUploadInput')?.click();
+}
+function editProfile(){
+ const userInput=document.getElementById('uname');
+ if(userInput){ userInput.value=currentProfile||''; userInput.readOnly=true; }
+ show('editModal');
+}
+
+function isVideoFile(file){
+ return Boolean(file && (file.type?.startsWith('video/') || /\.(mp4|webm|ogg|m4v|mov|mkv|3gp)$/i.test(file.name)));
+}
+
+function isImageFile(file){
+ return Boolean(file && (file.type?.startsWith('image/') || /\.(png|jpe?g|gif|webp|bmp|heic|heif|avif)$/i.test(file.name)));
+}
+
+const mediaUploadInput = document.getElementById('mediaUploadInput');
+if (mediaUploadInput) {
+  mediaUploadInput.addEventListener('change', function(){
+    const picked = this.files && this.files[0];
+    if (!picked) return;
+    const video=isVideoFile(picked);
+    if (!video && !isImageFile(picked)) {
+      toast('Please choose an image or video.');
+      this.value='';
+      return;
+    }
+    if(mediaPreviewUrl) URL.revokeObjectURL(mediaPreviewUrl);
+    mediaPreviewUrl=URL.createObjectURL(picked);
+    const preview=document.getElementById('mediaPreview');
+    if(!preview) return;
+    const media=document.createElement(video ? 'video' : 'img');
+    media.src=mediaPreviewUrl;
+    if(video){
+      media.controls=true;
+      media.playsInline=true;
+    }else{
+      media.alt='Selected media preview';
+    }
+    preview.replaceChildren(media);
+    const captionInput=document.getElementById('caption');
+    if(captionInput) captionInput.value='';
+    setCreateStatus('');
+    show('createModal');
+    if (captionInput) captionInput.focus();
+  });
+}
+
+function setCreateStatus(message, type='info'){
+ const status=document.getElementById('createStatus');
+ if(status){ status.textContent=message; status.className='auth-status'+(type ? ' '+type : ''); }
+}
+
+function cancelCreate(){
+ const input=document.getElementById('mediaUploadInput');
+ if(input) input.value='';
+ const caption=document.getElementById('caption');
+ if(caption) caption.value='';
+ const preview=document.getElementById('mediaPreview');
+ if(preview) preview.replaceChildren();
+ if(mediaPreviewUrl){ URL.revokeObjectURL(mediaPreviewUrl); mediaPreviewUrl=null; }
+ setCreateStatus('');
+ const shareButton=document.getElementById('sharePostButton');
+ if(shareButton) shareButton.disabled=false;
+ document.querySelectorAll('#cancelPostButton, #cancelPostCloseButton').forEach(button=>button.disabled=false);
+ const spinner=document.getElementById('uploadSpinner');
+ if(spinner) spinner.classList.add('hidden');
+ const label=document.getElementById('sharePostLabel');
+ if(label) label.textContent='Share / Post';
+ hide('createModal');
+}
+
+// STORIES
+function renderStories(){
+ const storyWrap=document.getElementById('stories');
+ if(!storyWrap) return;
+ const all=[me,...users];
+ storyWrap.innerHTML=all.map((u,i)=>`<div class="story" onclick="${i===0?'openCreate()':`viewProfile(${u.id})`}"><img src="${u.pic}"><small>${safe(i===0?(currentProfile||'You'):uName(u))}</small></div>`).join('');
+}
+
+function renderFeed(){
+ const feed=document.getElementById('feed');
+ if(!feed) return;
+ const term=searchTerm.trim().toLowerCase();
+ const list=posts.filter(post=>{
+   const author=user(post.user);
+   return !term || uName(author).includes(term) || (post.caption||'').toLowerCase().includes(term);
+ });
+ if(!list.length){
+   feed.innerHTML='<div class="empty">No posts match your search.</div>';
+   return;
+ }
+ feed.innerHTML=list.map(post=>{
+   const author=user(post.user);
+   const likedClass=post.liked?'liked':'';
+   const savedClass=saved.has(post.id)?'saved':'';
+   const comments=(post.comments||[]).slice(0,2).map(c=>`<div class="meta">${safe(user(c.user).name)}: ${safe(c.text)}</div>`).join('');
+   return `<article class="post glass">
+     <div class="posthead">
+       <img class="avatar" src="${author.pic}" onclick="viewProfile(${author.id})">
+       <div>
+         <div class="username" onclick="viewProfile(${author.id})">${safe(author.name)}</div>
+         <div class="meta">@${safe(uName(author))}</div>
+       </div>
+       <button class="more" onclick="openPost(${post.id})">⋯</button>
+     </div>
+     ${post.video?`<video class="postmedia" controls muted playsinline src="${post.src}"></video>`:`<img class="postmedia" src="${post.src}" alt="post">`}
+     <div class="actions">
+       <button class="action ${likedClass}" onclick="toggleLike(${post.id})">♥</button>
+       <button class="action" onclick="openPost(${post.id})">💬</button>
+       <button class="action" onclick="sharePost(${post.id})">↗</button>
+       <button class="action save ${savedClass}" onclick="toggleSave(${post.id})">★</button>
+     </div>
+     <div class="likes">${Number(post.likes).toLocaleString()} likes</div>
+     <div class="caption"><b>${safe(author.username)}</b> ${safe(post.caption)}</div>
+     <div class="commentlist">${comments || '<div class="meta">No comments yet.</div>'}</div>
+     <div class="commentrow"><input id="comment-${post.id}" placeholder="Add a comment..." onkeydown="if(event.key==='Enter') addComment(${post.id})"><button class="smallbtn" onclick="addComment(${post.id})">Post</button></div>
+   </article>`;
+ }).join('');
+}
+
+function renderExplore(){
+ const exploreGrid=document.getElementById('exploreGrid');
+ if(!exploreGrid) return;
+ exploreGrid.innerHTML=reels.length ? reels.map((reel,index)=>`
+   <div class="tile" style="grid-row-end:span ${index%4===2?25:index%4===3?22:18}" onclick="openReel('${safe(reel.id)}')">
+    ${isOwnReel(reel)?`<button class="reel-manage" aria-label="Manage your post" onclick="event.stopPropagation();openReelMenu('${safe(reel.id)}')">⋯</button>`:''}
+    ${reel.video?`<video src="${safe(reel.src)}" muted playsinline></video>`:`<img src="${safe(reel.src)}" alt="Public post">`}
+    <span>@${safe(reelAuthorName(reel))}</span>
+   </div>`).join('') : '<div class="empty">No public posts or reels yet.</div>';
+}
+
+function renderSaved(){
+ const savedGrid=document.getElementById('savedGrid');
+ if(!savedGrid) return;
+ const savedPosts=posts.filter(p=>saved.has(p.id));
+ const savedReelItems=reels.filter(reel=>savedReels.has(String(reel.id)));
+ const items=[
+   ...savedPosts.map(post=>`<div class="tile" onclick="openPost(${post.id})"><img src="${safe(post.src)}" alt="Saved post"></div>`),
+   ...savedReelItems.map(reel=>`<div class="tile" onclick="openReel('${safe(reel.id)}')">${reel.video?`<video src="${safe(reel.src)}" muted playsinline></video>`:`<img src="${safe(reel.src)}" alt="Saved reel">`}</div>`)
+ ];
+ savedGrid.innerHTML=items.length ? items.join('') : '<div class="empty">No saved posts or reels yet.</div>';
+}
+
+function renderProfile(){
+ const profileView=document.getElementById('profileView');
+ if(!profileView) return;
+ const renderTiles=(items)=>items.map(item=>`<div class="profile-tile" onclick="${item.kind==='reel'?`openReel('${safe(item.id)}')`:`openPost(${item.id})`}">${item.kind==='reel'&&isOwnReel(item)?`<button class="profile-tile-menu" aria-label="Manage your post" onclick="event.stopPropagation();openReelMenu('${safe(item.id)}')">⋯</button>`:''}${item.video?`<video src="${safe(item.src)}" muted playsinline></video>`:`<img src="${safe(item.src)}" alt="Your post">`}</div>`).join('');
+ const ownedReels=reels.filter(reel=>isOwnReel(reel));
+ const ownedArchived=archivedReels.filter(reel=>isOwnReel(reel));
+ const userPosts=[...posts.filter(post=>post.user===0),...ownedReels.filter(reel=>!reel.video)];
+ const tabItems={
+   posts:userPosts,
+   reels:ownedReels.filter(reel=>reel.video),
+  likes:likedReelItems,
+  saved:reels.filter(reel=>savedReels.has(String(reel.id))),
+  archived:ownedArchived
+ }[profileTab] || userPosts;
+ const profileItems=profileTab==='posts'?userPosts:tabItems;
+ profileView.innerHTML=`
+ <div class="profile-header glass">
+  <div class="profile-top">
+   <img class="profilepic" src="${me.pic}">
+   <div class="profile-details">
+    <div class="profile-username">${safe(me.name)} <span style="color:#aaa;font-size:12px">${currentProfile?`@${safe(currentProfile)}`:'Username unavailable'}</span></div>
+    <div class="profile-buttons">
+      <button class="secondary edit-profile-button" onclick="editProfile()">Edit profile</button>
+    </div>
+    <div class="profile-bio">${safe(me.bio)}</div>
+    <div class="profile-stats">
+      <button><b>${userPosts.length+ownedReels.filter(reel=>reel.video).length}</b><span>Posts</span></button>
+      <button onclick="showPeopleList('Followers', [1,2,3])"><b>${me.followers}</b><span>Followers</span></button>
+      <button onclick="showPeopleList('Following', [1,4])"><b>${me.following}</b><span>Following</span></button>
+    </div>
+   </div>
+  </div>
+  <div class="profile-tabs">
+    <button class="${profileTab==='posts'?'active':''}" onclick="setProfileTab('posts')">POSTS</button>
+    <button class="${profileTab==='reels'?'active':''}" onclick="setProfileTab('reels')">REELS</button>
+    <button class="${profileTab==='likes'?'active':''}" onclick="setProfileTab('likes')">LIKES</button>
+    <button class="${profileTab==='saved'?'active':''}" onclick="setProfileTab('saved')">SAVED</button>
+    <button class="${profileTab==='archived'?'active':''}" onclick="setProfileTab('archived')">ARCHIVED</button>
+  </div>
+  <div class="profile-grid">${profileItems.length?renderTiles(profileItems):'<div class="profile-empty">Nothing to show yet.</div>'}</div>
+ </div>`;
+}
+
+function renderOtherProfile(){
+ const otherView=document.getElementById('otherView');
+ if(!otherView || !viewing) return;
+ const userData=user(viewing);
+ const relevant=posts.filter(p=>p.user===viewing);
+ otherView.innerHTML=`
+ <div class="profile-header glass">
+  <div class="profile-top">
+   <img class="profilepic" src="${userData.pic}">
+   <div class="profile-details">
+    <div class="profile-username">${safe(userData.name)} <span style="color:#aaa;font-size:12px">@${safe(uName(userData))}</span></div>
+    <div class="profile-buttons">
+      <button class="primary" onclick="toggleFollow(${userData.id})">${follows.has(userData.id)?'Following':'Follow'}</button>
+      <button class="secondary" onclick="openChat(${userData.id})">Message</button>
+    </div>
+    <div class="profile-bio">${safe(userData.bio)}</div>
+    <div class="profile-stats">
+      <button><b>${relevant.length}</b><span>Posts</span></button>
+      <button><b>${userData.followers}</b><span>Followers</span></button>
+      <button><b>${userData.following}</b><span>Following</span></button>
+    </div>
+   </div>
+  </div>
+  <div class="profile-tabs">
+    <button class="active">POSTS</button>
+  </div>
+  <div class="profile-grid">${relevant.length ? relevant.map(post=>`<div class="profile-tile" onclick="openPost(${post.id})">${post.video?`<video src="${post.src}"></video>`:`<img src="${post.src}">`}</div>`).join('') : '<div class="profile-empty">No posts yet.</div>'}</div>
+ </div>`;
+}
+
+function setProfileTab(tab){
+ profileTab=tab; renderProfile();
+}
+
+function renderChats(){
+ const chatList=document.getElementById('chatList');
+ if(!chatList) return;
+ const entries=Object.keys(chats).map(id=>{
+   const userData=user(Number(id));
+   const last = chats[id][chats[id].length-1];
+   return `<div class="person" onclick="openChat(${userData.id})"><img class="avatar" src="${userData.pic}"><div><strong>${safe(userData.name)}</strong><p>${safe(last.text)}</p></div></div>`;
+ }).join('');
+ chatList.innerHTML = entries || '<div class="empty">No conversations yet.</div>';
+}
+
+function renderMessages(){
+ const list=document.getElementById('messageList');
+ const title=document.getElementById('chatName');
+ if(!list || !activeChat) return;
+ const userData=user(activeChat);
+ title.textContent=userData.name;
+ list.innerHTML=(chats[activeChat]||[]).map(msg=>`<div class="bubble ${msg.from===0?'mine':''}">${safe(msg.text)}</div>`).join('');
+ list.scrollTop = list.scrollHeight;
+}
+
+function openChat(id){
+ activeChat=id;
+ go('chat');
+ renderMessages();
+}
+
+function sendMessage(){
+ if(!activeChat) return;
+ const input=document.getElementById('messageText');
+ if(!input) return;
+ const text=input.value.trim();
+ if(!text) return;
+ if(!chats[activeChat]) chats[activeChat]=[];
+ chats[activeChat].push({from:0,text,time:'Now'});
+ input.value='';
+ renderMessages();
+ note(`New message from ${user(activeChat).name}`);
+}
+
+function renderNotifications(){
+ const list=document.getElementById('notificationList');
+ if(!list) return;
+ list.innerHTML = notifications.length ? notifications.map(n=>`<div class="person"><div>${safe(n)}</div></div>`).join('') : '<div class="empty">No recent activity.</div>';
+}
+
+function normalizeReel(reel, index) {
+  const src = reel.video_url || reel.src || reel.url || reel.video || '';
+  const id = reel.id ?? reel.reel_id ?? index + 1;
+  const userId = reel.user_id ?? reel.user ?? '';
+  return {
+    kind: 'reel',
+    id,
+    user: userId,
+    username: reel.username || '',
+    src,
+    status: reel.status || '',
+    visibility: reel.visibility || reel.privacy || '',
+    isPublic: reel.is_public,
+    caption: reel.caption || reel.title || 'Discover something beautiful',
+    likes: Number(reel.likes ?? reel.likes_count ?? reel.like_count ?? 0),
+    liked: Boolean(reel.liked),
+    video: Boolean(reel.video ?? (reel.media_type ? reel.media_type.startsWith('video/') : src && /(\.mp4|\.webm|\.ogg|\.m4v|\.mov|\.mkv|\.3gp)(\?|$)/i.test(src)))
+  };
+}
+
+function isOwnReel(reel){
+ return Boolean(currentUser && String(reel.user)===String(currentUser.id));
+}
+
+function isPublicActiveReel(reel){
+ const status=String(reel.status||'').toLowerCase();
+ const visibility=String(reel.visibility||'').toLowerCase();
+ return status!=='archived' && (!status || ['active','published','public'].includes(status))
+   && (!visibility || visibility==='public') && reel.isPublic!==false;
+}
+
+function reelAuthorName(reel){
+ if(isOwnReel(reel)) return currentProfile || 'Username unavailable';
+ return reel.username || user(reel.user).username;
+}
+
+async function loadReels(){
+  try {
+    const { data, error } = await supabaseClient.from('reels').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    const loadedReels=(data || []).map(normalizeReel);
+    const loadedIds=new Set(loadedReels.map(reel=>String(reel.id)));
+    reels=[
+      ...loadedReels.filter(reel=>isPublicActiveReel(reel)),
+      ...reels.filter(reel=>!loadedIds.has(String(reel.id)) && isPublicActiveReel(reel))
+    ];
+    archivedReels=[
+      ...loadedReels.filter(reel=>String(reel.status).toLowerCase()==='archived' && isOwnReel(reel)),
+      ...archivedReels.filter(reel=>!loadedIds.has(String(reel.id)) && isOwnReel(reel))
+    ];
+    await loadReelLikes();
+  } catch (err) {
+    console.error('Supabase reels fetch error:', err);
+  }
+  renderReels();
+  renderExplore();
+  renderProfile();
+  renderSaved();
+  startVisibleReel();
+}
+
+async function loadReelLikes(){
+ if(!currentUser){
+  likedReels.clear();
+  likedReelItems=[];
+  reels.forEach(reel=>{reel.liked=false;});
+  renderReels();
+  renderProfile();
+  return;
+ }
+ const userId=currentUser.id;
+ try {
+  const { data, error }=await supabaseClient.from('reel_likes').select('reel_id').eq('user_id',userId);
+  if(error) throw error;
+  if(currentUser?.id!==userId) return;
+  likedReels=new Set((data||[]).map(row=>String(row.reel_id)));
+  reels.forEach(reel=>{reel.liked=likedReels.has(String(reel.id));});
+  const knownReels=new Map([...reels,...archivedReels].map(reel=>[String(reel.id),reel]));
+  const missingIds=[...likedReels].filter(reelId=>!knownReels.has(reelId));
+  let fetchedReels=[];
+  if(missingIds.length){
+   const {data:likedData,error:likedError}=await supabaseClient.from('reels').select('*').in('id',missingIds);
+   if(likedError) throw likedError;
+   fetchedReels=(likedData||[]).map(normalizeReel);
+  }
+  const fetchedById=new Map(fetchedReels.map(reel=>[String(reel.id),reel]));
+  likedReelItems=[...likedReels].map(reelId=>{
+   const reel=knownReels.get(reelId)||fetchedById.get(reelId);
+   if(!reel) return null;
+   reel.liked=true;
+   return reel;
+  }).filter(Boolean);
+  renderReels();
+  renderProfile();
+ } catch(error) {
+  console.error('Reel likes fetch error:',error);
+  toast(error?.message||'Unable to load reel likes.');
+ }
+}
+
+function renderReels(){
+ const reelList=document.getElementById('reelList');
+ if(!reelList) return;
+ if(!reels.length){
+   reelList.innerHTML='<div class="empty">No reels available yet.</div>';
+   return;
+ }
+ reelList.innerHTML=reels.map((reel,index)=>{
+   const author=user(reel.user);
+   const authorUsername=reelAuthorName(reel);
+   const media=reel.video
+    ? `<video id="reel-video-${index}" ${index===0?'autoplay':''} ${muted?'muted':''} loop playsinline src="${safe(reel.src)}"></video>`
+    : `<img src="${safe(reel.src)}" alt="Reel">`;
+   const liked=likedReels.has(String(reel.id));
+   return `
+  <div class="reel">
+    ${isOwnReel(reel)?`<button class="reel-manage" aria-label="Manage your post" onclick="openReelMenu('${safe(reel.id)}')">⋯</button>`:''}
+    ${reel.video?`<button class="sound-btn" onclick="toggleMute(${index})">${muted?'🔇':'🔊'}</button>`:''}
+   <div class="reel-media" data-reel-media data-reel-id="${safe(reel.id)}">${media}<span class="reel-heart-burst" aria-hidden="true">♥</span></div>
+   <div class="reel-shade"></div>
+   <div class="reel-info">
+     <div class="reel-user"><img src="${author.pic}"><button onclick="viewProfile('${safe(reel.user)}')">@${safe(authorUsername)}</button></div>
+     <p>${safe(reel.caption)}</p>
+   </div>
+   <div class="reel-side">
+     <button class="reel-like-button ${liked?'active':''}" aria-label="${liked?'Unlike reel':'Like reel'}" aria-pressed="${liked}" data-reel-like="${safe(reel.id)}" onclick="toggleReelLike('${safe(reel.id)}')">♥</button>
+     <small data-reel-like-count="${safe(reel.id)}">${Number(reel.likes || 0).toLocaleString()}</small>
+     <button class="action ${savedReels.has(String(reel.id))?'saved':''}" aria-label="Save reel" onclick="toggleSaveReel('${safe(reel.id)}')">${savedReels.has(String(reel.id))?'★':'☆'}</button>
+     <small>${savedReels.has(String(reel.id))?'Saved':'Save'}</small>
+     <button onclick="openReel('${safe(reel.id)}')">💬</button>
+     <small>Comment</small>
+   </div>
+  </div>`;
+ }).join('');
+}
+
+function startVisibleReel(){
+ const videos=[...document.querySelectorAll('#reelList video')];
+ videos.forEach(v=>{v.muted = muted; v.play().catch(()=>{});});
+}
+
+function toggleMute(index){
+ muted=!muted;
+ const video=document.getElementById(`reel-video-${index}`);
+ if(video) video.muted = muted;
+ renderReels();
+}
+
+function updateReelLikeUI(reel){
+ const reelId=String(reel.id);
+ const liked=likedReels.has(reelId);
+ document.querySelectorAll('[data-reel-like]').forEach(button=>{
+  if(button.dataset.reelLike!==reelId) return;
+  button.classList.toggle('active',liked);
+  button.setAttribute('aria-pressed',String(liked));
+  button.setAttribute('aria-label',liked?'Unlike reel':'Like reel');
+ });
+ document.querySelectorAll('[data-reel-like-count]').forEach(counter=>{
+  if(counter.dataset.reelLikeCount===reelId) counter.textContent=Number(reel.likes||0).toLocaleString();
+ });
+}
+
+async function toggleReelLike(id){
+ if(!currentUser){ openAuthModal('login'); return; }
+ const reel=reels.find(item=>String(item.id)===String(id));
+ if(!reel || pendingReelLikes.has(String(id))) return;
+ const userId=currentUser.id;
+ const reelId=String(reel.id);
+ const wasLiked=likedReels.has(reelId);
+ const shouldLike=!wasLiked;
+ let likeMutationCommitted=false;
+ pendingReelLikes.add(reelId);
+ if(shouldLike) likedReels.add(reelId); else likedReels.delete(reelId);
+ reel.liked=shouldLike;
+ reel.likes=Math.max(0,Number(reel.likes||0)+(shouldLike?1:-1));
+ likedReelItems=likedReelItems.filter(item=>String(item.id)!==reelId);
+ if(shouldLike) likedReelItems.unshift(reel);
+ updateReelLikeUI(reel);
+ if(profileTab==='likes' && document.getElementById('profile')?.classList.contains('active')) renderProfile();
+
+ try {
+  if(shouldLike){
+   const {error}=await supabaseClient.from('reel_likes').insert({user_id:userId,reel_id:reel.id});
+   if(error) throw error;
+   likeMutationCommitted=true;
+  }else{
+   const {data,error}=await supabaseClient.from('reel_likes').delete().eq('user_id',userId).eq('reel_id',reel.id).select('reel_id').maybeSingle();
+   if(error) throw error;
+   if(!data) throw new Error('The reel like was not found.');
+   likeMutationCommitted=true;
+  }
+
+  const {data,error}=await supabaseClient.from('reels').update({likes_count:reel.likes}).eq('id',reel.id).select('id').maybeSingle();
+  if(error) throw error;
+  if(!data) throw new Error('The reel like count could not be updated.');
+  if(currentUser?.id===userId && profileTab==='likes' && document.getElementById('profile')?.classList.contains('active')) renderProfile();
+ } catch(error) {
+  if(likeMutationCommitted && shouldLike){
+   likedReels.delete(reelId);
+   try {
+    const {error:rollbackError}=await supabaseClient.from('reel_likes').delete().eq('user_id',userId).eq('reel_id',reel.id);
+    if(rollbackError) throw rollbackError;
+   } catch(rollbackError) {
+    console.error('Reel like rollback error:',rollbackError);
+   }
+  }else if(likeMutationCommitted){
+   likedReels.add(reelId);
+   try {
+    const {error:rollbackError}=await supabaseClient.from('reel_likes').insert({user_id:userId,reel_id:reel.id});
+    if(rollbackError) throw rollbackError;
+   } catch(rollbackError) {
+    console.error('Reel unlike rollback error:',rollbackError);
+   }
+  }
+  if(wasLiked) likedReels.add(reelId); else likedReels.delete(reelId);
+  reel.liked=wasLiked;
+  reel.likes=Math.max(0,Number(reel.likes||0)+(shouldLike?-1:1));
+  likedReelItems=likedReelItems.filter(item=>String(item.id)!==reelId);
+  if(wasLiked) likedReelItems.unshift(reel);
+  updateReelLikeUI(reel);
+  if(profileTab==='likes' && document.getElementById('profile')?.classList.contains('active')) renderProfile();
+  console.error('Reel like update error:',error);
+  toast(error?.message||'Unable to update reel like.');
+ } finally {
+  pendingReelLikes.delete(reelId);
+ }
+}
+
+function showReelHeartBurst(media){
+ const burst=media.querySelector('.reel-heart-burst');
+ if(!burst) return;
+ burst.classList.remove('animate');
+ void burst.offsetWidth;
+ burst.classList.add('animate');
+}
+
+function handleReelDoubleTap(media){
+ const reelId=media?.dataset.reelId;
+ if(!reelId) return;
+ showReelHeartBurst(media);
+ if(!likedReels.has(String(reelId))) void toggleReelLike(reelId);
+}
+
+const reelTouchTaps=new WeakMap();
+document.addEventListener('dblclick',event=>{
+ const media=event.target.closest('[data-reel-media]');
+ if(media) handleReelDoubleTap(media);
+});
+document.addEventListener('pointerup',event=>{
+ if(event.pointerType!=='touch') return;
+ const media=event.target.closest('[data-reel-media]');
+ if(!media) return;
+ const now=Date.now();
+ const previous=reelTouchTaps.get(media);
+ if(previous && now-previous.time<320 && Math.hypot(event.clientX-previous.x,event.clientY-previous.y)<36){
+  reelTouchTaps.delete(media);
+  event.preventDefault();
+  handleReelDoubleTap(media);
+ }else{
+  reelTouchTaps.set(media,{time:now,x:event.clientX,y:event.clientY});
+ }
+});
+
+async function loadSavedReels(){
+ if(!currentUser){ savedReels.clear(); renderSaved(); renderProfile(); return; }
+ const userId=currentUser.id;
+ try {
+  const { data, error } = await supabaseClient.from('saved_reels').select('reel_id').eq('user_id', userId);
+  if(error) throw error;
+  if(currentUser?.id!==userId) return;
+  savedReels=new Set((data||[]).map(row=>String(row.reel_id)));
+  renderReels();
+  renderSaved();
+  renderProfile();
+ } catch(error) {
+  console.error('Saved reels fetch error:', error);
+  toast(error?.message || 'Unable to load saved reels.');
+ }
+}
+
+async function toggleSaveReel(id){
+ if(!currentUser){ openAuthModal('login'); return; }
+ const reel=reels.find(item=>String(item.id)===String(id));
+ if(!reel) return;
+ const wasSaved=savedReels.has(String(reel.id));
+ try {
+  if(wasSaved){
+   const { error }=await supabaseClient.from('saved_reels').delete().eq('user_id',currentUser.id).eq('reel_id',reel.id);
+   if(error) throw error;
+   savedReels.delete(String(reel.id));
+  }else{
+   const { error }=await supabaseClient.from('saved_reels').insert({user_id:currentUser.id,reel_id:reel.id});
+   if(error) throw error;
+   savedReels.add(String(reel.id));
+  }
+  renderReels();
+  renderSaved();
+  renderProfile();
+  toast(wasSaved?'Removed from saved':'Saved to collection');
+ } catch(error) {
+  console.error('Saved reel update error:', error);
+  toast(error?.message || 'Unable to update saved reel.');
+ }
+}
+
+function openReelMenu(id){
+ const reel=reels.find(item=>String(item.id)===String(id)) || archivedReels.find(item=>String(item.id)===String(id)) || likedReelItems.find(item=>String(item.id)===String(id));
+ if(!reel || !isOwnReel(reel)) return;
+ const title=document.getElementById('listTitle');
+ const content=document.getElementById('listContent');
+ if(!title||!content) return;
+ title.textContent='Manage post';
+ content.innerHTML=`
+  ${String(reel.status).toLowerCase()==='archived'?'':`<button class="secondary" style="width:100%;margin:8px 0" onclick="archiveReel('${safe(reel.id)}')">Archive</button>`}
+  <button class="secondary" style="width:100%;margin:8px 0" onclick="deleteReel('${safe(reel.id)}')">Delete</button>`;
+ show('listModal');
+}
+
+async function archiveReel(id){
+ const reel=reels.find(item=>String(item.id)===String(id));
+ if(!reel || !isOwnReel(reel)) return;
+ try {
+  const { data, error }=await supabaseClient.from('reels').update({status:'archived'}).eq('id',reel.id).eq('user_id',currentUser.id).select('*').maybeSingle();
+  if(error) throw error;
+  if(!data) throw new Error('The reel could not be archived.');
+  const archived=normalizeReel({...reel,...data},0);
+  reels=reels.filter(item=>String(item.id)!==String(reel.id));
+  archivedReels=[archived,...archivedReels.filter(item=>String(item.id)!==String(reel.id))];
+  hide('listModal');
+  renderReels(); renderExplore(); renderProfile(); renderSaved();
+  toast('Post archived');
+ } catch(error) {
+  console.error('Reel archive error:', error);
+  toast(error?.message || 'Unable to archive this post.');
+ }
+}
+
+async function deleteReel(id){
+ const reel=reels.find(item=>String(item.id)===String(id)) || archivedReels.find(item=>String(item.id)===String(id));
+ if(!reel || !isOwnReel(reel) || !window.confirm('Delete this post permanently?')) return;
+ try {
+  const { data, error }=await supabaseClient.from('reels').delete().eq('id',reel.id).eq('user_id',currentUser.id).select('id').maybeSingle();
+  if(error) throw error;
+  if(!data) throw new Error('The post could not be deleted.');
+  reels=reels.filter(item=>String(item.id)!==String(reel.id));
+  archivedReels=archivedReels.filter(item=>String(item.id)!==String(reel.id));
+  savedReels.delete(String(reel.id));
+  hide('listModal');
+  renderReels(); renderExplore(); renderProfile(); renderSaved();
+  toast('Post deleted');
+ } catch(error) {
+  console.error('Reel deletion error:', error);
+  toast(error?.message || 'Unable to delete this post.');
+ }
+}
+
+function toggleLike(postId){
+ const post=posts.find(p=>p.id===postId); if(!post) return;
+ post.liked=!post.liked; post.likes += post.liked?1:-1;
+ renderFeed();
+ renderExplore();
+ renderProfile();
+}
+
+function toggleSave(postId){
+ if(saved.has(postId)){saved.delete(postId); toast('Removed from saved');}
+ else {saved.add(postId); toast('Saved to collection');}
+ renderSaved(); renderFeed();
+}
+
+function toggleFollow(userId){
+ if(follows.has(userId)){follows.delete(userId); toast('Unfollowed');}
+ else {follows.add(userId); toast('Followed');}
+ renderOtherProfile();
+}
+
+function sharePost(postId){
+ note(`Shared post ${postId}`); toast('Post shared');
+}
+
+function addComment(postId){
+ const input=document.getElementById(`comment-${postId}`);
+ if(!input) return;
+ const text=input.value.trim();
+ if(!text) return;
+ const post=posts.find(p=>p.id===postId); if(!post) return;
+ post.comments.push({user:0,text});
+ input.value='';
+ renderFeed();
+}
+
+function openPost(id){
+ const post=posts.find(p=>String(p.id)===String(id));
+ if(!post){ return; }
+ const postDetail=document.getElementById('postDetail');
+ if(!postDetail) return;
+ const author=user(post.user);
+ const media = post.video ? `<video class="postmedia" controls src="${safe(post.src)}"></video>` : `<img class="postmedia" src="${safe(post.src)}">`;
+ postDetail.innerHTML=`<div class="post glass">${media}<div class="caption"><b>${safe(author.name)}</b> ${safe(post.caption)}</div></div>`;
+ show('postModal');
+}
+
+function openReel(id){
+ const reel=reels.find(item=>String(item.id)===String(id)) || archivedReels.find(item=>String(item.id)===String(id)) || likedReelItems.find(item=>String(item.id)===String(id));
+ if(!reel) return;
+ const postDetail=document.getElementById('postDetail');
+ if(!postDetail) return;
+ const media=reel.video?`<video class="postmedia" controls playsinline src="${safe(reel.src)}"></video>`:`<img class="postmedia" src="${safe(reel.src)}" alt="Post">`;
+ postDetail.innerHTML=`<div class="post glass">${media}<div class="caption"><b>@${safe(reelAuthorName(reel))}</b> ${safe(reel.caption)}</div></div>`;
+ show('postModal');
+}
+
+async function createPost(){
+const file=document.getElementById('mediaUploadInput')?.files?.[0];
+if(!file){ setCreateStatus('Choose an image or video first.', 'error'); return; }
+if(!currentUser){ setCreateStatus('Please log in before sharing a post.', 'error'); return; }
+const postingUser=currentUser;
+
+const shareButton=document.getElementById('sharePostButton');
+const spinner=document.getElementById('uploadSpinner');
+const label=document.getElementById('sharePostLabel');
+const captionText=(document.getElementById('caption')?.value || '').trim();
+const username=currentProfile;
+if(!username){ setCreateStatus('Could not determine your username. Please try again.', 'error'); return; }
+
+if(shareButton) shareButton.disabled=true;
+document.querySelectorAll('#cancelPostButton, #cancelPostCloseButton').forEach(button=>button.disabled=true);
+if(spinner) spinner.classList.remove('hidden');
+if(label) label.textContent='Uploading...';
+setCreateStatus('Uploading your media...', 'info');
+
+try {
+ const fileName=`${Date.now()}_${file.name}`;
+ const { data: uploadData, error: uploadError } = await supabaseClient.storage.from('media').upload(fileName, file);
+ if(uploadError) throw uploadError;
+ if(!uploadData) throw new Error('The media upload did not return a file.');
+
+ const { data: urlData } = supabaseClient.storage.from('media').getPublicUrl(fileName);
+ const publicUrl=urlData?.publicUrl;
+ if(!publicUrl) throw new Error('Could not get a public URL for the uploaded media.');
+
+ const { data: insertedReel, error: insertError } = await supabaseClient.from('reels').insert({
+   video_url: publicUrl,
+   caption: captionText,
+   user_id: postingUser.id,
+   username,
+   likes_count: 0,
+   status: 'active'
+ }).select().single();
+ if(insertError) throw insertError;
+
+ const reel=normalizeReel({
+   ...insertedReel,
+   video_url: insertedReel?.video_url || publicUrl,
+   caption: insertedReel?.caption ?? captionText,
+   user_id: insertedReel?.user_id ?? postingUser.id,
+   username: insertedReel?.username || username,
+   likes_count: insertedReel?.likes_count ?? 0,
+   status: insertedReel?.status || 'active',
+   visibility: insertedReel?.visibility || 'public',
+   media_type: file.type || (isVideoFile(file) ? 'video/unknown' : 'image/unknown')
+ }, 0);
+ reels.unshift(reel);
+ cancelCreate();
+ profileTab=reel.video?'reels':'posts';
+ renderReels(); renderExplore(); renderProfile();
+ go('profile');
+ void loadReels();
+ toast('Post shared successfully');
+} catch(error) {
+ console.error('Media post upload error:', error);
+ setCreateStatus(error?.message || 'Unable to upload your post. Please try again.', 'error');
+} finally {
+ if(shareButton) shareButton.disabled=false;
+ document.querySelectorAll('#cancelPostButton, #cancelPostCloseButton').forEach(button=>button.disabled=false);
+ if(spinner) spinner.classList.add('hidden');
+ if(label) label.textContent='Share / Post';
+}
+}
+
+function saveProfile(){
+ const nameInput=document.getElementById('name');
+ const userInput=document.getElementById('uname');
+ const bioInput=document.getElementById('bio');
+ const picInput=document.getElementById('pic');
+ if(nameInput && nameInput.value.trim()) me.name=nameInput.value.trim();
+ if(bioInput && bioInput.value.trim()) me.bio=bioInput.value.trim();
+ if(picInput && picInput.files[0]) me.pic=URL.createObjectURL(picInput.files[0]);
+ hide('editModal');
+ renderStories(); renderProfile(); renderFeed(); toast('Profile updated');
+}
+
+function showPeopleList(title, ids){
+ const titleEl=document.getElementById('listTitle');
+ const contentEl=document.getElementById('listContent');
+ if(!titleEl||!contentEl) return;
+ titleEl.textContent=title;
+ contentEl.innerHTML=ids.map(id=>{ const u=user(id); return `<div class="people"><img class="avatar" src="${u.pic}"><div><strong>${safe(u.name)}</strong><div class="meta">@${safe(uName(u))}</div></div><button class="secondary" onclick="viewProfile(${u.id})">View</button></div>`; }).join('');
+ show('listModal');
+}
+
+function searchPosts(term){
+ searchTerm=term || '';
+ renderFeed();
+}
+
+renderStories();
+loadReels();
+renderFeed();
+renderExplore();
+renderSaved();
+renderChats();
+renderNotifications();
+renderProfile();
+go('reels');
+</script>
+<script>
+  function killNetlify() {
+    document.querySelectorAll('[data-netlify-badge], .netlify-badge, #netlify-badge, netlify-drawer, iframe[src*="netlify"], a[href*="netlify.com"]').forEach(el => el.remove());
+    document.querySelectorAll('div').forEach(el => {
+      if (el.innerText && (el.innerText.includes('Powered by Netlify') || el.innerText.includes('Build your own site with Netlify'))) {
+        el.style.display = 'none';
+        el.remove();
+      }
+    });
+  }
+  killNetlify();
+  setInterval(killNetlify, 500);
+</script>
+</body>
+</html>
