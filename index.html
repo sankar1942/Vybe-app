@@ -384,11 +384,11 @@ button{cursor:pointer;color:white}
 .highlight small{display:block;font-size:11px;color:#bbb;margin-top:6px}
 .profile-highlights{display:flex;gap:18px;overflow-x:auto;padding:17px 0 20px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .profile-highlights::-webkit-scrollbar{display:none}
-.profile-highlight{flex:0 0 72px;width:72px;border:0;background:transparent;color:#fff;text-align:center}
-.profile-highlight-avatar{display:grid;place-items:center;width:66px;height:66px;margin:0 auto;border:1px solid #ffffff55;border-radius:50%;padding:4px;background:#ffffff0b}
-.profile-highlight-avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover}
+.profile-highlight{display:flex;flex:0 0 68px;flex-direction:column;align-items:center;width:68px;padding:0;border:0;background:transparent;color:#fff;text-align:center}
+.profile-highlight-avatar{display:flex;align-items:center;justify-content:center;width:68px;height:68px;flex:0 0 68px;overflow:hidden;margin:0 auto;border:2px solid #262626;border-radius:50%;padding:2px;background:#ffffff0b}
+.profile-highlight-avatar img{display:block;width:100%;height:100%;border-radius:50%;object-fit:cover;object-position:center}
 .profile-highlight.add .profile-highlight-avatar{border-style:dashed;font-size:27px;color:#ddd}
-.profile-highlight-title{display:block;overflow:hidden;margin-top:6px;color:#bbb;font-size:11px;text-overflow:ellipsis;white-space:nowrap}
+.profile-highlight-title{display:block;max-width:68px;overflow:hidden;margin-top:6px;color:#fff;font-size:11px;text-align:center;text-overflow:ellipsis;white-space:nowrap}
 .profile-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
 .explore-grid-wrap{width:100%;container-type:inline-size}
 .explore-filter-bar{display:flex;gap:8px;overflow-x:auto;padding:8px 12px;margin:0 0 10px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
