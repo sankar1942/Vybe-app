@@ -4031,7 +4031,7 @@ async function markActivityNotificationsRead(){
  }
 }
 
-async function createActivityNotification(recipientId,type,{reelId,commentText}={}){
+async function createActivityNotification(recipientId,type,{reelId,commentText,silent=false}={}){
  if(!currentUser||!recipientId||!isValidUserUuid(String(recipientId))||String(recipientId)===String(currentUser.id)) return;
  const payload={receiver_id:recipientId,sender_id:currentUser.id,type,is_read:false};
  if(reelId!==undefined&&reelId!==null) payload.post_id=reelId;
@@ -4047,8 +4047,10 @@ async function createActivityNotification(recipientId,type,{reelId,commentText}=
    }
   }
  } catch(error) {
-  console.error(`${type} notification insert error:`,error);
-  toast(error?.message||'Your action succeeded, but its notification could not be sent.');
+  if(!silent){
+   console.error(`${type} notification insert error:`,error);
+   toast(error?.message||'Your action succeeded, but its notification could not be sent.');
+  }
  }
 }
 
@@ -4401,12 +4403,15 @@ function renderComments(comments){
   const id=String(comment.id||'');
   const liked=commentLikes.has(id);
   const count=commentLikeCounts.get(id)||0;
-  const row=`<article class="comment-item ${depth?'reply':''}" data-comment-id="${safe(id)}" style="${depth>1?`margin-left:${Math.min(depth,5)*42}px`:''}"><img class="comment-avatar" src="${safe(avatarSrc(author.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'" alt=""><div class="comment-content"><span class="comment-author">${safe(author.username)}</span>${renderTaggedText(comment.comment_text || comment.text || '')}<time class="comment-time">${safe(formatCommentTime(comment.created_at))}</time><div class="comment-actions"><button class="comment-like ${liked?'liked':''}" type="button" aria-label="${liked?'Unlike':'Like'} comment" aria-pressed="${liked}"   onclick="toggleCommentLike('${safe(id)}')">♥ <span>${Number(count).toLocaleString()}</span></button><button type="button" onclick="replyToComment('${safe(id)}','${safe(author.username)}')">Reply</button></div></div></article>`;
+  const row=`<article class="comment-item ${depth?'reply':''}" data-comment-id="${safe(id)}" style="${depth>1?`margin-left:${Math.min(depth,5)*42}px`:''}"><img class="comment-avatar" src="${safe(avatarSrc(author.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'" alt=""><div class="comment-content"><span class="comment-author">${safe(author.username)}</span>${renderTaggedText(comment.comment_text || comment.text || '')}<time class="comment-time">${safe(formatCommentTime(comment.created_at))}</time><div class="comment-actions"><button class="comment-like ${liked?'liked':''}" type="button" aria-label="${liked?'Unlike':'Like'} comment" aria-pressed="${liked}" onclick="toggleCommentLike('${safe(id)}')">♥ <span>${Number(count).toLocaleString()}</span></button><button type="button" data-reply-comment-id="${safe(id)}" data-reply-username="${safe(author.username)}">Reply</button></div></div></article>`;
   const replies=(byParent.get(id)||[]).map(reply=>renderComment(reply,depth+1)).join('');
   return row+replies;
  };
  const roots=comments.filter(comment=>!comment.parent_id||!comments.some(candidate=>String(candidate.id)===String(comment.parent_id)));
  list.innerHTML=roots.map(comment=>renderComment(comment)).join('');
+ list.querySelectorAll('[data-reply-comment-id]').forEach(button=>button.addEventListener('click',()=>{
+  replyToComment(button.dataset.replyCommentId,button.dataset.replyUsername);
+ }));
 }
 
 async function loadCommentLikeState(comments){
@@ -4424,15 +4429,17 @@ async function loadCommentLikeState(comments){
 }
 
 function replyToComment(commentId,username){
- activeCommentParentId=String(commentId);
+ const candidate=String(commentId??'').trim();
+ const parent=activeComments.find(comment=>comment.id!==null&&comment.id!==undefined&&String(comment.id)===candidate);
+ activeCommentParentId=parent?candidate:null;
  const input=document.getElementById('commentsInput');
  const replyLabel=document.getElementById('commentReplyingTo');
  if(input){
-  input.value=`@${username} `;
-  input.placeholder=`Replying to @${username}...`;
+  input.value=parent?`@${username} `:'';
+  input.placeholder=parent?`Replying to @${username}...`:`Add a comment as @${currentProfile || me.username || 'user'}...`;
   input.focus();
  }
- if(replyLabel){replyLabel.hidden=false;replyLabel.textContent=`Replying to @${username}`;}
+ if(replyLabel){replyLabel.hidden=!parent;replyLabel.textContent=parent?`Replying to @${username}`:'';}
 }
 
 async function toggleCommentLike(commentId){
@@ -4570,8 +4577,11 @@ async function submitReelComment(event){
  if(!text || activeCommentReelId===null || commentsSubmitting) return;
  if(!currentUser){ openAuthModal('login'); return; }
  const targetReelId=String(activeCommentReelId);
- const parentId=activeCommentParentId;
- const targetParentComment=activeComments.find(comment=>String(comment.id)===String(parentId));
+ const parentCandidate=String(activeCommentParentId??'').trim();
+ const targetParentComment=parentCandidate
+  ? activeComments.find(comment=>comment.id!==null&&comment.id!==undefined&&String(comment.id)===parentCandidate)
+  : null;
+ const parentId=targetParentComment?parentCandidate:null;
  commentsSubmitting=true;
  if(button) button.disabled=true;
  try {
@@ -4579,7 +4589,7 @@ async function submitReelComment(event){
    reel_id:targetReelId,
    user_id:currentUser.id,
    comment_text:text,
-   ...(parentId?{parent_id:parentId}:{})
+   ...(parentId!==null?{parent_id:parentId}:{})
   }).select('*').single();
   if(error) throw error;
   if(!data) throw new Error('The comment was not returned after saving.');
