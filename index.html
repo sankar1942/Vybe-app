@@ -220,6 +220,33 @@ button{cursor:pointer;color:white}
 .story-seen-empty{padding:18px 0;color:#aaa;text-align:center;font-size:13px}
 .dm-story-preview{display:flex;align-items:center;gap:8px;margin-top:8px;padding:6px;border-radius:10px;background:#ffffff12;color:#ddd;font-size:11px}
 .dm-story-preview img,.dm-story-preview video{width:42px;height:54px;border-radius:6px;object-fit:cover}
+.dm-composer{gap:7px}
+.dm-composer-tools{position:relative;display:flex;align-items:center;gap:6px}
+.dm-tool-button{width:38px;height:38px;flex:0 0 38px;border:1px solid #ffffff24;border-radius:50%;background:#ffffff0b;color:#fff;font-size:18px}
+.dm-tool-button.recording{background:#ff3040;color:#fff}
+.dm-emoji-picker{position:absolute;right:0;bottom:48px;z-index:10;display:grid;grid-template-columns:repeat(5,38px);gap:4px;padding:8px;border:1px solid #ffffff20;border-radius:14px;background:#181818;box-shadow:0 10px 30px #0009}
+.dm-emoji-picker[hidden]{display:none}
+.dm-emoji-picker button{height:36px;border:0;border-radius:8px;background:transparent;font-size:20px}
+.dm-reel-card{display:block;margin-top:7px;padding:10px;border:1px solid #ffffff20;border-radius:10px;background:#ffffff0c;color:#fff;text-decoration:none}
+.dm-reel-card strong{display:block;margin-bottom:4px}
+.dm-action-overlay,.reel-share-overlay{position:fixed;inset:0;z-index:120;display:flex;align-items:flex-end;justify-content:center;background:#0009;opacity:0;visibility:hidden;transition:opacity .2s ease,visibility .2s ease}
+.dm-action-overlay.open,.reel-share-overlay.open{opacity:1;visibility:visible}
+.dm-action-sheet,.reel-share-sheet{width:min(100%,560px);max-height:75vh;overflow:auto;padding:16px 18px calc(18px + env(safe-area-inset-bottom,0px));border-radius:22px 22px 0 0;background:#191a1e;transform:translateY(105%);transition:transform .25s ease}
+.dm-action-overlay.open .dm-action-sheet,.reel-share-overlay.open .reel-share-sheet{transform:translateY(0)}
+.dm-action-sheet button{width:100%;padding:14px;border:0;border-radius:10px;background:transparent;color:#fff;text-align:left;font-weight:650}
+.dm-action-sheet .delete-conversation-action{color:#ff5362}
+.reel-share-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.reel-share-header h2{margin:0;font-size:18px}
+.reel-share-contact{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #ffffff12}
+.reel-share-contact img{width:42px;height:42px;border-radius:50%;object-fit:cover}
+.reel-share-contact span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.reel-share-contact button{padding:8px 15px;border:0;border-radius:18px;background:#fff;color:#111;font-weight:700}
+.comment-item.reply{margin-left:42px}
+.comment-actions{display:flex;align-items:center;gap:14px;margin-top:5px}
+.comment-actions button{padding:0;border:0;background:transparent;color:#aaa;font-size:11px}
+.comment-actions .comment-like{color:#ff4057;font-size:14px}
+.comment-actions .comment-like.liked{color:#ff3040}
+.comment-replying{flex:1;color:#aaa;font-size:11px}
 @media(max-width:600px){.story-stage{width:100vw;height:100dvh;max-height:100dvh}.story-viewer-header{top:26px}}
 .post{border-radius:20px;overflow:hidden;margin-bottom:24px}
 .posthead{display:flex;align-items:center;gap:12px;padding:16px}
@@ -229,6 +256,7 @@ button{cursor:pointer;color:white}
 .more{margin-left:auto;border:0;background:none;font-size:22px}
 .post-media-stage{position:relative;overflow:hidden;background:#050505}
 .postmedia{display:block;width:100%;max-height:570px;object-fit:contain;background:#050505}
+.feed-video-duration{position:absolute;top:10px;left:10px;z-index:2;padding:4px 7px;border-radius:5px;background:#000a;color:#fff;font-size:11px;font-variant-numeric:tabular-nums;pointer-events:none}
 .double-tap-heart{position:absolute;left:50%;top:50%;z-index:6;width:clamp(96px,24vw,180px);height:clamp(96px,24vw,180px);pointer-events:none;transform:translate(-50%,-50%);animation:double-tap-heart-pop 700ms cubic-bezier(.18,.89,.32,1.18) forwards}
 .double-tap-heart svg{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 0 10px #fff9) drop-shadow(0 5px 22px #ff3040b8)}
 .double-tap-heart.reel-heart{width:90px;height:90px}
@@ -364,7 +392,8 @@ button{cursor:pointer;color:white}
 .profile-username{font-size:22px;font-weight:700;overflow-wrap:anywhere}
 .profile-buttons{display:flex;gap:9px;flex-wrap:wrap;margin-top:17px}
 .profile-buttons button{min-width:105px}
-.profile-buttons .edit-profile-button{width:100%;padding:13px 18px}
+.edit-profile-button{display:block;width:100%;padding:8px 0;border-radius:8px;font-weight:600}
+.profile-header>.edit-profile-button{margin-top:12px}
 .profile-bio{font-size:13px;line-height:1.7;margin-top:14px;white-space:pre-line}
 .profile-stats{display:flex;gap:35px;margin-top:20px}
 .profile-stats button{background:none;border:0;color:white;text-align:center}
@@ -687,7 +716,6 @@ button{cursor:pointer;color:white}
  <button class="nav" data-page="explore" onclick="go('explore')">⌕ Discover</button>
  <button class="nav" data-page="messages" onclick="go('messages')">▢ Messages</button>
  <button class="nav" onclick="openCreate()">＋ Create</button>
- <button class="nav" data-page="saved" onclick="go('saved')">♧ Saved</button>
  <button class="nav" data-page="notifications" onclick="openActivityDrawer()">♧ Notifications</button>
  <button class="nav" data-page="profile" onclick="go('profile')">◎ Profile</button>
  <div class="sidebar-bottom"><button class="nav" data-page="settings" onclick="go('settings')">⚙ Settings</button></div>
@@ -728,7 +756,7 @@ button{cursor:pointer;color:white}
 <section id="reels" class="page active">
  <div class="reels-top"><div><h2>For You</h2><p class="subheading">Discover your next vibe</p></div><span style="color:#aaa;font-size:12px">VYBE ORIGINALS</span></div>
  <div id="reelList"></div>
- <p class="reel-note">Videos start muted. Tap sound to listen.</p>
+ <p class="reel-note">Reels start muted. Unmuting applies as you scroll.</p>
 </section>
 
 <section id="home" class="page">
@@ -777,9 +805,39 @@ button{cursor:pointer;color:white}
   <div class="dm-inbox" id="dmInbox"></div>
   <div class="dm-thread" id="dmThread" style="display:none" aria-live="polite"></div>
   <form class="dm-composer" id="dmComposer" onsubmit="sendMessage(event)" style="display:none">
+   <div class="dm-composer-tools">
+    <button class="dm-tool-button" id="dmEmojiToggle" type="button" aria-label="Toggle emoji picker" onclick="toggleDMEmojiPicker()">☺</button>
+    <div class="dm-emoji-picker" id="dmEmojiPicker" hidden>
+     <button type="button" onclick="insertDMEmoji('😀')">😀</button><button type="button" onclick="insertDMEmoji('😂')">😂</button><button type="button" onclick="insertDMEmoji('🥰')">🥰</button><button type="button" onclick="insertDMEmoji('❤️')">❤️</button><button type="button" onclick="insertDMEmoji('🔥')">🔥</button>
+     <button type="button" onclick="insertDMEmoji('👍')">👍</button><button type="button" onclick="insertDMEmoji('👏')">👏</button><button type="button" onclick="insertDMEmoji('✨')">✨</button><button type="button" onclick="insertDMEmoji('😮')">😮</button><button type="button" onclick="insertDMEmoji('🙏')">🙏</button>
+    </div>
+   </div>
    <input id="messageText" type="text" maxlength="4000" autocomplete="off" placeholder="Message...">
+   <button class="dm-tool-button" id="dmVoiceButton" type="button" aria-label="Record voice note" onclick="toggleVoiceNoteRecording()">🎙</button>
    <button class="dm-send" id="dmSendButton" type="submit">Send</button>
   </form>
+ </section>
+</div>
+
+<div class="dm-action-overlay" id="dmActionSheet" aria-hidden="true" onclick="if(event.target===this)closeDMActionSheet()">
+ <section class="dm-action-sheet" role="dialog" aria-modal="true" aria-label="Conversation actions">
+  <button class="delete-conversation-action" type="button" onclick="confirmDeleteConversation()">Delete Conversation</button>
+  <button type="button" onclick="closeDMActionSheet()">Cancel</button>
+ </section>
+</div>
+
+<div class="dm-action-overlay" id="noteActionSheet" aria-hidden="true" onclick="if(event.target===this)closeNoteActionSheet()">
+ <section class="dm-action-sheet" role="dialog" aria-modal="true" aria-label="Note actions">
+  <button class="delete-conversation-action" type="button" onclick="deleteStatusNote()">Delete Note</button>
+  <button type="button" onclick="closeNoteActionSheet();editStatusNote()">Share new note / Rewrite</button>
+  <button type="button" onclick="closeNoteActionSheet()">Cancel</button>
+ </section>
+</div>
+
+<div class="reel-share-overlay" id="reelShareDrawer" aria-hidden="true" onclick="if(event.target===this)closeReelShareDrawer()">
+ <section class="reel-share-sheet" role="dialog" aria-modal="true" aria-labelledby="reelShareTitle">
+  <header class="reel-share-header"><h2 id="reelShareTitle">Share reel</h2><button class="comments-close" type="button" aria-label="Close share sheet" onclick="closeReelShareDrawer()">✕</button></header>
+  <div id="reelShareContacts"></div>
  </section>
 </div>
 
@@ -890,7 +948,7 @@ button{cursor:pointer;color:white}
 <div class="modal" id="editModal"><div class="modalbox glass">
  <button class="close" onclick="hide('editModal')">×</button><h2>Edit Profile</h2>
  <input id="name" placeholder="Display name">
- <input id="uname" placeholder="username (lowercase)">
+ <input id="uname" placeholder="username (lowercase)" maxlength="30" autocapitalize="none" autocomplete="username">
  <textarea id="bio" placeholder="Bio"></textarea>
  <input id="pic" type="file" accept="image/*" style="display:none">
  <button class="secondary profile-photo-picker" type="button" onclick="document.getElementById('pic')?.click()">Change Profile Photo</button>
@@ -938,6 +996,7 @@ button{cursor:pointer;color:white}
   <div class="comments-list" id="commentsList" aria-live="polite"></div>
   <form class="comments-composer" id="commentsComposer" onsubmit="submitReelComment(event)">
    <img class="comment-avatar" id="commentsAvatar" src="" alt="Your avatar">
+   <span id="commentReplyingTo" class="comment-replying" hidden></span>
    <input class="comments-input" id="commentsInput" maxlength="2000" autocomplete="off">
    <button class="comment-post-btn" id="commentsPostButton" type="submit">Post</button>
   </form>
@@ -1017,11 +1076,15 @@ let posts=[
 
 let reels=[],archivedReels=[];
 
-let follows=new Set(),followStates=new Map(),pendingFollows=new Set(),loadingFollowStates=new Set(),saved=new Set(),savedReels=new Set(),savedReelItems=[],pendingBookmarks=new Set(),savedBookmarksLoading=false,likedReels=new Set(),likedReelItems=[],pendingReelLikes=new Set(),notifications=[],chats={};
-let nextId=10,activeChat=null,viewing=null,profileTab="posts",muted=true,pendingReelShareDraft=null;
+let follows=new Set(),followStates=new Map(),pendingFollows=new Set(),loadingFollowStates=new Set(),saved=new Set(),savedReels=new Set(),savedReelItems=[],pendingBookmarks=new Set(),savedBookmarksLoading=false,likedReels=new Set(),likedReelItems=[],pendingReelLikes=new Set(),pendingPostLikes=new Set(),notifications=[],chats={};
+window.isGlobalAudioUnmuted=Boolean(window.isGlobalAudioUnmuted);
+let nextId=10,activeChat=null,viewing=null,profileTab="posts",muted=!window.isGlobalAudioUnmuted;
 window.isReelsMuted=muted;
 let homeFeedMode='forYou',exploreHashtagQuery='',peopleDrawerPreviousOverflow='';
 let dmConversations=[],dmProfiles=new Map(),dmMessages=[],dmChannel=null,dmRequestToken=0,dmSending=false;
+let dmVoiceRecorder=null,dmVoiceStream=null,dmVoiceChunks=[],dmActionTargetUserId=null,reelShareTargetId=null;
+let dmLongPressTimer=null;
+let feedPlaybackObserver=null,activeFeedVideo=null;
 let searchTerm="";
 let searchDebounceTimer=null;
 let searchRequestToken=0;
@@ -1055,8 +1118,11 @@ let createAspectRatio='square';
 let cameraStream=null,cameraRecorder=null,cameraChunks=[],cameraCaptureFile=null,cameraCaptureUrl=null,cameraRecordTimer=null,cameraPreviousOverflow='';
 let highlightPreviousOverflow='';
 let activeCommentReelId = null;
+let activeCommentParentId=null;
+let activeComments=[];
 let commentLoadToken = 0;
 let commentsSubmitting = false;
+let commentLikes=new Set(),pendingCommentLikes=new Set(),commentLikeCounts=new Map();
 let reelsLoading=false;
 let creatingPost=false;
 let feedRefreshing=false;
@@ -1074,9 +1140,7 @@ const dailyAppUsageKey=`vybe:daily-usage:${localToday.getFullYear()}-${String(lo
 const accountListKey='vybe:known-accounts';
 let currentAccountPrivate=false;
 let highQualityUploads=false;
-let blockedAccounts=[];
 try{dailyAppUsageMs=Number(localStorage.getItem(dailyAppUsageKey))||0;highQualityUploads=localStorage.getItem('vybe:high-quality-uploads')==='true';}catch(error){console.error('Local settings read error:',error);}
-try{blockedAccounts=JSON.parse(localStorage.getItem('vybe:blocked-accounts')||'[]');if(!Array.isArray(blockedAccounts))blockedAccounts=[];}catch(error){console.error('Blocked-account state read error:',error);blockedAccounts=[];}
 
 function safe(s){return String(s??"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function avatarSrc(pic){return pic || avatarPlaceholder}
@@ -1134,10 +1198,16 @@ function normalizeUsername(value){
 }
 
 async function checkUsernameAvailable(username){
+  return checkUsernameAvailableForUser(username,null);
+}
+
+async function checkUsernameAvailableForUser(username,excludeUserId){
   const clean = normalizeUsername(username);
   if(!clean){ return { available:false, error:'Username is required.'}; }
   if(clean.length < 3){ return { available:false, error:'Username must be at least 3 characters long.'}; }
-  const { data, error } = await supabaseClient.from('profiles').select('username').eq('username', clean).maybeSingle();
+  let query=supabaseClient.from('profiles').select('id,username').eq('username', clean);
+  if(excludeUserId) query=query.neq('id',excludeUserId);
+  const { data, error } = await query.limit(1).maybeSingle();
   if (error && error.code !== 'PGRST116') throw error;
   return { available: !data, error: data ? 'Username already taken, please choose another' : null };
 }
@@ -1308,6 +1378,11 @@ function enterApp(user){
   dmConversations=[];
   dmProfiles.clear();
   dmMessages=[];
+  closeDMActionSheet();
+  closeNoteActionSheet();
+  if(dmVoiceRecorder?.state==='recording') dmVoiceRecorder.stop();
+  else dmVoiceStream?.getTracks().forEach(track=>track.stop());
+  dmVoiceStream=null;
   storyGroups=[];
   archivedOwnStories=[];
   profileHighlights=[];
@@ -1510,10 +1585,16 @@ function showSettingsSubview(name){
  document.getElementById('settingsHome').style.display='none';
  document.getElementById('settingsBackButton').style.display='block';
  subview.classList.add('active');
- const title=name==='blocked'?'Blocked Accounts':name==='accounts'?'Accounts':'Your Activity';
+ const title=name==='blocked'?'Blocked Accounts':name==='accounts'?'Accounts':name==='saved'?'Saved':name==='archive'?'Archive':'Your Activity';
  document.getElementById('settingsSheetTitle').textContent=title;
  if(name==='blocked'){
-  renderBlockedAccounts();
+  void renderBlockedAccounts();
+ }else if(name==='saved'){
+  subview.innerHTML='<div id="savedSettingsGrid" class="grid"></div>';
+  renderSaved();
+  if(currentUser) void loadSavedReels();
+ }else if(name==='archive'){
+  renderArchivedCollection();
  }else if(name==='activity'){
   subview.innerHTML=`<div class="settings-version">Today you've spent <strong>${formatUsageTime(dailyAppUsageMs)}</strong> on VYBE.</div><p class="meta">Time is tracked locally on this device while the app is visible.</p>`;
  }else if(name==='accounts'){
@@ -1522,16 +1603,11 @@ function showSettingsSubview(name){
 }
 
 function openSavedCollection(){
- closeSettingsSheet();
- go('saved');
- if(currentUser) void loadSavedReels();
+ showSettingsSubview('saved');
 }
 
 function openArchiveCollection(){
- closeSettingsSheet();
- profileTab='archived';
- go('profile');
- renderProfile();
+ showSettingsSubview('archive');
 }
 
 async function toggleAccountPrivacy(value){
@@ -1566,30 +1642,78 @@ function toggleHighQualityUploads(value){
  }
 }
 
-function renderBlockedAccounts(){
+async function renderBlockedAccounts(){
  const subview=document.getElementById('settingsSubview');
  if(!subview) return;
- subview.innerHTML=`<button class="secondary settings-action" type="button" onclick="addBlockedAccount()">Block a username</button><div class="settings-subview-list">${blockedAccounts.length?blockedAccounts.map((item,index)=>`<div class="person"><span>@${safe(item.username||item)}</span><button class="secondary" type="button" onclick="removeBlockedAccount(${index})">Unblock</button></div>`).join(''):'<p class="meta">No blocked accounts on this device.</p>'}</div>`;
+ subview.innerHTML='<div class="settings-subview-list"><p class="meta">Loading blocked accounts...</p></div>';
+ if(!currentUser) return;
+ try{
+  let {data,error}=await supabaseClient.from('blocked_users').select('*,profiles!blocked_users_blocked_user_id_fkey(id,username,full_name,avatar_url,profile_avatar_url)').eq('user_id',currentUser.id);
+  if(error){
+   let fallback=await supabaseClient.from('blocked_users').select('*').eq('user_id',currentUser.id);
+   if(fallback.error) fallback=await supabaseClient.from('blocked_users').select('*').eq('blocker_id',currentUser.id);
+   if(fallback.error) throw fallback.error;
+   data=fallback.data||[];
+   const ids=[...new Set(data.map(row=>String(row.blocked_user_id||row.blocked_id||'')).filter(Boolean))];
+   if(ids.length){
+    const profiles=await supabaseClient.from('profiles').select('id,username,full_name,avatar_url,profile_avatar_url').in('id',ids);
+    if(profiles.error) throw profiles.error;
+    const byId=new Map((profiles.data||[]).map(profile=>[String(profile.id),profile]));
+    data=data.map(row=>({...row,profiles:byId.get(String(row.blocked_user_id||row.blocked_id))||null}));
+   }
+  }
+  if(settingsSubviewName!=='blocked') return;
+  const rows=data||[];
+  subview.innerHTML=`<button class="secondary settings-action" type="button" onclick="addBlockedAccount()">Block a username</button><div class="settings-subview-list">${rows.length?rows.map(row=>{
+   const profile=Array.isArray(row.profiles)?row.profiles[0]:row.profiles;
+   const blockedId=String(row.blocked_user_id||row.blocked_id||profile?.id||'');
+   const username=profile?.username||'user';
+   return `<div class="person"><img class="avatar" src="${safe(avatarSrc(profile?.avatar_url||profile?.profile_avatar_url))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'" alt=""><span>@${safe(username)}</span><button class="secondary" type="button" onclick="unblockAccount('${safe(row.id||'')}','${safe(blockedId)}','${row.blocker_id?'blocker_id':'user_id'}','${row.blocked_id?'blocked_id':'blocked_user_id'}')">Unblock</button></div>`;
+  }).join(''):'<p class="meta">No blocked accounts.</p>'}</div>`;
+ }catch(error){
+  console.error('Blocked accounts fetch error:',error);
+  subview.innerHTML='<div class="settings-subview-list"><p class="meta">Could not load blocked accounts.</p></div>';
+  toast(error?.message||'Unable to load blocked accounts.');
+ }
 }
 
-function persistBlockedAccounts(){
- try{localStorage.setItem('vybe:blocked-accounts',JSON.stringify(blockedAccounts));}
- catch(error){console.error('Blocked accounts save error:',error);toast(error?.message||'Unable to save blocked accounts.');}
-}
-
-function addBlockedAccount(){
+async function addBlockedAccount(){
+ if(!currentUser){openAuthModal('login');return;}
  const username=normalizeUsername(window.prompt('Enter the username to block:')||'');
  if(!username) return;
- if(blockedAccounts.some(item=>String(item.username||item)===username)){toast('That account is already blocked.');return;}
- blockedAccounts.push({username});
- persistBlockedAccounts();
- renderBlockedAccounts();
+ try{
+  const {data:profile,error:profileError}=await supabaseClient.from('profiles').select('id').eq('username',username).maybeSingle();
+  if(profileError) throw profileError;
+  if(!profile?.id) throw new Error(`Could not find @${username}.`);
+  if(String(profile.id)===String(currentUser.id)) throw new Error('You cannot block your own account.');
+  let result=await supabaseClient.from('blocked_users').insert({user_id:currentUser.id,blocked_user_id:profile.id});
+  if(result.error) result=await supabaseClient.from('blocked_users').insert({blocker_id:currentUser.id,blocked_id:profile.id});
+  if(result.error) throw result.error;
+  await renderBlockedAccounts();
+ }catch(error){
+  console.error('Block account error:',error);
+  toast(error?.message||'Unable to block this account.');
+ }
 }
 
-function removeBlockedAccount(index){
- blockedAccounts.splice(index,1);
- persistBlockedAccounts();
- renderBlockedAccounts();
+async function unblockAccount(rowId,blockedId,ownerColumn='user_id',blockedColumn='blocked_user_id'){
+ if(!currentUser) return;
+ try{
+  let query=supabaseClient.from('blocked_users').delete();
+  if(rowId) query=query.eq('id',rowId).eq(ownerColumn,currentUser.id);
+  else query=query.eq(ownerColumn,currentUser.id).eq(blockedColumn,blockedId);
+  let {data,error}=await query.select('*').maybeSingle();
+  if(error&&ownerColumn==='user_id'){
+   const retry=await supabaseClient.from('blocked_users').delete().eq('blocker_id',currentUser.id).eq('blocked_id',blockedId).select('*').maybeSingle();
+   data=retry.data;error=retry.error;
+  }
+  if(error) throw error;
+  if(!data) throw new Error('The block record could not be found.');
+  await renderBlockedAccounts();
+ }catch(error){
+  console.error('Unblock account error:',error);
+  toast(error?.message||'Unable to unblock this account.');
+ }
 }
 
 function rememberLoginAccount(user){
@@ -1775,6 +1899,12 @@ function toast(s){
 function go(id){
  if(id==='messages'){openDMDrawer();return;}
  if(id==='notifications'){openActivityDrawer();return;}
+ if(id==='saved'){
+  if(!currentUser){openAuthModal('login');return;}
+  openSettingsSheet();
+  openSavedCollection();
+  return;
+ }
  const blockedPages = ['reels','home','saved','notifications','profile'];
  if (blockedPages.includes(id) && !currentUser) {
    openAuthModal('login');
@@ -1783,6 +1913,7 @@ function go(id){
  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
  document.getElementById(id)?.classList.add('active');
  if(id!=='reels') pauseReelVideos();
+ if(id!=='home') syncFeedVideoPlayback();
  document.querySelectorAll('.nav,.bottom button').forEach(x=>x.classList.remove('active'));
  document.querySelectorAll('.nav').forEach(x=>{if(x.dataset.page===id)x.classList.add('active')});
  let map={reels:0,home:1,explore:2,profile:4};
@@ -2005,7 +2136,7 @@ function editProfile(){
  const userInput=document.getElementById('uname');
  const nameInput=document.getElementById('name');
  const bioInput=document.getElementById('bio');
- if(userInput){ userInput.value=currentProfile||''; userInput.readOnly=true; }
+ if(userInput){ userInput.value=currentProfile||me.username||''; userInput.readOnly=false; }
  if(nameInput) nameInput.value=me.name || '';
  if(bioInput) bioInput.value=me.bio || '';
  const photoInput=document.getElementById('pic');
@@ -2682,6 +2813,10 @@ document.addEventListener('keydown',event=>{
 function renderFeed(){
  const feed=document.getElementById('feed');
  if(!feed) return;
+ feedPlaybackObserver?.disconnect();
+ feedPlaybackObserver=null;
+ document.querySelectorAll('#feed video').forEach(video=>{video.pause();video.muted=true;});
+ activeFeedVideo=null;
  if(feedRefreshing){
   feed.innerHTML=Array.from({length:3},()=>`<article class="skeleton-card" aria-hidden="true"><div class="skeleton-post-head"><span class="skeleton-block skeleton-avatar"></span><span class="skeleton-user-lines"><i class="skeleton-block skeleton-line"></i><i class="skeleton-block skeleton-line" style="width:72%"></i></span></div><div class="skeleton-block skeleton-media"></div><div class="skeleton-block skeleton-footer"></div></article>`).join('');
   return;
@@ -2711,9 +2846,9 @@ function renderFeed(){
    const postSaved=isReel?savedReels.has(String(item.id)):(saved.has(String(item.id))||savedReels.has(String(item.id)));
    const savedClass=postSaved?'saved':'';
    const comments=(item.comments||[]).slice(0,2).map(c=>`<div class="meta">${safe(user(c.user).name)}: ${renderTaggedText(c.text)}</div>`).join('');
-   const media=isReel
-    ? (item.video?`<video class="postmedia" controls muted playsinline src="${safe(mediaSrc)}"></video>`:`<img class="postmedia" src="${safe(mediaSrc)}" alt="reel">`)
-    : (item.video?`<video class="postmedia" controls muted playsinline src="${safe(mediaSrc)}"></video>`:`<img class="postmedia" src="${safe(mediaSrc)}" alt="post">`);
+   const media=item.video
+    ? `<video class="postmedia feed-video" data-feed-video playsinline preload="metadata" muted src="${safe(mediaSrc)}" onclick="toggleFeedVideoSound(this)" aria-label="Feed video; tap to toggle sound"></video><span class="feed-video-duration" data-video-duration hidden>0:00</span>`
+    : `<img class="postmedia" src="${safe(mediaSrc)}" alt="${isReel?'reel':'post'}">`;
    return `<article class="post glass" data-feed-id="${isReel?'reel':'post'}:${safe(item.id)}">
      <div class="posthead">
        <img class="avatar" src="${safe(avatarSrc(author.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'" onclick="viewProfile('${safe(item.user)}')">
@@ -2736,6 +2871,74 @@ function renderFeed(){
      ${isReel?'':`<div class="commentrow"><input id="comment-${item.id}" placeholder="Add a comment..." onkeydown="if(event.key==='Enter') addComment(${item.id})"><button class="smallbtn" onclick="addComment(${item.id})">Post</button></div>`}
    </article>`;
  }).join('');
+ feed.querySelectorAll('[data-feed-video]').forEach(video=>{
+  const badge=video.parentElement?.querySelector('[data-video-duration]');
+  const updateDuration=()=>{
+   if(!badge||!Number.isFinite(video.duration)) return;
+   const seconds=Math.floor(video.duration);
+   badge.textContent=`${Math.floor(seconds/60)}:${String(seconds%60).padStart(2,'0')}`;
+   badge.hidden=false;
+  };
+  video.addEventListener('loadedmetadata',updateDuration,{once:true});
+  if(video.readyState>=1) updateDuration();
+ });
+ observeFeedVideoPlayback();
+}
+
+function syncFeedVideoPlayback(){
+ const feed=document.getElementById('feed');
+ if(!feed||!document.getElementById('home')?.classList.contains('active')){
+  document.querySelectorAll('#feed video').forEach(video=>{video.pause();video.muted=true;video.volume=0;});
+  activeFeedVideo=null;
+  return;
+ }
+ let bestVideo=null;
+ let bestRatio=0;
+ feed.querySelectorAll('[data-feed-video]').forEach(video=>{
+  const rect=video.getBoundingClientRect();
+  const width=Math.max(0,Math.min(rect.right,window.innerWidth)-Math.max(rect.left,0));
+  const height=Math.max(0,Math.min(rect.bottom,window.innerHeight)-Math.max(rect.top,0));
+  const ratio=width*height/Math.max(1,rect.width*rect.height);
+  if(ratio>bestRatio){bestRatio=ratio;bestVideo=video;}
+ });
+ if(bestRatio<.7) bestVideo=null;
+ feed.querySelectorAll('[data-feed-video]').forEach(video=>{
+  if(video!==bestVideo){
+   video.pause();
+   video.muted=true;
+   video.volume=0;
+  }
+ });
+ if(!bestVideo){activeFeedVideo=null;return;}
+ activeFeedVideo=bestVideo;
+ bestVideo.muted=bestVideo.dataset.audioEnabled!=='true';
+ bestVideo.volume=bestVideo.muted?0:1.0;
+ bestVideo.play().catch(error=>{
+  if(!bestVideo.muted){
+   bestVideo.muted=true;
+   bestVideo.volume=0;
+   bestVideo.play().catch(playError=>console.info('Feed video autoplay was blocked:',playError));
+  }else console.info('Feed video autoplay was blocked:',error);
+ });
+}
+
+function observeFeedVideoPlayback(){
+ const feed=document.getElementById('feed');
+ if(!feed) return;
+ if('IntersectionObserver' in window){
+  feedPlaybackObserver=new IntersectionObserver(()=>syncFeedVideoPlayback(),{threshold:[0,.7,.8,1]});
+  feed.querySelectorAll('[data-feed-video]').forEach(video=>feedPlaybackObserver.observe(video));
+ }
+ syncFeedVideoPlayback();
+}
+
+function toggleFeedVideoSound(video){
+ if(video!==activeFeedVideo) return;
+ const enable=video.dataset.audioEnabled!=='true';
+ video.dataset.audioEnabled=String(enable);
+ video.muted=!enable;
+ video.volume=enable?1.0:0;
+ if(video.paused) video.play().catch(error=>console.info('Feed video playback was blocked:',error));
 }
 
 async function setHomeFeedMode(mode){
@@ -2922,15 +3125,24 @@ function renderSearchResults(message){
 
 function renderSaved(){
  const savedGrid=document.getElementById('savedGrid');
- if(!savedGrid) return;
  const savedPosts=posts.filter(p=>saved.has(String(p.id))||saved.has(p.id));
  const items=[
    ...savedPosts.map(post=>`<div class="tile" role="button" tabindex="0" onclick="openSavedPost(${post.id})"><img src="${safe(post.src)}" alt="Saved post"></div>`),
    ...savedReelItems.map(reel=>`<div class="tile" role="button" tabindex="0" onclick="openSavedReel('${safe(reel.id)}')">${reel.video?`<video src="${safe(reel.src)}" muted playsinline></video>`:`<img src="${safe(reel.src)}" alt="Saved reel">`}</div>`)
  ];
- savedGrid.innerHTML=savedBookmarksLoading&&!items.length
+ const content=savedBookmarksLoading&&!items.length
   ? '<div class="empty">Loading saved items...</div>'
   : items.length ? items.join('') : '<div class="empty">No saved posts or reels yet.</div>';
+ if(savedGrid) savedGrid.innerHTML=content;
+ const settingsGrid=document.getElementById('savedSettingsGrid');
+ if(settingsGrid) settingsGrid.innerHTML=content;
+}
+
+function renderArchivedCollection(){
+ const subview=document.getElementById('settingsSubview');
+ if(!subview) return;
+ const ownItems=archivedReels.filter(isOwnReel);
+ subview.innerHTML=`<div class="grid">${ownItems.length?ownItems.map(reel=>`<div class="tile" role="button" tabindex="0" onclick="openReel('${safe(reel.id)}')"><button class="profile-tile-menu" type="button" aria-label="Manage archived post" onclick="event.stopPropagation();openReelMenu('${safe(reel.id)}')">⋯</button>${reel.video?`<video src="${safe(reel.src)}" muted playsinline></video>`:`<img src="${safe(reel.src)}" alt="Archived reel">`}</div>`).join(''):'<div class="empty">No archived items.</div>'}</div>`;
 }
 
 function openSavedPost(id){
@@ -3033,23 +3245,16 @@ function openStoryHighlight(highlightId){
 function renderProfile(){
  const profileView=document.getElementById('profileView');
  if(!profileView) return;
+ if(!['posts','reels','likes'].includes(profileTab)) profileTab='posts';
  const renderTiles=(items)=>items.map(item=>`<div class="profile-tile" onclick="${item.video?`playReelInPlayer('${safe(item.id)}')`:item.kind==='reel'?`openReel('${safe(item.id)}')`:`openPost(${item.id})`}">${item.kind==='reel'&&isOwnReel(item)?`<button class="profile-tile-menu" aria-label="Manage your post" onclick="event.stopPropagation();openReelMenu('${safe(item.id)}')">⋯</button>`:''}${item.video?`<video src="${safe(item.src)}" muted playsinline></video>`:`<img src="${safe(item.src)}" alt="Your post">`}</div>`).join('');
  const ownedReels=reels.filter(reel=>isOwnReel(reel));
- const ownedArchived=archivedReels.filter(reel=>isOwnReel(reel));
  const userPosts=[...posts.filter(post=>post.user===0),...ownedReels];
- const savedPostItems=posts.filter(post=>saved.has(String(post.id))||saved.has(post.id));
- const savedProfileItems=[...savedPostItems,...savedReelItems];
  const tabItems={
    posts:userPosts,
    reels:ownedReels.filter(reel=>reel.video),
-  likes:likedReelItems,
-  saved:savedProfileItems,
-  archived:ownedArchived
+  likes:likedReelItems
  }[profileTab] || userPosts;
- const profileItems=profileTab==='posts'?userPosts:tabItems;
- const profileItemsContent=profileTab==='saved'&&savedBookmarksLoading&&!profileItems.length
-  ?'<div class="profile-empty">Loading saved items...</div>'
-  :profileItems.length?renderTiles(profileItems):'<div class="profile-empty">Nothing to show yet.</div>';
+ const profileItemsContent=tabItems.length?renderTiles(tabItems):'<div class="profile-empty">Nothing to show yet.</div>';
  profileView.innerHTML=`
  <div class="profile-header glass">
   <button class="profile-settings-button" type="button" aria-label="Settings" onclick="openSettingsSheet()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"/><path d="m19.4 15 .1.1 1.4 1.1-1.4 2.4-1.7-.7a7.8 7.8 0 0 1-1.7 1l-.3 1.8h-2.8l-.3-1.8a7.8 7.8 0 0 1-1.7-1l-1.7.7-1.4-2.4L7.3 15a7.4 7.4 0 0 1 0-2l-1.4-1.1 1.4-2.4 1.7.7a7.8 7.8 0 0 1 1.7-1l.3-1.8h2.8l.3 1.8a7.8 7.8 0 0 1 1.7 1l1.7-.7 1.4 2.4-1.4 1.1a7.4 7.4 0 0 1-.1 2Z"/></svg></button>
@@ -3057,9 +3262,6 @@ function renderProfile(){
    <img class="profilepic" src="${safe(avatarSrc(me.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'">
    <div class="profile-details">
     <button class="profile-username profile-username-switch" type="button" onclick="openAccountSwitcher()">${safe(me.name)} <span style="color:#aaa;font-size:12px">@${safe(currentProfile || me.username)}</span></button>
-    <div class="profile-buttons">
-      <button class="secondary edit-profile-button" onclick="editProfile()">Edit profile</button>
-    </div>
     <div class="profile-bio">${safe(me.bio)}</div>
     <div class="profile-stats">
       <button><b>${userPosts.length}</b><span>Posts</span></button>
@@ -3068,13 +3270,12 @@ function renderProfile(){
     </div>
    </div>
   </div>
+  <button class="secondary edit-profile-button" onclick="editProfile()">Edit Profile</button>
   ${renderProfileHighlights()}
   <div class="profile-tabs">
     <button class="${profileTab==='posts'?'active':''}" onclick="setProfileTab('posts')">POSTS</button>
     <button class="${profileTab==='reels'?'active':''}" onclick="setProfileTab('reels')">REELS</button>
     <button class="${profileTab==='likes'?'active':''}" onclick="setProfileTab('likes')">LIKES</button>
-    <button class="profile-saved-tab ${profileTab==='saved'?'active':''}" onclick="setProfileTab('saved')" aria-label="Saved"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.75h12v17l-6-4-6 4v-17Z"/></svg> SAVED</button>
-    <button class="${profileTab==='archived'?'active':''}" onclick="setProfileTab('archived')">ARCHIVED</button>
   </div>
   <div class="profile-grid">${profileItemsContent}</div>
  </div>`;
@@ -3118,8 +3319,8 @@ function renderOtherProfile(){
 }
 
 function setProfileTab(tab){
+ if(!['posts','reels','likes'].includes(tab)) return;
  profileTab=tab; renderProfile();
- if(tab==='saved'&&currentUser) void loadSavedReels();
 }
 
 function renderChats(){
@@ -3159,7 +3360,10 @@ async function resolveDMRecipient(target){
 }
 
 function dmMessageText(message){
- return String(message.message_text || message.content || message.text || '').replace(/\n?\[\[story-preview:[^:\]]+:[^\]]+\]\]$/,'');
+ return String(message.message_text || message.content || message.text || '')
+  .replace(/\n?\[\[story-preview:[^:\]]+:[^\]]+\]\]$/,'')
+  .replace(/\n?\[\[reel-card:[^:\]]+:[^\]]+\]\]$/,'')
+  .replace(/\n?\[\[voice-note:[^\]]+\]\]$/,'');
 }
 
 function dmStoryPreview(message){
@@ -3168,6 +3372,20 @@ function dmStoryPreview(message){
  if(!match) return null;
  try{return {id:decodeURIComponent(match[1]),url:decodeURIComponent(match[2])};}
  catch(error){console.error('Story reply metadata parse error:',error);return null;}
+}
+
+function dmReelCard(message){
+ const match=String(message.message_text||message.content||message.text||'').match(/\[\[reel-card:([^:\]]+):([^\]]+)\]\]$/);
+ if(!match) return null;
+ try{return {url:decodeURIComponent(match[1]),caption:decodeURIComponent(match[2])};}
+ catch(error){console.error('Shared reel metadata parse error:',error);return null;}
+}
+
+function dmVoiceNote(message){
+ const match=String(message.message_text||message.content||message.text||'').match(/\[\[voice-note:([^\]]+)\]\]$/);
+ if(!match) return '';
+ try{return decodeURIComponent(match[1]);}
+ catch(error){console.error('Voice note metadata parse error:',error);return '';}
 }
 
 function dmPartnerId(message,userId=currentUser?.id){
@@ -3192,8 +3410,30 @@ function renderDMInbox(){
   </button>`;
  }).join(''):'<div class="dm-empty">No conversations yet. Message someone from their profile to get started.</div>';
  inbox.innerHTML=notes+conversations;
- inbox.querySelectorAll('[data-chat-user]').forEach(button=>button.addEventListener('click',()=>openChat(button.dataset.chatUser)));
- inbox.querySelectorAll('[data-note-user]').forEach(button=>button.addEventListener('click',()=>button.dataset.noteUser==='self'?editStatusNote():openChat(button.dataset.noteUser)));
+ inbox.querySelectorAll('[data-chat-user]').forEach(button=>{
+  const cancelLongPress=()=>{clearTimeout(dmLongPressTimer);dmLongPressTimer=null;};
+  button.addEventListener('pointerdown',()=>{
+   dmLongPressTimer=setTimeout(()=>{
+    button.dataset.longPressed='true';
+    openDMActionSheet(button.dataset.chatUser);
+    dmLongPressTimer=null;
+   },550);
+  });
+  button.addEventListener('pointerup',cancelLongPress);
+  button.addEventListener('pointercancel',cancelLongPress);
+  button.addEventListener('pointerleave',cancelLongPress);
+  button.addEventListener('contextmenu',event=>{
+   event.preventDefault();
+   button.dataset.longPressed='true';
+   cancelLongPress();
+   openDMActionSheet(button.dataset.chatUser);
+  });
+  button.addEventListener('click',()=>{
+   if(button.dataset.longPressed==='true'){delete button.dataset.longPressed;return;}
+   void openChat(button.dataset.chatUser);
+  });
+ });
+ inbox.querySelectorAll('[data-note-user]').forEach(button=>button.addEventListener('click',()=>button.dataset.noteUser==='self'?openNoteActionSheet():openChat(button.dataset.noteUser)));
 }
 
 function renderNotesTray(){
@@ -3215,6 +3455,34 @@ async function editStatusNote(){
  }catch(error){console.error('Status note update error:',error);toast(error?.message||'Unable to update your note.');}
 }
 
+function openNoteActionSheet(){
+ const sheet=document.getElementById('noteActionSheet');
+ if(!sheet) return;
+ sheet.classList.add('open');
+ sheet.setAttribute('aria-hidden','false');
+}
+
+function closeNoteActionSheet(){
+ const sheet=document.getElementById('noteActionSheet');
+ sheet?.classList.remove('open');
+ sheet?.setAttribute('aria-hidden','true');
+}
+
+async function deleteStatusNote(){
+ if(!currentUser) return;
+ try{
+  const {error}=await supabaseClient.from('profiles').update({status_note:null}).eq('id',currentUser.id);
+  if(error) throw error;
+  me.statusNote='';
+  closeNoteActionSheet();
+  renderDMInbox();
+  toast('Note deleted');
+ }catch(error){
+  console.error('Status note deletion error:',error);
+  toast(error?.message||'Unable to delete your note.');
+ }
+}
+
 function renderDMThread(){
  const thread=document.getElementById('dmThread');
  if(!thread || !currentUser || !activeChat) return;
@@ -3223,10 +3491,18 @@ function renderDMThread(){
   const timestamp=message.created_at?new Date(message.created_at):null;
   const time=timestamp&&!Number.isNaN(timestamp.getTime())?timestamp.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):'';
   const preview=dmStoryPreview(message);
+  const reelCard=dmReelCard(message);
+  const voiceUrl=dmVoiceNote(message);
   let previewUrl='';
   try{const parsed=preview?.url?new URL(preview.url,location.href):null;if(parsed&&['http:','https:'].includes(parsed.protocol))previewUrl=parsed.href;}catch(error){console.error('Story preview URL error:',error);}
+  let reelUrl='';
+  try{const parsed=reelCard?.url?new URL(reelCard.url,location.href):null;if(parsed&&['http:','https:'].includes(parsed.protocol))reelUrl=parsed.href;}catch(error){console.error('Shared reel URL error:',error);}
+  let safeVoiceUrl='';
+  try{const parsed=voiceUrl?new URL(voiceUrl,location.href):null;if(parsed&&['http:','https:'].includes(parsed.protocol))safeVoiceUrl=parsed.href;}catch(error){console.error('Voice note URL error:',error);}
   const previewMedia=previewUrl?(isVideoFile({type:'',name:previewUrl})?`<video src="${safe(previewUrl)}" muted playsinline preload="metadata"></video>`:`<img src="${safe(previewUrl)}" alt="Story preview">`):'';
-  return `<div class="dm-bubble ${mine?'mine':''}">${safe(dmMessageText(message))}${previewMedia?`<div class="dm-story-preview">${previewMedia}<span>Replied to your story</span></div>`:''}${time?`<time class="dm-time">${safe(time)}</time>`:''}</div>`;
+  const reelPreview=reelUrl?`<a class="dm-reel-card" href="${safe(reelUrl)}" target="_blank" rel="noopener noreferrer"><strong>▶ Shared a reel</strong><span>${safe(reelCard.caption||'Watch this reel on VYBE')}</span></a>`:'';
+  const voicePreview=safeVoiceUrl?`<audio controls preload="metadata" src="${safe(safeVoiceUrl)}" aria-label="Voice note"></audio>`:'';
+  return `<div class="dm-bubble ${mine?'mine':''}">${safe(dmMessageText(message))}${previewMedia?`<div class="dm-story-preview">${previewMedia}<span>Replied to your story</span></div>`:''}${reelPreview}${voicePreview}${time?`<time class="dm-time">${safe(time)}</time>`:''}</div>`;
  }).join('') || '<div class="dm-empty">Say hello to start the conversation.</div>';
  thread.scrollTop=thread.scrollHeight;
 }
@@ -3381,6 +3657,123 @@ function subscribeToDirectMessages(){
   });
 }
 
+function openDMActionSheet(userId){
+ dmActionTargetUserId=String(userId||'');
+ const sheet=document.getElementById('dmActionSheet');
+ if(!sheet) return;
+ sheet.classList.add('open');
+ sheet.setAttribute('aria-hidden','false');
+}
+
+function closeDMActionSheet(){
+ const sheet=document.getElementById('dmActionSheet');
+ sheet?.classList.remove('open');
+ sheet?.setAttribute('aria-hidden','true');
+ dmActionTargetUserId=null;
+}
+
+async function confirmDeleteConversation(){
+ const targetId=dmActionTargetUserId;
+ if(!currentUser||!isValidUserUuid(targetId)) return;
+ closeDMActionSheet();
+ try{
+  const {error}=await supabaseClient.from('direct_messages').delete()
+   .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${targetId}),and(sender_id.eq.${targetId},receiver_id.eq.${currentUser.id})`);
+  if(error) throw error;
+  dmConversations=dmConversations.filter(item=>String(item.userId)!==targetId);
+  if(String(activeChat)===targetId){
+   activeChat=null;
+   dmMessages=[];
+   setDMView('inbox');
+  }
+  renderDMInbox();
+  toast('Conversation deleted');
+ }catch(error){
+  console.error('Conversation deletion error:',error);
+  toast(error?.message||'Unable to delete this conversation.');
+ }
+}
+
+function toggleDMEmojiPicker(){
+ const picker=document.getElementById('dmEmojiPicker');
+ if(picker) picker.hidden=!picker.hidden;
+}
+
+function insertDMEmoji(emoji){
+ const input=document.getElementById('messageText');
+ if(!input) return;
+ const start=input.selectionStart??input.value.length;
+ const end=input.selectionEnd??start;
+ input.setRangeText(emoji,start,end,'end');
+ input.focus();
+}
+
+async function toggleVoiceNoteRecording(){
+ if(dmVoiceRecorder?.state==='recording'){
+  dmVoiceRecorder.stop();
+  return;
+ }
+ if(!currentUser||!activeChat){toast('Open a conversation before recording a voice note.');return;}
+ if(!navigator.mediaDevices?.getUserMedia||typeof MediaRecorder==='undefined'){
+  toast('Voice recording is not supported in this browser.');
+  return;
+ }
+ const receiverId=String(activeChat);
+ const button=document.getElementById('dmVoiceButton');
+ try{
+  dmVoiceStream=await navigator.mediaDevices.getUserMedia({audio:true});
+  dmVoiceChunks=[];
+  dmVoiceRecorder=new MediaRecorder(dmVoiceStream);
+  dmVoiceRecorder.addEventListener('dataavailable',event=>{if(event.data?.size) dmVoiceChunks.push(event.data);});
+  dmVoiceRecorder.addEventListener('stop',()=>{
+   const blob=new Blob(dmVoiceChunks,{type:dmVoiceRecorder?.mimeType||'audio/webm'});
+   const stream=dmVoiceStream;
+   dmVoiceStream=null;
+   stream?.getTracks().forEach(track=>track.stop());
+   dmVoiceRecorder=null;
+   dmVoiceChunks=[];
+   if(button){button.classList.remove('recording');button.setAttribute('aria-label','Record voice note');}
+   if(blob.size) void sendVoiceNoteBlob(blob,receiverId);
+  },{once:true});
+  dmVoiceRecorder.start();
+  if(button){button.classList.add('recording');button.setAttribute('aria-label','Stop recording voice note');}
+ }catch(error){
+  dmVoiceStream?.getTracks().forEach(track=>track.stop());
+  dmVoiceStream=null;
+  dmVoiceRecorder=null;
+  console.error('Voice note recording error:',error);
+  toast(error?.message||'Unable to start voice recording.');
+ }
+}
+
+async function sendVoiceNoteBlob(blob,receiverId){
+ if(!currentUser||!isValidUserUuid(receiverId)) return;
+ try{
+  const extension=blob.type.includes('ogg')?'ogg':blob.type.includes('mp4')?'m4a':'webm';
+  const path=`${currentUser.id}/voice-notes/${Date.now()}.${extension}`;
+  const {data,error}=await supabaseClient.storage.from('media').upload(path,blob,{contentType:blob.type||'audio/webm'});
+  if(error) throw error;
+  if(!data?.path) throw new Error('The voice note upload did not return a file path.');
+  const {data:urlData}=supabaseClient.storage.from('media').getPublicUrl(data.path);
+  if(!urlData?.publicUrl) throw new Error('Could not get a public URL for the voice note.');
+  const {data:message,error:messageError}=await supabaseClient.from('direct_messages').insert({
+   sender_id:currentUser.id,
+   receiver_id:receiverId,
+   message_text:`[[voice-note:${encodeURIComponent(urlData.publicUrl)}]]`
+  }).select('*').single();
+  if(messageError) throw messageError;
+  if(!message) throw new Error('The voice note message was not returned.');
+  if(String(activeChat)===receiverId&&!dmMessages.some(item=>String(item.id)===String(message.id))){
+   dmMessages.push(message);
+   renderDMThread();
+  }
+  handleDMRealtimeMessage(message);
+ }catch(error){
+  console.error('Voice note send error:',error);
+  toast(error?.message||'Unable to send voice note.');
+ }
+}
+
 function openDMDrawer(targetUserId=null){
  if(!currentUser){openAuthModal('login');return;}
  const drawer=document.getElementById('dmDrawer');
@@ -3440,10 +3833,8 @@ async function openChat(id){
  setDMView('thread');
  await loadDMConversation(activeChat);
  const messageInput=document.getElementById('messageText');
- if(pendingReelShareDraft&&messageInput){
-  messageInput.value=pendingReelShareDraft;
-  pendingReelShareDraft=null;
- }
+ const emojiPicker=document.getElementById('dmEmojiPicker');
+ if(emojiPicker) emojiPicker.hidden=true;
  messageInput?.focus();
 }
 
@@ -3482,6 +3873,8 @@ async function sendMessage(event){
    if(!dmMessages.some(message=>String(message.id)===String(data.id))) dmMessages.push(data);
    renderDMThread();
    input.value='';
+   const emojiPicker=document.getElementById('dmEmojiPicker');
+   if(emojiPicker) emojiPicker.hidden=true;
   }
   handleDMRealtimeMessage(data);
  } catch(error) {
@@ -3519,11 +3912,14 @@ function activityActor(notification){
 
 function activityText(notification){
  const type=String(notification.type||'').toLowerCase();
- if(type==='like') return 'liked your reel';
+ if(type==='like'||type==='reel_like') return 'liked your reel';
+ if(type==='post_like') return 'liked your post';
  if(type==='comment'){
   const snippet=String(notification.comment_text||notification.content||'').trim();
   return `commented: ${snippet?`${snippet.slice(0,70)}${snippet.length>70?'…':''}`:'on your post'}`;
  }
+ if(type==='reply') return 'replied to your comment';
+ if(type==='comment_like') return 'liked your comment';
  if(type==='follow') return 'started following you';
  return notification.message||'interacted with you';
 }
@@ -3548,7 +3944,7 @@ function renderActivityNotifications(){
   return `<article class="activity-item ${notification.is_read?'':'unread'}" data-activity-index="${index}">
    <img class="activity-avatar" src="${safe(avatarSrc(actor.avatar))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'" alt="">
    <span class="activity-copy"><b>${safe(actor.username)}</b> ${safe(activityText(notification))}<time class="activity-time">${safe(formatCommentTime(notification.created_at))}</time></span>
-   ${type==='follow'?`<button class="${isFollowing?'secondary following':'primary'} activity-follow" type="button" data-activity-follow="${safe(actor.id)}" ${pendingFollows.has(actor.id)?'disabled':''}>${pendingFollows.has(actor.id)?'...':isFollowing?'Following':'Follow back'}</button>`:['like','comment'].includes(type)?`<button class="activity-thumb-button" type="button" data-activity-reel="${safe(reelId)}" aria-label="View post"><img class="activity-thumb" src="${safe(thumbnail||avatarPlaceholder)}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'" alt=""></button>`:''}
+   ${type==='follow'?`<button class="${isFollowing?'secondary following':'primary'} activity-follow" type="button" data-activity-follow="${safe(actor.id)}" ${pendingFollows.has(actor.id)?'disabled':''}>${pendingFollows.has(actor.id)?'...':isFollowing?'Following':'Follow back'}</button>`:['like','reel_like','post_like','comment','reply','comment_like'].includes(type)?`<button class="activity-thumb-button" type="button" data-activity-reel="${safe(reelId)}" aria-label="View post"><img class="activity-thumb" src="${safe(thumbnail||avatarPlaceholder)}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'" alt=""></button>`:''}
   </article>`;
  }).join('');
  list.querySelectorAll('[data-activity-follow]').forEach(button=>button.addEventListener('click',event=>{
@@ -3581,7 +3977,7 @@ async function loadActivityNotifications(){
   const rows=data||[];
   const senderIds=[...new Set(rows.map(item=>String(item.sender_id||'')).filter(Boolean))];
   const reelIds=[...new Set(rows.map(item=>String(item.post_id||'')).filter(Boolean))];
-  const commentRows=rows.filter(item=>String(item.type||'').toLowerCase()==='comment');
+  const commentRows=rows.filter(item=>['comment','reply'].includes(String(item.type||'').toLowerCase()));
   const commentPostIds=[...new Set(commentRows.map(item=>String(item.post_id||'')).filter(Boolean))];
   const [profilesResult,reelsResult,commentsResult]=await Promise.all([
    senderIds.length?supabaseClient.from('profiles').select('*').in('id',senderIds):Promise.resolve({data:[],error:null}),
@@ -3602,7 +3998,7 @@ async function loadActivityNotifications(){
    const reelId=String(item.post_id||'');
    const profile=profilesById.get(senderId);
    const reel=reelsById.get(reelId);
-   const comment=String(item.type||'').toLowerCase()==='comment'
+   const comment=['comment','reply'].includes(String(item.type||'').toLowerCase())
     ?(commentsResult.data||[]).filter(row=>String(row.user_id)===senderId&&String(row.reel_id)===reelId)
       .sort((a,b)=>Math.abs(new Date(a.created_at||0)-new Date(item.created_at||0))-Math.abs(new Date(b.created_at||0)-new Date(item.created_at||0)))[0]
     :null;
@@ -3636,7 +4032,7 @@ async function markActivityNotificationsRead(){
 }
 
 async function createActivityNotification(recipientId,type,{reelId,commentText}={}){
- if(!currentUser||!recipientId||String(recipientId)===String(currentUser.id)) return;
+ if(!currentUser||!recipientId||!isValidUserUuid(String(recipientId))||String(recipientId)===String(currentUser.id)) return;
  const payload={receiver_id:recipientId,sender_id:currentUser.id,type,is_read:false};
  if(reelId!==undefined&&reelId!==null) payload.post_id=reelId;
  try {
@@ -3748,7 +4144,7 @@ function normalizeReel(reel, index) {
     likes: Number(reel.likes ?? reel.likes_count ?? reel.like_count ?? 0),
     commentCount: Number(reel.comment_count ?? reel.comments_count ?? (Array.isArray(reel.comments) ? reel.comments.length : 0)),
     liked: Boolean(reel.liked),
-    video: Boolean(reel.video ?? (reel.media_type ? reel.media_type.startsWith('video/') : src && /(\.mp4|\.webm|\.ogg|\.m4v|\.mov|\.mkv|\.3gp)(\?|$)/i.test(src)))
+    video: Boolean(reel.video || String(reel.media_type||reel.mime_type||'').trim().toLowerCase()==='video' || /\.(mp4|webm|mov)(?:[?#].*)?$/i.test(String(src)))
   };
 }
 
@@ -3766,6 +4162,12 @@ function isPublicActiveReel(reel){
 function reelAuthorName(reel){
  if(isOwnReel(reel)) return currentProfile || me.username;
  return reel.username || user(reel.user).username;
+}
+
+function isStrictReelVideo(reel){
+ const mediaType=String(reel.media_type||'').trim().toLowerCase();
+ const url=String(reel.src||'').split(/[?#]/)[0];
+ return mediaType==='video'||/\.(mp4|webm|mov)$/i.test(url);
 }
 
 async function loadReels(){
@@ -3863,14 +4265,17 @@ function renderReels(){
   reelList.innerHTML=Array.from({length:2},()=>`<div class="reel-skeleton-card" aria-hidden="true"><div class="skeleton-block skeleton-media"></div><div class="reel-skeleton-info"><i class="skeleton-block reel-skeleton-line"></i><i class="skeleton-block reel-skeleton-line" style="width:44%"></i></div></div>`).join('');
   return;
  }
- if(!reels.length){
+ const visibleReels=reels.filter(isStrictReelVideo);
+ muted=!Boolean(window.isGlobalAudioUnmuted);
+ window.isReelsMuted=muted;
+ if(!visibleReels.length){
    reelPlaybackObserver?.disconnect();
    reelPlaybackObserver=null;
    pauseReelVideos();
    reelList.innerHTML='<div class="empty">No reels available yet.</div>';
    return;
  }
- reelList.innerHTML=reels.map((reel,index)=>{
+ reelList.innerHTML=visibleReels.map((reel,index)=>{
    const author=user(reel.user);
    const authorUsername=reelAuthorName(reel);
    const audioLabel=reel.audioTitle || `Original Audio • ${authorUsername}`;
@@ -3985,10 +4390,95 @@ function renderComments(comments){
   list.innerHTML='<div class="comments-empty">No comments yet. Start the conversation!</div>';
   return;
  }
- list.innerHTML=comments.map(comment=>{
+ const byParent=new Map();
+ comments.forEach(comment=>{
+  const parentId=String(comment.parent_id||'');
+  if(!byParent.has(parentId)) byParent.set(parentId,[]);
+  byParent.get(parentId).push(comment);
+ });
+ const renderComment=(comment,depth=0)=>{
   const author=commentAuthor(comment);
-  return `<article class="comment-item"><img class="comment-avatar" src="${safe(avatarSrc(author.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'" alt=""><div class="comment-content"><span class="comment-author">${safe(author.username)}</span>${renderTaggedText(comment.comment_text || comment.text || '')}<time class="comment-time">${safe(formatCommentTime(comment.created_at))}</time></div></article>`;
- }).join('');
+  const id=String(comment.id||'');
+  const liked=commentLikes.has(id);
+  const count=commentLikeCounts.get(id)||0;
+  const row=`<article class="comment-item ${depth?'reply':''}" data-comment-id="${safe(id)}" style="${depth>1?`margin-left:${Math.min(depth,5)*42}px`:''}"><img class="comment-avatar" src="${safe(avatarSrc(author.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'" alt=""><div class="comment-content"><span class="comment-author">${safe(author.username)}</span>${renderTaggedText(comment.comment_text || comment.text || '')}<time class="comment-time">${safe(formatCommentTime(comment.created_at))}</time><div class="comment-actions"><button class="comment-like ${liked?'liked':''}" type="button" aria-label="${liked?'Unlike':'Like'} comment" aria-pressed="${liked}"   onclick="toggleCommentLike('${safe(id)}')">♥ <span>${Number(count).toLocaleString()}</span></button><button type="button" onclick="replyToComment('${safe(id)}','${safe(author.username)}')">Reply</button></div></div></article>`;
+  const replies=(byParent.get(id)||[]).map(reply=>renderComment(reply,depth+1)).join('');
+  return row+replies;
+ };
+ const roots=comments.filter(comment=>!comment.parent_id||!comments.some(candidate=>String(candidate.id)===String(comment.parent_id)));
+ list.innerHTML=roots.map(comment=>renderComment(comment)).join('');
+}
+
+async function loadCommentLikeState(comments){
+ commentLikes=new Set();
+ commentLikeCounts=new Map();
+ const ids=comments.map(comment=>String(comment.id)).filter(Boolean);
+ if(!ids.length||!currentUser) return;
+ const {data,error}=await supabaseClient.from('comment_likes').select('comment_id,user_id').in('comment_id',ids);
+ if(error) throw error;
+ (data||[]).forEach(row=>{
+  const id=String(row.comment_id);
+  commentLikeCounts.set(id,(commentLikeCounts.get(id)||0)+1);
+  if(String(row.user_id)===String(currentUser.id)) commentLikes.add(id);
+ });
+}
+
+function replyToComment(commentId,username){
+ activeCommentParentId=String(commentId);
+ const input=document.getElementById('commentsInput');
+ const replyLabel=document.getElementById('commentReplyingTo');
+ if(input){
+  input.value=`@${username} `;
+  input.placeholder=`Replying to @${username}...`;
+  input.focus();
+ }
+ if(replyLabel){replyLabel.hidden=false;replyLabel.textContent=`Replying to @${username}`;}
+}
+
+async function toggleCommentLike(commentId){
+ if(!currentUser){openAuthModal('login');return;}
+ const id=String(commentId);
+ if(!id||pendingCommentLikes.has(id)) return;
+ const wasLiked=commentLikes.has(id);
+ const shouldLike=!wasLiked;
+ const targetComment=activeComments.find(item=>String(item.id)===id);
+ const previousCount=commentLikeCounts.get(id)||0;
+ pendingCommentLikes.add(id);
+ if(shouldLike) commentLikes.add(id); else commentLikes.delete(id);
+ commentLikeCounts.set(id,Math.max(0,previousCount+(shouldLike?1:-1)));
+ const update=()=>{
+  const row=[...document.querySelectorAll('[data-comment-id]')].find(item=>item.dataset.commentId===id);
+  const button=row?.querySelector('.comment-like');
+  if(button){
+   button.classList.toggle('liked',commentLikes.has(id));
+   button.setAttribute('aria-pressed',String(commentLikes.has(id)));
+   button.setAttribute('aria-label',commentLikes.has(id)?'Unlike comment':'Like comment');
+   const count=button.querySelector('span');
+   if(count) count.textContent=Number(commentLikeCounts.get(id)||0).toLocaleString();
+  }
+ };
+ update();
+ try{
+  if(shouldLike){
+   const {error}=await supabaseClient.from('comment_likes').insert({comment_id:id,user_id:currentUser.id});
+   if(error) throw error;
+  }else{
+   const {data,error}=await supabaseClient.from('comment_likes').delete().eq('comment_id',id).eq('user_id',currentUser.id).select('comment_id').maybeSingle();
+   if(error) throw error;
+   if(!data) throw new Error('The comment like could not be found.');
+  }
+  if(shouldLike){
+   if(targetComment) await createActivityNotification(targetComment.user_id,'comment_like',{reelId:targetComment.reel_id});
+  }
+ }catch(error){
+  if(wasLiked) commentLikes.add(id); else commentLikes.delete(id);
+  commentLikeCounts.set(id,previousCount);
+  update();
+  console.error('Comment like update error:',error);
+  toast(error?.message||'Unable to update comment like.');
+ }finally{
+  pendingCommentLikes.delete(id);
+ }
 }
 
 function updateCommentCounts(reelId,count){
@@ -4001,6 +4491,8 @@ function updateCommentCounts(reelId,count){
 async function openCommentsDrawer(reelId){
  if(!currentUser){ openAuthModal('login'); return; }
  activeCommentReelId=String(reelId);
+ activeCommentParentId=null;
+ activeComments=[];
  const token=++commentLoadToken;
  const drawer=document.getElementById('commentsDrawer');
  const list=document.getElementById('commentsList');
@@ -4013,6 +4505,8 @@ async function openCommentsDrawer(reelId){
  document.getElementById('commentsTotal').textContent=`(${Number(initialCount).toLocaleString()})`;
  input.placeholder=`Add a comment as @${currentProfile || me.username || 'user'}...`;
  input.value='';
+ const replyLabel=document.getElementById('commentReplyingTo');
+ if(replyLabel){replyLabel.hidden=true;replyLabel.textContent='';}
  avatarPreview.src=avatarSrc(me.pic);
  list.innerHTML='<div class="comments-loading">Loading comments...</div>';
  drawer.classList.add('open');
@@ -4037,6 +4531,14 @@ async function openCommentsDrawer(reelId){
   }else if(error) throw error;
   if(token!==commentLoadToken || activeCommentReelId!==String(reelId)) return;
   const comments=data||[];
+  activeComments=comments;
+  try{
+   await loadCommentLikeState(comments);
+  }catch(likeError){
+   console.error('Comment likes fetch error:',likeError);
+   toast(likeError?.message||'Comment likes could not be loaded.');
+  }
+  if(token!==commentLoadToken || activeCommentReelId!==String(reelId)) return;
   renderComments(comments);
   document.getElementById('commentsTotal').textContent=`(${comments.length.toLocaleString()})`;
   updateCommentCounts(reelId,comments.length);
@@ -4054,6 +4556,8 @@ function closeCommentsDrawer(){
  drawer.classList.remove('open');
  drawer.setAttribute('aria-hidden','true');
  activeCommentReelId=null;
+ activeCommentParentId=null;
+ activeComments=[];
  commentLoadToken++;
  document.body.style.overflow='';
 }
@@ -4065,28 +4569,37 @@ async function submitReelComment(event){
  const text=input?.value.trim();
  if(!text || activeCommentReelId===null || commentsSubmitting) return;
  if(!currentUser){ openAuthModal('login'); return; }
+ const targetReelId=String(activeCommentReelId);
+ const parentId=activeCommentParentId;
+ const targetParentComment=activeComments.find(comment=>String(comment.id)===String(parentId));
  commentsSubmitting=true;
  if(button) button.disabled=true;
  try {
   const {data,error}=await supabaseClient.from('post_comments').insert({
-   reel_id:activeCommentReelId,
+   reel_id:targetReelId,
    user_id:currentUser.id,
-   comment_text:text
+   comment_text:text,
+   ...(parentId?{parent_id:parentId}:{})
   }).select('*').single();
   if(error) throw error;
   if(!data) throw new Error('The comment was not returned after saving.');
   triggerInteractionFeedback();
-  const commentedReel=reels.find(reel=>String(reel.id)===String(activeCommentReelId))||archivedReels.find(reel=>String(reel.id)===String(activeCommentReelId));
-  if(commentedReel) await createActivityNotification(commentedReel.user,'comment',{reelId:commentedReel.id,commentText:text});
-  if(activeCommentReelId===String(data.reel_id ?? activeCommentReelId)){
+  const commentedReel=reels.find(reel=>String(reel.id)===targetReelId)||archivedReels.find(reel=>String(reel.id)===targetReelId);
+  if(targetParentComment) await createActivityNotification(targetParentComment.user_id,'reply',{reelId:targetReelId,commentText:text});
+  else if(commentedReel) await createActivityNotification(commentedReel.user,'comment',{reelId:commentedReel.id,commentText:text});
+  if(activeCommentReelId===targetReelId&&activeCommentReelId===String(data.reel_id ?? targetReelId)){
    const list=document.getElementById('commentsList');
    const empty=list?.querySelector('.comments-empty, .comments-error');
    if(empty) empty.remove();
-   const row={...data,user_id:data.user_id||currentUser.id,comment_text:data.comment_text||text,created_at:data.created_at||new Date().toISOString(),username:currentProfile,full_name:me.name};
-   const author=commentAuthor(row);
-   list?.insertAdjacentHTML('beforeend',`<article class="comment-item"><img class="comment-avatar" src="${safe(avatarSrc(author.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'" alt=""><div class="comment-content"><span class="comment-author">${safe(author.username)}</span>${safe(row.comment_text)}<time class="comment-time">${safe(formatCommentTime(row.created_at))}</time></div></article>`);
+   const row={...data,user_id:data.user_id||currentUser.id,comment_text:data.comment_text||text,created_at:data.created_at||new Date().toISOString(),parent_id:data.parent_id||parentId||null,username:currentProfile,full_name:me.name};
+   activeComments.push(row);
+   renderComments(activeComments);
    if(list) list.scrollTop=list.scrollHeight;
    input.value='';
+   activeCommentParentId=null;
+   input.placeholder=`Add a comment as @${currentProfile || me.username || 'user'}...`;
+   const replyLabel=document.getElementById('commentReplyingTo');
+   if(replyLabel){replyLabel.hidden=true;replyLabel.textContent='';}
    const total=document.getElementById('commentsTotal');
    const count=(Number(total?.textContent?.replace(/[^\d]/g,''))||0)+1;
    if(total) total.textContent=`(${count.toLocaleString()})`;
@@ -4113,6 +4626,9 @@ document.getElementById('commentsHandle')?.addEventListener('pointerup',event=>{
 document.addEventListener('keydown',event=>{
  if(event.key==='Escape' && document.getElementById('commentsDrawer')?.classList.contains('open')) closeCommentsDrawer();
  if(event.key==='Escape' && document.getElementById('dmDrawer')?.classList.contains('open')) closeDMDrawer();
+ if(event.key==='Escape' && document.getElementById('dmActionSheet')?.classList.contains('open')) closeDMActionSheet();
+ if(event.key==='Escape' && document.getElementById('noteActionSheet')?.classList.contains('open')) closeNoteActionSheet();
+ if(event.key==='Escape' && document.getElementById('reelShareDrawer')?.classList.contains('open')) closeReelShareDrawer();
  if(event.key==='Escape' && document.getElementById('activityDrawer')?.classList.contains('open')) closeActivityDrawer();
  if(event.key==='Escape' && document.getElementById('settingsSheet')?.classList.contains('open')) closeSettingsSheet();
 });
@@ -4123,6 +4639,8 @@ let activeReelVideo=null;
 function pauseReelVideos(){
  document.querySelectorAll('#reelList video').forEach(video=>{
   video.pause();
+  video.muted=true;
+  video.volume=0;
   setReelDiscPlaying(video,false);
   try { video.currentTime=0; } catch(error) { console.info('Reel playback reset deferred:',error); }
  });
@@ -4156,14 +4674,18 @@ function syncActiveReelVideo(){
  reelList.querySelectorAll('video').forEach(video=>{
   if(video!==bestVideo){
    video.pause();
+   video.muted=true;
+   video.volume=0;
    setReelDiscPlaying(video,false);
    try { video.currentTime=0; } catch(error) { console.info('Reel playback reset deferred:',error); }
   }
  });
  if(!bestVideo){activeReelVideo=null;return;}
  activeReelVideo=bestVideo;
- muted=Boolean(window.isReelsMuted);
+ muted=!Boolean(window.isGlobalAudioUnmuted);
+ window.isReelsMuted=muted;
  bestVideo.muted=muted;
+ bestVideo.volume=muted?0:1.0;
  bestVideo.play().catch(error=>console.info('Reel autoplay was blocked:',error));
 }
 
@@ -4196,8 +4718,9 @@ function showReelSoundIndicator(reelCard){
 
 function toggleReelsMute(reelCard){
  muted=!muted;
+ window.isGlobalAudioUnmuted=!muted;
  window.isReelsMuted=muted;
- document.querySelectorAll('#reelList video').forEach(video=>{video.muted=muted;});
+ document.querySelectorAll('#reelList video').forEach(video=>{video.muted=muted;video.volume=muted?0:1.0;});
  document.querySelectorAll('#reelList .sound-btn').forEach(button=>{
   button.textContent=muted?'🔇':'🔊';
   button.setAttribute('aria-label',muted?'Unmute':'Mute');
@@ -4205,6 +4728,7 @@ function toggleReelsMute(reelCard){
  showReelSoundIndicator(reelCard);
  if(activeReelVideo){
   activeReelVideo.muted=muted;
+  activeReelVideo.volume=muted?0:1.0;
   if(!muted) activeReelVideo.play().catch(error=>console.info('Unmuted reel playback was blocked:',error));
  }
 }
@@ -4235,12 +4759,14 @@ async function toggleReelLike(id){
  const reelId=String(reel.id);
  const wasLiked=likedReels.has(reelId);
  const shouldLike=!wasLiked;
+ const previousCount=Number(reel.likes_count??reel.likes??0);
  if(shouldLike) triggerInteractionFeedback();
  let likeMutationCommitted=false;
  pendingReelLikes.add(reelId);
  if(shouldLike) likedReels.add(reelId); else likedReels.delete(reelId);
  reel.liked=shouldLike;
- reel.likes=Math.max(0,Number(reel.likes||0)+(shouldLike?1:-1));
+ reel.likes=Math.max(0,previousCount+(shouldLike?1:-1));
+ reel.likes_count=reel.likes;
  likedReelItems=likedReelItems.filter(item=>String(item.id)!==reelId);
  if(shouldLike) likedReelItems.unshift(reel);
  updateReelLikeUI(reel);
@@ -4258,10 +4784,16 @@ async function toggleReelLike(id){
    likeMutationCommitted=true;
   }
 
+  const {count,error:countError}=await supabaseClient.from('reel_likes').select('reel_id',{count:'exact',head:true}).eq('reel_id',reel.id);
+  if(countError) throw countError;
+  if(!Number.isFinite(count)) throw new Error('The reel like count could not be calculated.');
+  reel.likes=Math.max(0,count);
+  reel.likes_count=reel.likes;
+  updateReelLikeUI(reel);
   const {data,error}=await supabaseClient.from('reels').update({likes_count:reel.likes}).eq('id',reel.id).select('id').maybeSingle();
   if(error) throw error;
   if(!data) throw new Error('The reel like count could not be updated.');
-  if(shouldLike) await createActivityNotification(reel.user,'like',{reelId:reel.id});
+  if(shouldLike) await createActivityNotification(reel.user,'reel_like',{reelId:reel.id});
   if(currentUser?.id===userId && profileTab==='likes' && document.getElementById('profile')?.classList.contains('active')) renderProfile();
  } catch(error) {
   if(likeMutationCommitted && shouldLike){
@@ -4283,7 +4815,8 @@ async function toggleReelLike(id){
   }
   if(wasLiked) likedReels.add(reelId); else likedReels.delete(reelId);
   reel.liked=wasLiked;
-  reel.likes=Math.max(0,Number(reel.likes||0)+(shouldLike?-1:1));
+  reel.likes=previousCount;
+  reel.likes_count=previousCount;
   likedReelItems=likedReelItems.filter(item=>String(item.id)!==reelId);
   if(wasLiked) likedReelItems.unshift(reel);
   updateReelLikeUI(reel);
@@ -4474,7 +5007,6 @@ async function loadSavedReels(){
  const token=++bookmarkLoadToken;
  restoreLocalSavedPosts(userId);
  savedBookmarksLoading=true;
- if(profileTab==='saved') renderProfile();
  renderSaved();
  try{
   const {data,error}=await supabaseClient.from('bookmarks').select('reel_id,reels(*)').eq('user_id',userId);
@@ -4531,7 +5063,6 @@ async function toggleSaveReel(id){
  }
  updateBookmarkButtons();
  renderSaved();
- if(profileTab==='saved') renderProfile();
  try{
   if(wasSaved){
    const {error}=await supabaseClient.from('bookmarks').delete().eq('user_id',currentUser.id).eq('reel_id',reel.id);
@@ -4555,7 +5086,6 @@ async function toggleSaveReel(id){
   pendingBookmarks.delete(key);
   updateBookmarkButtons();
   renderSaved();
-  if(profileTab==='saved') renderProfile();
  }
 }
 
@@ -4639,21 +5169,51 @@ async function deleteReel(id){
  }
 }
 
-function toggleLike(postId){
- const post=posts.find(p=>p.id===postId); if(!post) return;
- post.liked=!post.liked; post.likes += post.liked?1:-1;
- if(post.liked) triggerInteractionFeedback();
+async function toggleLike(postId){
+ if(!currentUser){openAuthModal('login');return;}
+ const post=posts.find(item=>String(item.id)===String(postId));
+ if(!post||pendingPostLikes.has(String(post.id))) return;
+ const previousLiked=Boolean(post.liked);
+ const previousCount=Number(post.likes_count??post.likes??0);
+ const shouldLike=!previousLiked;
+ pendingPostLikes.add(String(post.id));
+ post.liked=shouldLike;
+ post.likes=Math.max(0,previousCount+(shouldLike?1:-1));
+ post.likes_count=post.likes;
+ if(shouldLike) triggerInteractionFeedback();
  document.querySelectorAll('[data-post-like]').forEach(button=>{
   if(button.dataset.postLike!==String(post.id)) return;
-  button.classList.toggle('liked',post.liked);
-  button.setAttribute('aria-pressed',String(post.liked));
-  button.setAttribute('aria-label',post.liked?'Unlike post':'Like post');
+  button.classList.toggle('liked',shouldLike);
+  button.setAttribute('aria-pressed',String(shouldLike));
+  button.setAttribute('aria-label',shouldLike?'Unlike post':'Like post');
  });
  document.querySelectorAll('[data-post-like-count]').forEach(counter=>{
   if(counter.dataset.postLikeCount===String(post.id)) counter.textContent=Number(post.likes).toLocaleString();
  });
  renderExplore();
  renderProfile();
+ try{
+  if(shouldLike&&currentUser){
+   await createActivityNotification(post.user,'post_like',{reelId:post.id});
+  }
+ }catch(error){
+  post.liked=previousLiked;
+  post.likes=previousCount;
+  post.likes_count=previousCount;
+  document.querySelectorAll('[data-post-like]').forEach(button=>{
+   if(button.dataset.postLike!==String(post.id)) return;
+   button.classList.toggle('liked',previousLiked);
+   button.setAttribute('aria-pressed',String(previousLiked));
+   button.setAttribute('aria-label',previousLiked?'Unlike post':'Like post');
+  });
+  document.querySelectorAll('[data-post-like-count]').forEach(counter=>{
+   if(counter.dataset.postLikeCount===String(post.id)) counter.textContent=previousCount.toLocaleString();
+  });
+  console.error('Post like update error:',error);
+  toast(error?.message||'Unable to update post like.');
+ }finally{
+  pendingPostLikes.delete(String(post.id));
+ }
 }
 
 async function toggleSave(postId){
@@ -4758,34 +5318,61 @@ function sharePost(postId){
 async function shareReel(reelId){
  const reel=reels.find(item=>String(item.id)===String(reelId));
  if(!reel) return;
+ if(!currentUser){openAuthModal('login');return;}
+ reelShareTargetId=String(reel.id);
+ const drawer=document.getElementById('reelShareDrawer');
+ drawer?.classList.add('open');
+ drawer?.setAttribute('aria-hidden','false');
+ try{
+  await loadDMInbox();
+  renderReelShareContacts();
+ }catch(error){
+  console.error('Recent DM contacts lookup error:',error);
+  toast(error?.message||'Unable to load recent DM contacts.');
+ }
+}
+
+function renderReelShareContacts(){
+ const list=document.getElementById('reelShareContacts');
+ const reel=reels.find(item=>String(item.id)===String(reelShareTargetId));
+ if(!list||!reel) return;
+ const contacts=dmConversations.filter(item=>item.lastMessage);
+ if(!contacts.length){list.innerHTML='<div class="dm-empty">No recent DM conversations to share with.</div>';return;}
+ list.innerHTML=contacts.map(({userId})=>{
+  const person=dmProfile(userId);
+  return `<div class="reel-share-contact"><img src="${safe(avatarSrc(person.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'" alt=""><span>${safe(person.name||person.username||'VYBE user')}<br><small>@${safe(person.username||'user')}</small></span><button type="button" onclick="sendReelToDM('${safe(userId)}')">Send</button></div>`;
+ }).join('');
+}
+
+function closeReelShareDrawer(){
+ const drawer=document.getElementById('reelShareDrawer');
+ drawer?.classList.remove('open');
+ drawer?.setAttribute('aria-hidden','true');
+ reelShareTargetId=null;
+}
+
+async function sendReelToDM(receiverId){
+ if(!currentUser||!isValidUserUuid(receiverId)) return;
+ const reel=reels.find(item=>String(item.id)===String(reelShareTargetId));
+ if(!reel) return;
  const shareUrl=new URL(window.location.href);
  shareUrl.searchParams.set('reel',String(reel.id));
- const shareData={title:`${reelAuthorName(reel)} on VYBE`,text:reel.caption||'Watch this reel on VYBE',url:shareUrl.href};
- if(typeof navigator.share==='function'){
-  try{
-   await navigator.share(shareData);
-   return;
-  }catch(error){
-   if(error?.name==='AbortError') return;
-   console.error('Native reel sharing failed:',error);
-  }
- }
- const draft=`${shareData.text}\n${shareData.url}`;
- if(currentUser){
-  pendingReelShareDraft=draft;
-  openDMDrawer();
-  toast('Choose a conversation to share this reel.');
- }
+ const messageText=`[[reel-card:${encodeURIComponent(shareUrl.href)}:${encodeURIComponent(reel.caption||'Watch this reel on VYBE')}]]`;
  try{
-  if(navigator.clipboard?.writeText){
-   await navigator.clipboard.writeText(shareUrl.href);
-   toast(currentUser?'Reel link copied. Choose a chat and paste it.':'Reel link copied to clipboard.');
-   return;
-  }
+  const {data,error}=await supabaseClient.from('direct_messages').insert({
+   sender_id:currentUser.id,
+   receiver_id:receiverId,
+   message_text:messageText
+  }).select('*').single();
+  if(error) throw error;
+  if(!data) throw new Error('The reel share was not returned after sending.');
+  handleDMRealtimeMessage(data);
+  closeReelShareDrawer();
+  toast('Reel sent');
  }catch(error){
-  console.error('Reel link copy failed:',error);
+  console.error('Reel DM share error:',error);
+  toast(error?.message||'Unable to share this reel.');
  }
- if(!currentUser) toast('Unable to share this reel from this browser.');
 }
 
 function addComment(postId){
@@ -4992,13 +5579,21 @@ async function uploadFileWithProgress(bucket,filePath,file,onProgress){
 async function saveProfile(){
  if(!currentUser){ openAuthModal('login'); return; }
  const nameInput=document.getElementById('name');
+ const userInput=document.getElementById('uname');
  const bioInput=document.getElementById('bio');
  const picInput=document.getElementById('pic');
  const nextName=nameInput?.value.trim() || me.name;
+ const nextUsername=normalizeUsername(userInput?.value||currentProfile||me.username);
  const nextBio=bioInput?.value.trim() || '';
- const metadata={...(currentUser.user_metadata||{}),full_name:nextName,name:nextName,bio:nextBio};
+ const metadata={...(currentUser.user_metadata||{}),full_name:nextName,name:nextName,bio:nextBio,username:nextUsername};
  const photo=picInput?.files?.[0];
  try {
+  if(nextUsername!==normalizeUsername(currentProfile||me.username)){
+   const availability=await checkUsernameAvailableForUser(nextUsername,currentUser.id);
+   if(!availability.available) throw new Error(availability.error||'That username is unavailable.');
+  }else if(!nextUsername||nextUsername.length<3){
+   throw new Error('Username must be at least 3 characters long.');
+  }
   if(photo){
    const fileName=`${currentUser.id}/profile/avatar-${Date.now()}-${photo.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
    const {data:uploadData,error:uploadError}=await supabaseClient.storage.from('media').upload(fileName,photo,{upsert:true,contentType:photo.type});
@@ -5013,13 +5608,15 @@ async function saveProfile(){
   currentUser=data.user || {...currentUser,user_metadata:metadata};
   const profileUpdate={
    id:currentUser.id,
-   username:currentProfile||me.username,
+   username:nextUsername,
    full_name:nextName,
    bio:nextBio,
    ...(photo?{avatar_url:metadata.profile_avatar_url}:{})
   };
   const {error:profileError}=await supabaseClient.from('profiles').upsert(profileUpdate,{onConflict:'id'});
   if(profileError) throw profileError;
+  currentProfile=nextUsername;
+  me.username=nextUsername;
   me.name=nextName;
   me.bio=nextBio;
   if(photo) me.pic=metadata.profile_avatar_url;
