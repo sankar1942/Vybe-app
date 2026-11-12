@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
 <style>
   [data-netlify-badge],
@@ -66,7 +66,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="VYBE">
-<title>VYBE — Social Experience</title>
+<title>VYBE — Share • Connect • Belong</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
@@ -705,10 +705,193 @@ button{cursor:pointer;color:white}
  .search-wrap .search{padding:11px 36px 11px 9px}
 }
  </style>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+
+    :root {
+      --bg-obsidian: #050811;
+      --bg-surface: #0b1120;
+      --bg-card: rgba(15, 23, 42, 0.72);
+      --border-glass: rgba(56, 189, 248, 0.16);
+      --cyber-blue: #0ea5e9;
+      --electric-blue: #2563eb;
+      --glow-blue: rgba(14, 165, 233, 0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #02040a;
+      color: #f8fafc;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* App Shell */
+    #vybe-shell {
+      width: 100%;
+      max-width: 430px;
+      min-height: 100vh;
+      background: radial-gradient(circle at 50% 0%, #0c1e3e 0%, #050811 55%, #03050c 100%);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 0 60px rgba(0, 0, 0, 0.9);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Strict Screen Visibility Router */
+    .app-screen {
+      display: none;
+      width: 100%;
+      flex: 1;
+      flex-direction: column;
+      overflow-y: auto;
+      padding-bottom: 145px; /* Space for music bar + bottom nav */
+      animation: fadeIn 0.22s ease-out;
+    }
+
+    .app-screen.active {
+      display: flex;
+    }
+
+    .auth-screen {
+      padding-bottom: 24px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Glass & Cyber Glow Styles */
+    .glass-panel {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-glass);
+    }
+
+    .cyber-btn {
+      background: linear-gradient(135deg, #0284c7 0%, #2563eb 50%, #38bdf8 100%);
+      box-shadow: 0 6px 24px rgba(14, 165, 233, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.35);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .cyber-btn:active {
+      transform: scale(0.97);
+    }
+
+    .vybe-v-logo {
+      background: linear-gradient(145deg, #38bdf8 0%, #2563eb 60%, #1d4ed8 100%);
+      box-shadow: 0 0 28px rgba(56, 189, 248, 0.55);
+    }
+
+    .avatar-ring {
+      padding: 2.5px;
+      background: linear-gradient(135deg, #38bdf8, #2563eb, #06b6d4);
+      box-shadow: 0 0 18px rgba(56, 189, 248, 0.45);
+    }
+
+    /* Onboarding Collage Cards */
+    .collage-card {
+      border-radius: 16px;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.65);
+      overflow: hidden;
+      transition: transform 0.3s ease;
+    }
+
+    /* Hide Scrollbars cleanly */
+    ::-webkit-scrollbar {
+      width: 0px;
+      background: transparent;
+    }
+
+    /* Bottom Floating Dock */
+    #bottom-dock {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      max-width: 430px;
+      z-index: 50;
+      padding: 0 12px 12px 12px;
+      background: linear-gradient(to top, #050811 65%, transparent);
+    }
+
+    #bottom-dock.visible {
+      display: block;
+    }
+
+    .nav-btn.active {
+      color: #38bdf8;
+    }
+
+    .nav-btn.active svg {
+      filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.7));
+    }
+
+    /* Equalizer Bars Animation */
+    .eq-bar {
+      width: 3px;
+      background: #38bdf8;
+      border-radius: 99px;
+      animation: eqPulse 0.8s infinite ease-in-out alternate;
+    }
+    .eq-bar:nth-child(2) { animation-delay: 0.2s; }
+    .eq-bar:nth-child(3) { animation-delay: 0.4s; }
+    .eq-bar:nth-child(4) { animation-delay: 0.1s; }
+
+    @keyframes eqPulse {
+      0% { height: 4px; }
+      100% { height: 14px; }
+    }
+  
+
+/* Cyber-blue presentation. Original IDs, handlers, templates and scripts remain intact. */
+:root{--bg:#050811;--panel:rgba(15,23,42,.72);--glass:rgba(15,23,42,.72);--line:rgba(56,189,248,.16);--muted:#94a3b8;--white:#f8fafc;color-scheme:dark}
+html{background:#02040a}
+body{display:block;background:#02040a;color:#f8fafc;font-family:'Plus Jakarta Sans',Arial,sans-serif;overflow-x:hidden}
+button,input,textarea{font:inherit}button:focus-visible,a:focus-visible{outline:2px solid #38bdf8;outline-offset:3px}
+.app{display:flex;position:relative;width:100%;max-width:430px;min-height:100dvh;margin:auto;background:radial-gradient(circle at 50% 0%,#0c1e3e 0%,#050811 55%,#03050c 100%);box-shadow:0 0 60px #000e}
+.sidebar{display:none}.main{margin:0;width:100%;padding:0 16px 108px;min-width:0}.content{width:100%;max-width:none}
+.topbar{position:relative;display:flex;flex-wrap:wrap;gap:14px 8px;margin:0 -16px 18px;padding:18px 16px 14px;background:#050811db;border-bottom:1px solid var(--line);backdrop-filter:blur(18px)}
+#mobileBrand{display:flex!important;align-items:center;gap:9px;font-size:22px!important;font-weight:800;letter-spacing:3px;margin:0!important;flex:1}
+.cyber-logo{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;flex-shrink:0;border-radius:12px;color:white;font-size:22px;font-weight:800;letter-spacing:0}
+.top-actions{display:flex;align-items:center;gap:7px}.top-actions .icon-btn{width:34px;height:34px;border-radius:50%}.top-actions #authButton{max-width:94px;font-size:11px;padding:8px 10px;border-radius:999px}.top-actions #headerLogoutButton{display:none!important}
+.search-wrap{order:3;width:100%;max-width:100%;flex:1 0 100%}.search-wrap .search{padding:11px 40px 11px 15px;border-radius:999px;font-size:12px;background:#0f172ab8}.search-suggestions{background:#0b1120fa}
+.glass,.glass-panel{background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.primary,.cyber-btn,.auth-submit,.dm-send,.story-reply-send,.reel-share-contact button{border:1px solid #38bdf84d;background:linear-gradient(135deg,#0284c7 0%,#2563eb 50%,#38bdf8 100%);color:white;box-shadow:0 6px 24px #0ea5e947,inset 0 1px 1px #ffffff59;border-radius:999px;font-weight:750}
+.primary:active,.cyber-btn:active{transform:scale(.97)}.secondary,.icon-btn,.media-picker{background:#0f172ab8;border-color:var(--line)}.secondary{border-radius:13px}
+.heading{font-size:22px;font-weight:800}.quick-post{display:flex;align-items:center;gap:12px;width:100%;padding:7px 14px 7px 7px;border:1px solid var(--line);border-radius:999px;background:var(--glass);color:#94a3b8;text-align:left;font-size:12px;margin:0 0 15px}.quick-post .cyber-logo{width:30px;height:30px;font-size:22px;border-radius:50%}
+.home-feed-header{display:block;margin:10px 0 16px}.home-feed-header .heading{display:none}.home-feed-switcher{display:flex;gap:8px;padding:0;border:0;background:none}.home-feed-switcher button{padding:8px 18px;border:1px solid var(--line);color:#cbd5e1;background:var(--glass);font-size:12px;border-radius:999px}.home-feed-switcher button.active{background:linear-gradient(135deg,#0284c7,#2563eb,#38bdf8);border-color:#38bdf84d;color:white;box-shadow:0 4px 16px #0ea5e93b}
+.stories{gap:14px;padding:8px 0 14px;margin:0 0 10px;border:0;background:transparent;box-shadow:none}.story.has-story .story-avatar-wrap,.story.has-unviewed .story-avatar-wrap{background:linear-gradient(135deg,#38bdf8,#2563eb,#06b6d4);box-shadow:0 0 16px #38bdf84d}.story img{border-color:#050811}.story-plus{background:#0284c7;border-color:#050811}
+.post{border-radius:24px;margin-bottom:18px;background:var(--glass);border:1px solid var(--line)}.posthead{padding:15px}.posthead .avatar{border:2px solid #38bdf8;padding:2px;box-shadow:0 0 12px #38bdf833}.post-media-stage{margin:0 12px;border-radius:16px}.postmedia{max-height:520px}.actions{padding:14px 16px}.action{font-size:21px}.action.save.saved svg{fill:#38bdf8;stroke:#38bdf8}.caption{color:#e2e8f0}.commentrow input{font-size:12px}.smallbtn{color:#38bdf8}
+#bottom-dock.bottom{display:flex;position:fixed;left:50%;right:auto;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);width:calc(100% - 24px);max-width:406px;height:68px;padding:5px 8px;border:1px solid var(--line);border-radius:25px;background:#0b1120e8;box-shadow:0 8px 30px #0009;z-index:30;justify-content:space-between;gap:2px;backdrop-filter:blur(20px)}
+.bottom button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:7px 4px;min-width:43px;color:#94a3b8;background:none;border:0;border-radius:14px}.bottom button svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:2}.bottom button span{font-size:9px;font-weight:650}.bottom button.active{background:none;color:#38bdf8}.bottom button.active svg{filter:drop-shadow(0 0 8px #38bdf8b3)}
+.bottom button:nth-child(1){order:3}.bottom button:nth-child(2){order:0}.bottom button:nth-child(3){order:1}.bottom button:nth-child(4){order:2;width:47px;min-width:47px;height:47px;margin-top:-24px;background:linear-gradient(135deg,#0284c7,#2563eb,#38bdf8);color:white;box-shadow:0 6px 24px #0ea5e973;border:2px solid #050811;border-radius:50%}.bottom button:nth-child(4) span{display:none}.bottom button:nth-child(5){order:5}.bottom button:nth-child(6){order:4}
+#reels.page.active{left:50%;right:auto;top:0;bottom:auto;transform:translateX(-50%);width:100%;max-width:430px;height:calc(100dvh - 92px);border-radius:0 0 22px 22px}.reel,.reel-skeleton-card{width:100%;height:calc(100dvh - 92px)}.reel-media video{max-width:100%;max-height:100%}.reel-info{bottom:35px}.reel-side{bottom:65px;right:12px}.reel-side button{background:#0f172aa8;border-color:#38bdf840;backdrop-filter:blur(12px)}.reel-progress-fill{background:#38bdf8}.reel-vinyl-wrap{bottom:18px}.reels-back{position:absolute;top:15px;left:14px;z-index:15;padding:8px 13px;border:1px solid var(--line);border-radius:999px;background:#0b1120b8;color:white;font-size:12px;backdrop-filter:blur(12px)}.reel-manage{left:100px}
+.profile-header{padding:22px 16px;border-radius:24px;background:transparent;border:0;box-shadow:none}.profile-top{flex-direction:column;align-items:center;text-align:center;gap:15px}.profile-header .profilepic{width:100px;height:100px;border:3px solid #38bdf8;padding:3px;background:#050811;box-shadow:0 0 24px #38bdf859}.profile-details{width:100%}.profile-username{font-size:22px;font-weight:800}.profile-bio{color:#e2e8f0}.profile-stats{justify-content:space-around;gap:8px;padding:16px 10px;border:1px solid var(--line);border-radius:18px;background:var(--glass)}.profile-stats b{font-size:19px}.profile-stats span{font-size:11px;color:#94a3b8}.profile-tabs{gap:15px;flex-wrap:wrap}.profile-tabs button.active{color:#38bdf8;border-color:#38bdf8}.profile-highlight-avatar{border-color:#38bdf880}.profile-grid{gap:5px;border-radius:16px;overflow:hidden}
+.explore-filter-bar{padding:4px 0 10px;gap:8px}.explore-filter-chip{border-color:var(--line);background:var(--glass);font-size:12px}.explore-filter-chip.active{background:linear-gradient(135deg,#0284c7,#2563eb);color:white;border-color:#38bdf8}.discover-grid{gap:5px;grid-auto-rows:calc((100cqw - 10px)/3)}.discover-grid .tile{border-radius:14px}
+.modalbox,.settings-sheet,.comments-sheet,.people-drawer,.dm-action-sheet,.reel-share-sheet,.highlight-dialog,.camera-dialog{background:#0b1120f5;border-color:var(--line)}.modalbox input,.modalbox textarea{background:#0f172ab8;border-color:var(--line);border-radius:16px}.modalbox input:focus,.modalbox textarea:focus{border-color:#38bdf8}.create-drawer{max-width:430px}.media-preview{border-color:var(--line);border-radius:18px}.create-title-row h2{font-size:18px}
+#authModal{padding:0;background:#02040a;z-index:60}#authModal>.modalbox{max-width:430px;min-height:100dvh;max-height:100dvh;border:0;border-radius:0;padding:36px 25px;background:radial-gradient(circle at 50% 0%,#0c1e3e 0%,#050811 60%);overflow:auto}#authModal>.modalbox>.close{width:36px;height:36px;display:grid;place-items:center;border:1px solid var(--line);border-radius:50%;font-size:22px;background:var(--glass)}.auth-design-intro{clear:both;padding:28px 0 24px}.auth-design-intro .cyber-logo{width:64px;height:64px;border-radius:22px;font-size:40px;transform:rotate(3deg);margin-bottom:22px}.auth-design-intro h1{font-size:28px;font-weight:800;line-height:1.3}.auth-design-intro p{font-size:13px;color:#94a3b8;margin-top:9px;line-height:1.7}.auth-header{margin:0}.auth-header h2{display:none}.auth-subtitle{font-size:14px;color:#7dd3fc}.auth-box{gap:12px}.auth-box input{margin:0;padding:16px;font-size:14px}.auth-submit{padding:15px;font-size:15px}.auth-toggle{margin-top:24px;font-size:12px;color:#94a3b8}.auth-toggle button{color:#38bdf8;text-decoration:none;opacity:1}.auth-status{margin:0;min-height:20px}.auth-footer{text-align:center;color:#64748b;font-size:11px;margin-top:35px;letter-spacing:1px}
+.dm-drawer{max-width:430px;background:#050811f5}.dm-header{border-color:var(--line)}.dm-inbox{padding:12px}.dm-person{margin-bottom:10px;padding:14px 12px;border:1px solid var(--line);border-radius:18px;background:var(--glass)}.dm-person-avatar{border:1px solid #38bdf860}.dm-bubble{background:#0f172a;border-color:var(--line)}.dm-bubble.mine{background:linear-gradient(135deg,#0284c7,#2563eb);border-color:#38bdf840}.dm-composer,.comments-composer{background:#0b1120;border-color:var(--line)}.activity-drawer{background:#0b1120f5;border-color:var(--line)}.activity-item.unread{background:#0ea5e910}.notification-dot{background:#38bdf8}.settings-menu button{background:var(--glass);border-color:var(--line)}.settings-toggle{accent-color:#0ea5e9}.toast{background:#0b1120;border-color:#38bdf840;color:#e2e8f0}.skeleton-card{background:#0b1120;border-color:var(--line)}.skeleton-block{background:#172338}
+@media(max-width:360px){.main{padding-left:12px;padding-right:12px}.topbar{margin-left:-12px;margin-right:-12px;padding-left:12px;padding-right:12px}.top-actions{gap:4px}.top-actions #authButton{max-width:76px}.bottom button{min-width:38px}.bottom button span{font-size:8px}}
+
+</style>
 </head>
 
 <body>
-<div class="app">
+<div class="app" id="vybe-shell">
 <aside class="sidebar">
  <div class="brand">VYBE.<small>YOUR SOCIAL WORLD</small></div>
  <button class="nav active" data-page="reels" onclick="go('reels')">▷ Reels</button>
@@ -723,7 +906,7 @@ button{cursor:pointer;color:white}
 
 <main class="main">
 <header class="topbar">
- <div class="brand" style="display:none;font-size:25px;margin:0" id="mobileBrand">VYBE.</div>
+ <div class="brand" style="display:none;font-size:25px;margin:0" id="mobileBrand"><span class="vybe-v-logo cyber-logo" aria-hidden="true">V</span><span>VYBE</span></div>
  <div id="searchWrap" class="search-wrap">
   <input id="topSearchInput" class="search" placeholder="⌕  Search VYBE..." autocomplete="off" aria-label="Search VYBE" aria-controls="searchSuggestions" aria-expanded="false">
   <button id="searchClearButton" class="search-clear" type="button" aria-label="Clear search">✕</button>
@@ -755,18 +938,20 @@ button{cursor:pointer;color:white}
 <div class="content">
 <section id="reels" class="page active">
  <div class="reels-top"><div><h2>For You</h2><p class="subheading">Discover your next vibe</p></div><span style="color:#aaa;font-size:12px">VYBE ORIGINALS</span></div>
+ <button class="reels-back" type="button" onclick="go('home')">← Feed</button>
  <div id="reelList"></div>
  <p class="reel-note">Reels start muted. Unmuting applies as you scroll.</p>
 </section>
 
 <section id="home" class="page">
+ <button class="quick-post" type="button" onclick="openCreate()"><span class="cyber-logo cyber-btn" aria-hidden="true">＋</span><span>What's on your mind?</span></button>
  <div class="stories glass" id="stories"></div>
- <div class="home-feed-header"><h2 class="heading">Your Feed</h2><div class="home-feed-switcher" role="tablist" aria-label="Home feed"><button id="forYouTab" class="active" type="button" role="tab" aria-selected="true" onclick="setHomeFeedMode('forYou')">For You</button><button id="followingTab" type="button" role="tab" aria-selected="false" onclick="setHomeFeedMode('following')">Following</button></div></div>
+ <div class="home-feed-header"><h2 class="heading">Your Feed</h2><div class="home-feed-switcher" role="tablist" aria-label="Home feed"><button id="forYouTab" class="active" type="button" role="tab" aria-selected="true" onclick="setHomeFeedMode('forYou')">For You</button><button id="followingTab" type="button" role="tab" aria-selected="false" onclick="setHomeFeedMode('following')">Following</button><button type="button" onclick="go('reels')">Reels</button></div></div>
  <div id="feedRefreshIndicator" class="feed-refresh-indicator" aria-live="polite"><span class="feed-refresh-spinner"></span><span id="feedRefreshText">Pull to refresh</span></div>
  <div id="feed"></div>
 </section>
 <section id="explore" class="page">
- <h2 class="heading">Explore</h2>
+ <h2 class="heading">Discover</h2><p class="subheading" style="margin-bottom:16px">Discover amazing content, people and ideas.</p>
  <div class="explore-filter-bar" id="exploreFilterBar" role="group" aria-label="Filter Explore media">
   <button class="explore-filter-chip active" type="button" data-explore-filter="all" aria-pressed="true" onclick="setExploreFilter('all')">All</button>
   <button class="explore-filter-chip" type="button" data-explore-filter="trending" aria-pressed="false" onclick="setExploreFilter('trending')">🔥 Trending</button>
@@ -785,7 +970,7 @@ button{cursor:pointer;color:white}
  <h2 class="heading">Settings</h2>
  <div class="chatbox glass">
   <div class="person">Account settings</div><div class="person">Privacy</div>
-  <div class="person">Notifications</div><div class="person">Appearance · Monochrome glass</div>
+  <div class="person">Notifications</div><div class="person">Appearance · Cyber blue</div>
   <button class="primary" onclick="editProfile()">Custom Profile</button>
   <button class="secondary" style="margin-top:12px;width:100%" id="logoutButton" onclick="logoutUser()">Logout</button>
  </div>
@@ -892,12 +1077,13 @@ button{cursor:pointer;color:white}
  </section>
 </div>
 
-<nav class="bottom">
- <button class="active" onclick="go('reels')">▷</button>
- <button onclick="go('home')">⌂</button>
- <button onclick="go('explore')">⌕</button>
- <button onclick="openCreate()">＋</button>
- <button onclick="go('profile')">◎</button>
+<nav class="bottom" id="bottom-dock" aria-label="Main navigation">
+ <button type="button" class="active" onclick="go('reels')" aria-label="Reels"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="5"/><path d="m10 9 5 3-5 3Z M3 8h18 M8 4l3 4 M15 4l3 4"/></svg><span>Reels</span></button>
+ <button type="button" onclick="go('home')" aria-label="Home"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg><span>Home</span></button>
+ <button type="button" onclick="go('explore')" aria-label="Discover"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18zm3.5-12.5l-2 5-5 2 2-5 5-2z"/></svg><span>Discover</span></button>
+ <button type="button" onclick="openCreate()" aria-label="Create"><svg viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" d="M12 4.5v15m7.5-7.5h-15"/></svg><span>Create</span></button>
+ <button type="button" onclick="go('profile')" aria-label="Profile"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg><span>Profile</span></button>
+ <button type="button" onclick="openDMDrawer()" aria-label="Messages"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM2.25 12c0-4.97 4.365-9 9.75-9s9.75 4.03 9.75 9-4.365 9-9.75 9c-1.56 0-3.035-.339-4.345-.942L3 21l1.242-3.93A8.645 8.645 0 012.25 12z"/></svg><span>Messages</span></button>
 </nav>
 
 <input type="file" id="mediaUploadInput" accept="video/*,image/*" style="display:none;">
@@ -967,7 +1153,8 @@ button{cursor:pointer;color:white}
 
 <div class="modal" id="authModal"><div class="modalbox glass">
  <button class="close" onclick="hide('authModal')">×</button>
- <div class="auth-box">
+ <div class="auth-design-intro"><span class="vybe-v-logo cyber-logo" aria-hidden="true">V</span><h1>Welcome to VYBE 👋</h1><p>Your Vibe. Your World.<br>Share • Connect • Belong</p></div>
+  <div class="auth-box">
   <div class="auth-header">
    <div>
     <h2>VYBE</h2>
@@ -976,7 +1163,7 @@ button{cursor:pointer;color:white}
   </div>
   <input id="authUsername" type="text" placeholder="Username" autocomplete="username" style="display:none;">
   <input id="authEmail" type="text" placeholder="Username or Email" autocomplete="username" aria-label="Username or Email">
-  <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password">
+  <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password" aria-label="Password">
   <div id="authStatus" class="auth-status"></div>
   <button id="authSubmitBtn" class="primary auth-submit" onclick="submitAuth()">Log In</button>
   <div class="auth-toggle">
@@ -5914,5 +6101,6 @@ if ('serviceWorker' in navigator) {
   killNetlify();
   setInterval(killNetlify, 500);
 </script>
+<script src="vybe-bootstrap.js"></script>
 </body>
 </html>
