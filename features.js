@@ -1452,3 +1452,2242 @@ if (typeof createPost === "function") {
     return res;
   };
 }
+
+
+
+// ================= VYBE v9.0: 10 NEXT-GEN SENSORY & INTERACTIVE FEATURES =================
+
+// --- 1. GRAVITY-TILT 3D PARALLAX CARDS (Gyroscope / Pointer) ---
+if (window.DeviceOrientationEvent) {
+  window.addEventListener("deviceorientation", (e) => {
+    if (e.gamma === null || e.beta === null) return;
+    const tiltX = Math.max(-6, Math.min(6, e.gamma / 5));
+    const tiltY = Math.max(-4, Math.min(4, (e.beta - 45) / 8));
+    document.querySelectorAll("#feed article.post").forEach((card) => {
+      const rect = card.getBoundingClientRect();
+      if (rect.top < window.innerHeight && rect.bottom > 0) {
+        card.style.transform = `perspective(900px) rotateY(${tiltX.toFixed(1)}deg) rotateX(${(-tiltY).toFixed(1)}deg)`;
+      }
+    });
+  }, { passive: true });
+}
+
+// --- 2. VOICE-BUBBLE WAVEFORM STORIES ---
+let voiceBubbles = JSON.parse(localStorage.getItem("vybe:voice-bubbles") || "null") || [
+  { user: "alex.design", title: "Late night design grind 🎧", duration: "0:06", url: "" },
+  { user: "sarah.official", title: "Good morning VYBE fam! ☀️", duration: "0:04", url: "" }
+];
+let vbRecorder = null;
+
+function openVoiceBubbleModal() {
+  if (typeof show === "function") show("voiceBubbleModal");
+  renderVoiceBubbles();
+}
+
+function renderVoiceBubbles() {
+  const list = document.getElementById("voiceBubbleFeedList");
+  if (!list) return;
+  list.innerHTML = voiceBubbles
+    .map(
+      (vb, i) => `
+      <div class="people glass" style="padding:10px 12px;margin:0;justify-content:space-between;">
+        <div>
+          <strong style="display:block;font-size:12px;color:#7dd3fc;">@${safe(vb.user)} • ${vb.duration}</strong>
+          <span style="font-size:12px;color:#fff;">${safe(vb.title)}</span>
+        </div>
+        <button type="button" class="primary" style="padding:5px 12px;font-size:11px;" onclick="playVoiceBubble(${i})">▶ Play</button>
+      </div>`
+    )
+    .join("");
+}
+
+function playVoiceBubble(idx) {
+  const item = voiceBubbles[idx];
+  if (!item) return;
+  if (item.url) {
+    new Audio(item.url).play().catch(() => {});
+  }
+  if (typeof toast === "function") toast(`🫧 Playing @${item.user}: "${item.title}"`);
+}
+
+async function toggleVoiceBubbleRecord() {
+  const btn = document.getElementById("voiceBubbleRecBtn");
+  const wave = document.getElementById("voiceBubbleWave");
+  if (vbRecorder && vbRecorder.state === "recording") {
+    vbRecorder.stop();
+    return;
+  }
+  if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+    if (typeof toast === "function") toast("Microphone not supported on this device.");
+    return;
+  }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const chunks = [];
+    vbRecorder = new MediaRecorder(stream);
+    if (wave) wave.classList.add("recording");
+    if (btn) btn.textContent = "⏹ Stop & Drop Voice Story";
+
+    vbRecorder.addEventListener("dataavailable", (e) => { if (e.data?.size) chunks.push(e.data); });
+    vbRecorder.addEventListener("stop", async () => {
+      stream.getTracks().forEach((t) => t.stop());
+      vbRecorder = null;
+      if (wave) wave.classList.remove("recording");
+      if (btn) btn.textContent = "🎙 Start Recording (Max 10s)";
+      if (!chunks.length) return;
+      const blob = new Blob(chunks, { type: "audio/webm" });
+      const titleInput = document.getElementById("voiceBubbleCaption");
+      const title = (titleInput?.value || "").trim() || "Voice Vibe Drop 🫧";
+      if (typeof toast === "function") toast("Uploading Voice-Bubble Story...");
+      try {
+        const url = await uploadToCloudinary(new File([blob], `vb-${Date.now()}.webm`, { type: blob.type }));
+        voiceBubbles.unshift({
+          user: (typeof currentProfile !== "undefined" && currentProfile) || "you",
+          title,
+          duration: "0:07",
+          url
+        });
+        localStorage.setItem("vybe:voice-bubbles", JSON.stringify(voiceBubbles));
+        if (titleInput) titleInput.value = "";
+        renderVoiceBubbles();
+        if (typeof toast === "function") toast("🫧 Voice-Bubble Story live!");
+      } catch (_) {
+        if (typeof toast === "function") toast("Could not upload voice story.");
+      }
+    }, { once: true });
+
+    vbRecorder.start();
+    setTimeout(() => { if (vbRecorder && vbRecorder.state === "recording") vbRecorder.stop(); }, 10000);
+  } catch (_) {
+    if (typeof toast === "function") toast("Allow microphone permission to record.");
+  }
+}
+
+// --- 3. FUTURE-SELF TIME-LOCK LETTER ---
+function openFutureLetterModal() {
+  if (typeof show === "function") show("futureLetterModal");
+  renderFutureLetters();
+}
+
+function sealFutureLetter() {
+  const textEl = document.getElementById("futureLetterText");
+  const dateEl = document.getElementById("futureLetterDate");
+  const text = (textEl?.value || "").trim();
+  const dateVal = dateEl?.value;
+  if (!text || !dateVal) {
+    if (typeof toast === "function") toast("Write a message and pick a future date!");
+    return;
+  }
+  const letters = JSON.parse(localStorage.getItem("vybe:future-letters") || "[]");
+  letters.unshift({
+    id: Date.now(),
+    text,
+    unlockTs: new Date(dateVal).getTime(),
+    createdAt: new Date().toLocaleDateString()
+  });
+  localStorage.setItem("vybe:future-letters", JSON.stringify(letters));
+  textEl.value = "";
+  dateEl.value = "";
+  renderFutureLetters();
+  if (typeof toast === "function") toast("🔮 Letter sealed for your future self!");
+}
+
+function renderFutureLetters() {
+  const list = document.getElementById("futureLettersList");
+  if (!list) return;
+  const letters = JSON.parse(localStorage.getItem("vybe:future-letters") || "[]");
+  if (!letters.length) {
+    list.innerHTML = '<div class="meta" style="text-align:center;">No sealed letters yet.</div>';
+    return;
+  }
+  list.innerHTML = letters
+    .map((l) => {
+      const unlocked = Date.now() >= l.unlockTs;
+      return `
+        <div class="glass" style="padding:12px;border-radius:14px;">
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:#7dd3fc;">
+            <span>${unlocked ? "📬 DELIVERED FROM PAST YOU" : "🔒 SEALED CAPSULE"}</span>
+            <span>${new Date(l.unlockTs).toLocaleDateString()}</span>
+          </div>
+          <p style="margin-top:6px;font-size:13px;color:${unlocked ? "#fff" : "#64748b"};">
+            ${unlocked ? safe(l.text) : "•••••••••••••••••••••••• (Locked until unlock date)"}
+          </p>
+        </div>`;
+    })
+    .join("");
+}
+
+// --- 4. VIBE CHECK FLASH QUIZ (On Other Profiles) ---
+const sampleQuizQuestions = [
+  { q: "1. Ideal weekend plan?", a: "🏍️ Midnight Highway Ride", b: "☕ Cozy Cafe & Chill" },
+  { q: "2. Music mood while working?", a: "🎧 Cyber Lo-Fi Beats", b: "🔥 High-Energy Synth" },
+  { q: "3. Late night superpower?", a: "💻 2 AM Deep Focus", b: "🌌 Stargazing & Talks" }
+];
+let quizScoreCount = 0;
+let quizAnsweredCount = 0;
+
+function openVibeCheckQuiz() {
+  quizScoreCount = 0;
+  quizAnsweredCount = 0;
+  if (typeof show === "function") show("vibeQuizModal");
+  const body = document.getElementById("vibeQuizBody");
+  if (!body) return;
+  body.innerHTML = sampleQuizQuestions
+    .map(
+      (item, idx) => `
+      <div class="glass" style="padding:10px 12px;border-radius:14px;" id="quiz-q-${idx}">
+        <strong style="display:block;font-size:12px;margin-bottom:8px;">${item.q}</strong>
+        <div style="display:flex;gap:8px;">
+          <button type="button" class="secondary" style="flex:1;font-size:11px;" onclick="answerVibeQuiz(${idx}, 0)">${item.a}</button>
+          <button type="button" class="secondary" style="flex:1;font-size:11px;" onclick="answerVibeQuiz(${idx}, 1)">${item.b}</button>
+        </div>
+      </div>`
+    )
+    .join("");
+}
+
+function answerVibeQuiz(qIdx, choice) {
+  const box = document.getElementById(`quiz-q-${qIdx}`);
+  if (!box || box.dataset.done === "true") return;
+  box.dataset.done = "true";
+  quizAnsweredCount++;
+  if (choice === (qIdx % 2)) quizScoreCount++;
+  box.style.borderColor = "#38bdf8";
+  box.innerHTML = `<div style="font-size:12px;color:#7dd3fc;text-align:center;">✓ Answer Locked!</div>`;
+
+  if (quizAnsweredCount === sampleQuizQuestions.length) {
+    const pct = Math.round(((quizScoreCount + 1) / (sampleQuizQuestions.length + 1)) * 100);
+    document.getElementById("vibeQuizBody").innerHTML = `
+      <div style="text-align:center;padding:18px;">
+        <div style="font-size:36px;">⚡</div>
+        <h3 style="font-size:20px;color:#38bdf8;margin:6px 0;">${pct}% Vibe Sync!</h3>
+        <p class="meta">You matched ${quizScoreCount}/${sampleQuizQuestions.length} core creator instincts!</p>
+      </div>`;
+  }
+}
+
+if (typeof renderOtherProfile === "function") {
+  const _v9OrigRenderOther = renderOtherProfile;
+  window.renderOtherProfile = function () {
+    _v9OrigRenderOther.apply(this, arguments);
+    const btns = document.querySelector("#otherView .profile-buttons");
+    if (btns && !btns.querySelector(".vibe-quiz-btn")) {
+      const qBtn = document.createElement("button");
+      qBtn.type = "button";
+      qBtn.className = "secondary vibe-quiz-btn";
+      qBtn.textContent = "⚡ Vibe Quiz";
+      qBtn.onclick = openVibeCheckQuiz;
+      btns.appendChild(qBtn);
+    }
+  };
+}
+
+// --- 5. LIVE NEON GRAFFITI CANVAS ---
+let graffitiColor = "#38bdf8";
+let graffitiDrawing = false;
+
+function openNeonGraffitiModal() {
+  if (typeof show === "function") show("neonGraffitiModal");
+  const canvas = document.getElementById("neonGraffitiCanvas");
+  if (!canvas || canvas.dataset.init === "true") return;
+  canvas.dataset.init = "true";
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#050811";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const getPos = (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+    return {
+      x: ((cx - rect.left) / rect.width) * canvas.width,
+      y: ((cy - rect.top) / rect.height) * canvas.height
+    };
+  };
+
+  const startDraw = (e) => {
+    graffitiDrawing = true;
+    const p = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+  };
+  const moveDraw = (e) => {
+    if (!graffitiDrawing) return;
+    e.preventDefault();
+    const p = getPos(e);
+    ctx.strokeStyle = graffitiColor;
+    ctx.shadowColor = graffitiColor;
+    ctx.shadowBlur = 14;
+    ctx.lineWidth = 5;
+    ctx.lineCap = "round";
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+  };
+  const endDraw = () => { graffitiDrawing = false; };
+
+  canvas.addEventListener("pointerdown", startDraw);
+  canvas.addEventListener("pointermove", moveDraw);
+  window.addEventListener("pointerup", endDraw);
+  canvas.addEventListener("touchstart", startDraw, { passive: true });
+  canvas.addEventListener("touchmove", moveDraw, { passive: false });
+  canvas.addEventListener("touchend", endDraw);
+}
+
+function setGraffitiColor(c) {
+  graffitiColor = c;
+}
+
+function clearNeonCanvas() {
+  const canvas = document.getElementById("neonGraffitiCanvas");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = "#050811";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+function useNeonGraffitiPost() {
+  const canvas = document.getElementById("neonGraffitiCanvas");
+  if (!canvas) return;
+  canvas.toBlob((blob) => {
+    if (!blob) return;
+    const file = new File([blob], `vybe-neon-${Date.now()}.png`, { type: "image/png" });
+    if (typeof hide === "function") hide("neonGraffitiModal");
+    const input = document.getElementById("mediaUploadInput");
+    if (input && typeof assignFileToInput === "function") {
+      assignFileToInput(input, file);
+    }
+  }, "image/png");
+}
+
+// --- 6. AMBIENT SOUNDSCAPE MIXER (Web Audio Noise Layers) ---
+const soundscapeNodes = {};
+function updateSoundscapeLayer(layer, val) {
+  const level = Number(val) / 100;
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  if (!AudioCtx) return;
+  window._vybeScapeCtx = window._vybeScapeCtx || new AudioCtx();
+  const ctx = window._vybeScapeCtx;
+  if (ctx.state === "suspended") ctx.resume().catch(() => {});
+
+  if (!soundscapeNodes[layer]) {
+    const bufferSize = ctx.sampleRate * 2;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = (Math.random() * 2 - 1) * (layer === "vinyl" ? (Math.random() > 0.985 ? 0.8 : 0.05) : 0.35);
+    }
+    const noise = ctx.createBufferSource();
+    noise.buffer = buffer;
+    noise.loop = true;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = layer === "rain" ? "lowpass" : layer === "crickets" ? "bandpass" : "highpass";
+    filter.frequency.value = layer === "rain" ? 420 : layer === "crickets" ? 3800 : 1800;
+
+    const gain = ctx.createGain();
+    gain.gain.value = 0;
+
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    noise.start();
+    soundscapeNodes[layer] = gain;
+  }
+  soundscapeNodes[layer].gain.setTargetAtTime(level * 0.12, ctx.currentTime, 0.05);
+}
+
+// --- 7. VIEW-ONCE SELF-DESTRUCT MEDIA IN DM ---
+let dmViewOnceActive = false;
+function toggleDMViewOnce() {
+  dmViewOnceActive = !dmViewOnceActive;
+  const btn = document.getElementById("dmViewOnceBtn");
+  if (btn) btn.classList.toggle("bomb-active", dmViewOnceActive);
+  if (typeof toast === "function") {
+    toast(dmViewOnceActive ? "💣 View-Once Bomb ON (Next message self-destructs)" : "View-Once Bomb OFF");
+  }
+}
+
+if (typeof sendMessage === "function") {
+  const _v9OrigSendMsg = sendMessage;
+  window.sendMessage = async function () {
+    const input = document.getElementById("messageText");
+    if (input && dmViewOnceActive && input.value.trim()) {
+      input.value = `💣 [VIEW-ONCE] ${input.value.trim()}`;
+      dmViewOnceActive = false;
+      document.getElementById("dmViewOnceBtn")?.classList.remove("bomb-active");
+    }
+    return _v9OrigSendMsg.apply(this, arguments);
+  };
+}
+
+// --- 8. VIBE LEGENDS LEADERBOARD ---
+function openVibeLeaderboard() {
+  if (typeof show === "function") show("vibeLeaderboardModal");
+  const list = document.getElementById("vibeLeaderboardList");
+  if (!list) return;
+  const myStreak = Number(localStorage.getItem("vybe:streak-count") || 1);
+  const myName = (typeof currentProfile !== "undefined" && currentProfile) || "you";
+  const board = [
+    { rank: "🥇", user: myName, streak: `${myStreak}d Streak`, score: `${120 + myStreak * 15} XP` },
+    { rank: "🥈", user: "sarah.official", streak: "14d Streak", score: "310 XP" },
+    { rank: "🥉", user: "alex.design", streak: "9d Streak", score: "245 XP" },
+    { rank: "4️⃣", user: "john.travel", streak: "6d Streak", score: "190 XP" }
+  ];
+  list.innerHTML = board
+    .map(
+      (b) => `
+      <div class="people glass" style="padding:10px 14px;margin:0;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:18px;">${b.rank}</span>
+          <div>
+            <strong style="display:block;font-size:13px;">@${safe(b.user)}</strong>
+            <small class="meta">🔥 ${b.streak}</small>
+          </div>
+        </div>
+        <strong style="color:#38bdf8;font-size:13px;">${b.score}</strong>
+      </div>`
+    )
+    .join("");
+}
+
+// --- 9. MOOD-REACTIVE TYPING AURA IN DM ---
+document.getElementById("messageText")?.addEventListener("input", function () {
+  const val = this.value.toLowerCase();
+  const composer = document.getElementById("dmComposer");
+  if (!composer) return;
+  composer.classList.remove("aura-love", "aura-fire", "aura-laugh");
+  if (val.includes("love") || val.includes("❤️") || val.includes("🥰")) {
+    composer.classList.add("aura-love");
+  } else if (val.includes("fire") || val.includes("🔥") || val.includes("lit")) {
+    composer.classList.add("aura-fire");
+  } else if (val.includes("haha") || val.includes("😂") || val.includes("lol")) {
+    composer.classList.add("aura-laugh");
+  }
+});
+
+// --- 10. POLAROID SHAKE-TO-DEVELOP POSTS ---
+function enhancePolaroidPosts() {
+  document.querySelectorAll("#feed article.post").forEach((article) => {
+    const captionEl = article.querySelector(".caption");
+    if (!captionEl) return;
+    const raw = captionEl.textContent || "";
+    if (!raw.includes("[POLAROID]") && article.dataset.isPolaroid !== "true") return;
+
+    article.dataset.isPolaroid = "true";
+    captionEl.innerHTML = captionEl.innerHTML.replace("[POLAROID]", "").trim();
+    const stage = article.querySelector(".post-media-stage");
+    if (!stage || stage.classList.contains("polaroid-frame")) return;
+
+    stage.classList.add("polaroid-frame");
+    const strip = document.createElement("div");
+    strip.className = "polaroid-caption-strip";
+    strip.textContent = "📸 Tap or Shake Phone to Develop Polaroid";
+    stage.appendChild(strip);
+
+    stage.addEventListener("click", () => {
+      stage.classList.add("developed");
+      strip.textContent = "✨ VYBE Polaroid Developed";
+    }, { once: true });
+  });
+}
+
+// Shake gesture listener to develop all visible Polaroids
+if (window.DeviceMotionEvent) {
+  window.addEventListener("devicemotion", (e) => {
+    const acc = e.accelerationIncludingGravity;
+    if (!acc) return;
+    const force = Math.abs(acc.x || 0) + Math.abs(acc.y || 0) + Math.abs(acc.z || 0);
+    if (force > 28) {
+      document.querySelectorAll(".polaroid-frame:not(.developed)").forEach((el) => {
+        el.classList.add("developed");
+        const strip = el.querySelector(".polaroid-caption-strip");
+        if (strip) strip.textContent = "✨ Developed by Shake!";
+      });
+    }
+  }, { passive: true });
+}
+
+// Hook Polaroid into renderFeed & createPost
+if (typeof renderFeed === "function") {
+  const _v9PrevRenderFeed = renderFeed;
+  window.renderFeed = function () {
+    _v9PrevRenderFeed.apply(this, arguments);
+    enhancePolaroidPosts();
+  };
+}
+
+if (typeof createPost === "function") {
+  const _v9PrevCreatePost = createPost;
+  window.createPost = async function () {
+    const captionEl = document.getElementById("caption");
+    const polEl = document.getElementById("postPolaroidToggle");
+    if (captionEl && polEl?.checked) {
+      captionEl.value = `${captionEl.value.trim()} [POLAROID]`.trim();
+    }
+    const res = await _v9PrevCreatePost.apply(this, arguments);
+    if (polEl) polEl.checked = false;
+    return res;
+  };
+}
+
+
+
+// ================= VYBE v10.0: 10 MILESTONE FUTURISTIC FEATURES =================
+
+// --- 1. 3D HOLOGRAM AVATAR & AURA RING CUSTOMIZER ---
+let currentAvatarAura = localStorage.getItem("vybe:avatar-aura") || "pulse";
+function cycleAvatarAura() {
+  const order = ["pulse", "solar", "matrix"];
+  const next = order[(order.indexOf(currentAvatarAura) + 1) % order.length];
+  currentAvatarAura = next;
+  localStorage.setItem("vybe:avatar-aura", next);
+  if (typeof renderProfile === "function") renderProfile();
+  if (typeof toast === "function") toast(`🌌 Hologram Aura switched: ${next.toUpperCase()}`);
+}
+
+if (typeof renderProfile === "function") {
+  const _v10PrevRenderProfile = renderProfile;
+  window.renderProfile = function () {
+    _v10PrevRenderProfile.apply(this, arguments);
+    const pic = document.querySelector("#profileView .profilepic");
+    if (pic) {
+      pic.classList.add(`aura-${currentAvatarAura}`);
+    }
+    const tools = document.querySelector("#profileView .profile-mega-tools");
+    if (tools && !tools.querySelector(".aura-cycle-btn")) {
+      const auraBtn = document.createElement("button");
+      auraBtn.type = "button";
+      auraBtn.className = "mega-pill-btn aura-cycle-btn";
+      auraBtn.textContent = "🌌 Aura Ring";
+      auraBtn.onclick = cycleAvatarAura;
+      tools.appendChild(auraBtn);
+    }
+  };
+}
+
+// --- 2. LIVE CO-BROWSING REELS WATCH PARTY ---
+let watchPartyChannel = null;
+let myPartyCode = "VYBE-" + Math.floor(10 + Math.random() * 89);
+
+function openWatchPartyModal() {
+  if (typeof show === "function") show("watchPartyModal");
+  const disp = document.getElementById("myPartyCodeDisplay");
+  if (disp) disp.textContent = myPartyCode;
+}
+
+function joinWatchParty(customCode) {
+  const input = document.getElementById("joinPartyCodeInput");
+  const code = (customCode || input?.value || myPartyCode).trim().toUpperCase();
+  if (!code) return;
+  if (watchPartyChannel && typeof supabaseClient !== "undefined") {
+    supabaseClient.removeChannel(watchPartyChannel).catch(() => {});
+  }
+  if (typeof supabaseClient !== "undefined") {
+    watchPartyChannel = supabaseClient.channel(`watchparty-${code}`, {
+      config: { broadcast: { self: false } }
+    });
+    watchPartyChannel
+      .on("broadcast", { event: "sync_reel" }, ({ payload }) => {
+        if (payload?.reelId && typeof playReelInPlayer === "function") {
+          playReelInPlayer(payload.reelId);
+        }
+      })
+      .subscribe();
+  }
+  const st = document.getElementById("watchPartyStatus");
+  if (st) st.textContent = `● Connected to Watch Party ${code}!`;
+  if (typeof toast === "function") toast(`🤝 Synced to Watch Party: ${code}`);
+}
+
+// Broadcast active reel when scrolling in Reels tab
+document.getElementById("reelList")?.addEventListener("scroll", () => {
+  if (!watchPartyChannel) return;
+  clearTimeout(window._wpSyncTimer);
+  window._wpSyncTimer = setTimeout(() => {
+    const activeCard = document.querySelector("#reelList .reel");
+    const reelId = activeCard?.dataset.reelCard;
+    if (reelId) {
+      watchPartyChannel.send({ type: "broadcast", event: "sync_reel", payload: { reelId } });
+    }
+  }, 450);
+}, { passive: true });
+
+// --- 3. AI VIBE ORACLE & DAILY FORTUNE CARD ---
+const oracleFortunes = [
+  { color: "Cyber Cyan 💎", hour: "9:00 PM – 11:00 PM", mission: "Drop a 5s Voice Reaction on a friend's post!" },
+  { color: "Neon Purple 🔮", hour: "11:00 PM – 1:00 AM", mission: "Create a Neon Graffiti art drop!" },
+  { color: "Solar Gold ⚡", hour: "6:00 PM – 8:00 PM", mission: "Start a Pass-the-Vibe Chain Story!" },
+  { color: "Emerald Matrix 🍀", hour: "4:00 PM – 6:00 PM", mission: "Test your Vibe DNA with 2 creators!" }
+];
+
+function openVibeOracleModal() {
+  if (typeof show === "function") show("vibeOracleModal");
+  document.getElementById("oracleCard")?.classList.remove("flipped");
+}
+
+function flipOracleCard() {
+  const card = document.getElementById("oracleCard");
+  if (!card) return;
+  const pick = oracleFortunes[new Date().getDate() % oracleFortunes.length];
+  const back = document.getElementById("oracleBackContent");
+  if (back) {
+    back.innerHTML = `
+      <span style="font-size:28px;">✨</span>
+      <strong style="font-size:14px;color:#38bdf8;margin-top:6px;">TODAY'S VIBE ORACLE</strong>
+      <p style="font-size:12px;margin-top:10px;color:#e2e8f0;"><b>Lucky Aura:</b> ${pick.color}</p>
+      <p style="font-size:12px;margin-top:6px;color:#e2e8f0;"><b>Power Hour:</b> ${pick.hour}</p>
+      <p style="font-size:11px;margin-top:10px;color:#fde047;">🎯 ${pick.mission}</p>
+    `;
+  }
+  card.classList.toggle("flipped");
+  awardVybeCoins(10, "Consulted AI Vibe Oracle");
+}
+
+// --- 4. WALKIE-TALKIE PUSH-TO-TALK LIVE CHANNEL ---
+let walkieRecorder = null;
+async function startWalkieTalkie() {
+  if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+    if (typeof toast === "function") toast("Mic unavailable for Walkie-Talkie.");
+    return;
+  }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const chunks = [];
+    walkieRecorder = new MediaRecorder(stream);
+    document.getElementById("walkieTalkieBtn")?.classList.add("recording");
+    if (typeof toast === "function") toast("📻 Walkie-Talkie LIVE — Release to send!");
+
+    walkieRecorder.addEventListener("dataavailable", (e) => { if (e.data?.size) chunks.push(e.data); });
+    walkieRecorder.addEventListener("stop", async () => {
+      stream.getTracks().forEach((t) => t.stop());
+      document.getElementById("walkieTalkieBtn")?.classList.remove("recording");
+      if (!chunks.length || !activeChat) return;
+      const blob = new Blob(chunks, { type: "audio/webm" });
+      if (typeof sendVoiceNoteBlob === "function") {
+        await sendVoiceNoteBlob(blob, activeChat);
+        if (typeof toast === "function") toast("📻 Walkie-Talkie transmission sent!");
+      }
+    }, { once: true });
+
+    walkieRecorder.start();
+  } catch (_) {}
+}
+
+function stopWalkieTalkie() {
+  if (walkieRecorder && walkieRecorder.state === "recording") {
+    walkieRecorder.stop();
+    walkieRecorder = null;
+  }
+}
+
+// --- 5. COLLABORATIVE 4-PIECE PUZZLE POSTS ---
+function enhancePuzzlePosts() {
+  document.querySelectorAll("#feed article.post").forEach((article) => {
+    const captionEl = article.querySelector(".caption");
+    if (!captionEl) return;
+    const raw = captionEl.textContent || "";
+    if (!raw.includes("[PUZZLE]") && article.dataset.isPuzzle !== "true") return;
+
+    article.dataset.isPuzzle = "true";
+    captionEl.innerHTML = captionEl.innerHTML.replace("[PUZZLE]", "").trim();
+    const stage = article.querySelector(".post-media-stage");
+    if (!stage || stage.querySelector(".puzzle-grid-overlay")) return;
+
+    const overlay = document.createElement("div");
+    overlay.className = "puzzle-grid-overlay";
+    for (let i = 1; i <= 4; i++) {
+      const tile = document.createElement("div");
+      tile.className = "puzzle-tile";
+      tile.innerHTML = `🧩<br>Piece #${i}<br><small style="font-size:9px;color:#94a3b8;">Tap to Unlock</small>`;
+      tile.onclick = (e) => {
+        e.stopPropagation();
+        tile.classList.add("unlocked");
+        awardVybeCoins(5, `Unlocked Puzzle Piece #${i}`);
+        if (overlay.querySelectorAll(".puzzle-tile:not(.unlocked)").length === 0) {
+          setTimeout(() => overlay.remove(), 450);
+          if (typeof toast === "function") toast("🧩 Full Puzzle Post Unlocked!");
+        }
+      };
+      overlay.appendChild(tile);
+    }
+    stage.appendChild(overlay);
+  });
+}
+
+// --- 6. REACTION COMBO MULTIPLIER ---
+let comboClicks = 0;
+let comboResetTimer = null;
+document.addEventListener("click", (e) => {
+  if (e.target.closest(".action, .reel-like-button")) {
+    comboClicks++;
+    clearTimeout(comboResetTimer);
+    comboResetTimer = setTimeout(() => { comboClicks = 0; }, 1200);
+    if (comboClicks >= 3) {
+      const floater = document.createElement("div");
+      floater.className = "combo-floater";
+      floater.textContent = `🔥 ${comboClicks}x VYBE COMBO!`;
+      document.body.appendChild(floater);
+      setTimeout(() => floater.remove(), 750);
+    }
+  }
+});
+
+// --- 7. TIME-TRAVEL FEED FILTER (Throwback VHS Mode) ---
+let timeTravelActive = false;
+function toggleTimeTravelFeed() {
+  timeTravelActive = !timeTravelActive;
+  document.body.classList.toggle("time-travel-mode", timeTravelActive);
+  document.getElementById("timeTravelBtn")?.classList.toggle("active", timeTravelActive);
+  if (typeof toast === "function") {
+    toast(timeTravelActive ? "🕰️ Time-Travel Throwback Filter ON" : "🕰️ Returned to Present Feed");
+  }
+}
+
+// --- 8. DAILY MICRO-QUESTS & VYBE COINS WALLET ---
+let vybeCoins = Number(localStorage.getItem("vybe:coins") || 150);
+function updateCoinsUI() {
+  const b1 = document.getElementById("vybeCoinsBtn");
+  const b2 = document.getElementById("walletModalBalance");
+  if (b1) b1.textContent = `🪙 ${vybeCoins}`;
+  if (b2) b2.textContent = `🪙 ${vybeCoins} Coins`;
+}
+updateCoinsUI();
+
+function awardVybeCoins(amount, reason) {
+  vybeCoins += amount;
+  localStorage.setItem("vybe:coins", String(vybeCoins));
+  updateCoinsUI();
+}
+
+function openQuestsModal() {
+  if (typeof show === "function") show("questsModal");
+  updateCoinsUI();
+  const list = document.getElementById("questsListContainer");
+  if (!list) return;
+  const quests = [
+    { title: "🎙️ Drop a 5s Voice Reaction on any post", reward: "+25 🪙" },
+    { title: "💓 Send a Heartbeat Pulse in DM", reward: "+30 🪙" },
+    { title: "🎨 Create a Live Neon Graffiti post", reward: "+40 🪙" }
+  ];
+  list.innerHTML = quests
+    .map(
+      (q) => `
+      <div class="people glass" style="padding:10px 14px;margin:0;justify-content:space-between;">
+        <span style="font-size:12px;color:#f8fafc;">${q.title}</span>
+        <strong style="font-size:12px;color:#fde047;white-space:nowrap;">${q.reward}</strong>
+      </div>`
+    )
+    .join("");
+}
+
+// --- 9. ENCRYPTED MORSE-CODE / SECRET TAP KNOCK ON PROFILE ---
+let knockCount = 0;
+let knockTimer = null;
+document.addEventListener("click", (e) => {
+  if (e.target.closest("#otherView .profilepic")) {
+    knockCount++;
+    clearTimeout(knockTimer);
+    knockTimer = setTimeout(() => {
+      if (knockCount >= 3) {
+        if (navigator.vibrate) try { navigator.vibrate([80, 60, 80, 60, 180]); } catch (_) {}
+        if (typeof toast === "function") toast("🔐 Secret Tap Knock transmitted to creator!");
+        awardVybeCoins(15, "Secret Tap Knock");
+      }
+      knockCount = 0;
+    }, 600);
+  }
+});
+
+// --- 10. AUTO-HIGHLIGHT MONTAGE REEL GENERATOR ---
+let montageInterval = null;
+function openMontageModal() {
+  if (typeof show === "function") show("montageModal");
+  startMontagePlayback();
+}
+
+function closeMontageModal() {
+  if (montageInterval) {
+    clearInterval(montageInterval);
+    montageInterval = null;
+  }
+  if (typeof hide === "function") hide("montageModal");
+}
+
+function startMontagePlayback() {
+  if (montageInterval) clearInterval(montageInterval);
+  const pool = [
+    ...(typeof posts !== "undefined" ? posts.map((p) => ({ src: p.src, cap: p.caption })) : []),
+    ...(typeof reels !== "undefined" ? reels.filter((r) => !r.video).map((r) => ({ src: r.src, cap: r.caption })) : [])
+  ];
+  if (!pool.length) return;
+  let idx = 0;
+  const imgEl = document.getElementById("montageSlideImg");
+  const capEl = document.getElementById("montageOverlayCaption");
+
+  const showSlide = () => {
+    const item = pool[idx % pool.length];
+    if (imgEl) {
+      imgEl.style.transform = "scale(1)";
+      imgEl.src = item.src;
+      requestAnimationFrame(() => { imgEl.style.transform = "scale(1.09)"; });
+    }
+    if (capEl) capEl.textContent = `🎬 ${item.cap || "VYBE Highlight"}`;
+    idx++;
+  };
+  showSlide();
+  montageInterval = setInterval(showSlide, 2200);
+}
+
+// Hook Puzzle posts into renderFeed & createPost
+if (typeof renderFeed === "function") {
+  const _v10PrevRenderFeed = renderFeed;
+  window.renderFeed = function () {
+    _v10PrevRenderFeed.apply(this, arguments);
+    enhancePuzzlePosts();
+  };
+}
+
+if (typeof createPost === "function") {
+  const _v10PrevCreatePost = createPost;
+  window.createPost = async function () {
+    const captionEl = document.getElementById("caption");
+    const puzEl = document.getElementById("postPuzzleToggle");
+    if (captionEl && puzEl?.checked) {
+      captionEl.value = `${captionEl.value.trim()} [PUZZLE]`.trim();
+    }
+    const res = await _v10PrevCreatePost.apply(this, arguments);
+    if (puzEl) puzEl.checked = false;
+    return res;
+  };
+}
+
+
+
+// ================= VYBE v11.0: 10 SOCIAL-GAMING & INTERACTIVE FEATURES =================
+
+// --- 1. LIVE 1V1 VIBE DUEL ARENA ---
+let duelLeftVotes = 50;
+let duelRightVotes = 50;
+function openVibeDuelModal() {
+  if (typeof show === "function") show("vibeDuelModal");
+  updateDuelUI();
+}
+function voteVibeDuel(side) {
+  if (side === "left") {
+    duelLeftVotes = Math.min(92, duelLeftVotes + 3);
+    duelRightVotes = 100 - duelLeftVotes;
+  } else {
+    duelRightVotes = Math.min(92, duelRightVotes + 3);
+    duelLeftVotes = 100 - duelRightVotes;
+  }
+  updateDuelUI();
+  if (typeof awardVybeCoins === "function") awardVybeCoins(2, "Vibe Duel Push");
+}
+function updateDuelUI() {
+  const l = document.getElementById("duelLeftFill");
+  const r = document.getElementById("duelRightFill");
+  if (l) { l.style.width = duelLeftVotes + "%"; l.textContent = duelLeftVotes + "%"; }
+  if (r) { r.style.width = duelRightVotes + "%"; r.textContent = duelRightVotes + "%"; }
+}
+
+// --- 2. FLOATING BUBBLE COMMENTS (DANMAKU STREAM) ---
+let danmakuEnabled = false;
+let danmakuTimer = null;
+function toggleDanmakuBubbles() {
+  danmakuEnabled = !danmakuEnabled;
+  document.getElementById("danmakuToggleBtn")?.classList.toggle("active", danmakuEnabled);
+  if (danmakuEnabled) {
+    if (typeof toast === "function") toast("🫧 Live Bubble Comments ON!");
+    spawnDanmakuBurst();
+    danmakuTimer = setInterval(spawnDanmakuBurst, 3200);
+  } else {
+    clearInterval(danmakuTimer);
+    document.querySelectorAll(".danmaku-layer").forEach((el) => el.remove());
+    if (typeof toast === "function") toast("🫧 Live Bubble Comments OFF");
+  }
+}
+function spawnDanmakuBurst() {
+  if (!danmakuEnabled) return;
+  const sampleMsgs = ["🔥 Pure vibe!", "💯 Insane shot!", "🎧 Love this mood", "⚡ Next level!", "✨ VYBE fam!"];
+  document.querySelectorAll("#feed article.post .post-media-stage").forEach((stage, idx) => {
+    const rect = stage.getBoundingClientRect();
+    if (rect.top > window.innerHeight || rect.bottom < 0) return;
+    let layer = stage.querySelector(".danmaku-layer");
+    if (!layer) {
+      layer = document.createElement("div");
+      layer.className = "danmaku-layer";
+      stage.appendChild(layer);
+    }
+    const bubble = document.createElement("span");
+    bubble.className = "danmaku-bubble";
+    bubble.style.top = `${10 + ((idx * 27) % 65)}px`;
+    bubble.textContent = sampleMsgs[(idx + Math.floor(Math.random() * sampleMsgs.length)) % sampleMsgs.length];
+    layer.appendChild(bubble);
+    setTimeout(() => bubble.remove(), 6600);
+  });
+}
+
+// --- 3. VOICE-CHANGER FILTER STUDIO ---
+const voiceFxModes = [
+  { icon: "🤖", name: "Cyber Droid" },
+  { icon: "🐿️", name: "Chipmunk High" },
+  { icon: "👹", name: "Deep Bass" },
+  { icon: "🎙", name: "Natural Voice" }
+];
+let currentVoiceFxIdx = 0;
+function cycleVoiceChangerFX() {
+  currentVoiceFxIdx = (currentVoiceFxIdx + 1) % voiceFxModes.length;
+  const mode = voiceFxModes[currentVoiceFxIdx];
+  const btn = document.getElementById("dmVoiceFxBtn");
+  if (btn) btn.textContent = mode.icon;
+  if (typeof toast === "function") toast(`🎭 Voice FX: ${mode.icon} ${mode.name}`);
+}
+
+// --- 4. INVISIBLE INK SECRET CAPTIONS ---
+function enhanceInvisibleInkPosts() {
+  document.querySelectorAll("#feed article.post").forEach((article) => {
+    const captionEl = article.querySelector(".caption");
+    if (!captionEl) return;
+    const raw = captionEl.textContent || "";
+    if (!raw.includes("[INK]") && article.dataset.isInk !== "true") return;
+    article.dataset.isInk = "true";
+    captionEl.innerHTML = captionEl.innerHTML.replace("[INK]", "").trim();
+    captionEl.classList.add("invisible-ink-text");
+    captionEl.title = "Tap or rub to reveal Invisible Ink caption";
+    captionEl.onclick = () => captionEl.classList.toggle("revealed");
+  });
+}
+
+// --- 5. TRUTH-OR-DARE SPIN WHEEL ---
+let wheelDeg = 0;
+const truthOrDareList = [
+  "🔥 DARE: Drop a 5-second voice reaction on the top post right now!",
+  "💬 TRUTH: What is your #1 goal for this month?",
+  "🎨 DARE: Draw something on Neon Canvas and share it!",
+  "💓 DARE: Send a Heartbeat Pulse to a friend in DM!",
+  "🕯️ TRUTH: Share an anonymous midnight thought in the 3 AM Booth!"
+];
+function openSpinWheelModal() {
+  if (typeof show === "function") show("spinWheelModal");
+}
+function spinTruthOrDare() {
+  const disc = document.getElementById("cyberSpinDisc");
+  const res = document.getElementById("spinWheelResult");
+  wheelDeg += 720 + Math.floor(Math.random() * 360);
+  if (disc) disc.style.transform = `rotate(${wheelDeg}deg)`;
+  if (res) res.textContent = "Spinning...";
+  setTimeout(() => {
+    const pick = truthOrDareList[Math.floor(Math.random() * truthOrDareList.length)];
+    if (res) res.textContent = pick;
+    if (typeof awardVybeCoins === "function") awardVybeCoins(10, "Truth-or-Dare Spin");
+  }, 1450);
+}
+
+// --- 6. SPEED-READ / BEAT-FLASH KINETIC STORY ---
+let beatFlashTimer = null;
+function openBeatFlashModal() {
+  if (typeof show === "function") show("beatFlashModal");
+}
+function closeBeatFlashModal() {
+  clearInterval(beatFlashTimer);
+  if (typeof hide === "function") hide("beatFlashModal");
+}
+function playBeatFlash() {
+  clearInterval(beatFlashTimer);
+  const input = document.getElementById("beatFlashInput");
+  const text = (input?.value || "WELCOME TO VYBE NEXT GEN SOCIAL").trim();
+  const words = text.split(/\s+/);
+  let i = 0;
+  const wordEl = document.getElementById("beatFlashWord");
+  beatFlashTimer = setInterval(() => {
+    if (wordEl) {
+      wordEl.textContent = words[i % words.length];
+      wordEl.style.color = i % 2 === 0 ? "#38bdf8" : "#f43f5e";
+    }
+    i++;
+  }, 340);
+}
+
+// --- 7. VIBE COMPASS (Live Direction Pointer in Radar) ---
+if (window.DeviceOrientationEvent) {
+  window.addEventListener("deviceorientation", (e) => {
+    const needle = document.getElementById("vibeCompassNeedle");
+    if (needle && e.alpha !== null) {
+      needle.style.transform = `rotate(${Math.round(e.alpha)}deg)`;
+    }
+  }, { passive: true });
+}
+
+// --- 8. MYSTERY LOOT BOX DROP ---
+function openLootBoxModal() {
+  if (typeof show === "function") show("lootBoxModal");
+}
+function claimDailyLootBox() {
+  const today = new Date().toISOString().slice(0, 10);
+  const res = document.getElementById("lootBoxResult");
+  const chest = document.getElementById("lootChestIcon");
+  if (chest) {
+    chest.style.transform = "scale(1.25) rotate(8deg)";
+    setTimeout(() => { chest.style.transform = "scale(1)"; }, 250);
+  }
+  if (localStorage.getItem("vybe:loot-claimed") === today) {
+    if (res) res.textContent = "✅ Today's chest already claimed! Come back tomorrow.";
+    return;
+  }
+  localStorage.setItem("vybe:loot-claimed", today);
+  if (typeof awardVybeCoins === "function") awardVybeCoins(50, "Mystery Loot Box");
+  if (res) res.textContent = "🎉 JACKPOT! +50 🪙 VYBE Coins & Cyber Pioneer Badge unlocked!";
+  if (typeof toast === "function") toast("🎁 Claimed +50 VYBE Coins!");
+}
+
+// --- 9. DUAL-LAYER X-RAY POST (Hold to Peek Inside) ---
+function enhanceXrayPosts() {
+  document.querySelectorAll("#feed article.post").forEach((article) => {
+    const captionEl = article.querySelector(".caption");
+    if (!captionEl) return;
+    const raw = captionEl.textContent || "";
+    if (!raw.includes("[XRAY]") && article.dataset.isXray !== "true") return;
+    article.dataset.isXray = "true";
+    captionEl.innerHTML = captionEl.innerHTML.replace("[XRAY]", "").trim();
+    const stage = article.querySelector(".post-media-stage");
+    if (!stage || stage.dataset.xrayBound === "true") return;
+    stage.dataset.xrayBound = "true";
+
+    const badge = document.createElement("span");
+    badge.className = "scratch-hint-badge";
+    badge.textContent = "🩻 Hold Image for X-Ray Peek";
+    stage.appendChild(badge);
+
+    const startXray = () => {
+      const img = stage.querySelector("img");
+      if (img) img.style.filter = "invert(0.92) hue-rotate(180deg) contrast(1.4)";
+      const line = document.createElement("div");
+      line.className = "xray-scanner-line";
+      stage.appendChild(line);
+    };
+    const endXray = () => {
+      const img = stage.querySelector("img");
+      if (img) img.style.filter = "";
+      stage.querySelectorAll(".xray-scanner-line").forEach((l) => l.remove());
+    };
+    stage.addEventListener("pointerdown", startXray);
+    stage.addEventListener("pointerup", endXray);
+    stage.addEventListener("pointerleave", endXray);
+  });
+}
+
+// --- 10. HALL OF FAME TIME-CAPSULE TROPHY WALL ---
+function openHallOfFameModal() {
+  if (typeof show === "function") show("hallOfFameModal");
+  const grid = document.getElementById("hallOfFameGrid");
+  if (!grid) return;
+  const streak = localStorage.getItem("vybe:streak-count") || "1";
+  const coins = localStorage.getItem("vybe:coins") || "150";
+  const trophies = [
+    { icon: "🔥", title: `${streak}-Day Vibe Streak`, desc: "Consistent daily creator energy" },
+    { icon: "🪙", title: `${coins} VYBE Coins`, desc: "Earned from interactive quests & puzzles" },
+    { icon: "🚀", title: "VYBE v11 Pioneer", desc: "Early adopter of Next-Gen Social Features" }
+  ];
+  grid.innerHTML = trophies
+    .map(
+      (t) => `
+      <div class="people glass" style="padding:12px;margin:0;justify-content:flex-start;">
+        <span style="font-size:26px;">${t.icon}</span>
+        <div>
+          <strong style="display:block;font-size:13px;color:#fff;">${t.title}</strong>
+          <small class="meta">${t.desc}</small>
+        </div>
+      </div>`
+    )
+    .join("");
+}
+
+// Hook v11 enhancers into renderFeed, createPost & renderProfile
+if (typeof renderFeed === "function") {
+  const _v11PrevRenderFeed = renderFeed;
+  window.renderFeed = function () {
+    _v11PrevRenderFeed.apply(this, arguments);
+    enhanceInvisibleInkPosts();
+    enhanceXrayPosts();
+  };
+}
+
+if (typeof createPost === "function") {
+  const _v11PrevCreatePost = createPost;
+  window.createPost = async function () {
+    const captionEl = document.getElementById("caption");
+    const inkEl = document.getElementById("postInvisibleInkToggle");
+    const xrayEl = document.getElementById("postXrayToggle");
+    if (captionEl) {
+      let txt = captionEl.value.trim();
+      if (inkEl?.checked) txt += " [INK]";
+      if (xrayEl?.checked) txt += " [XRAY]";
+      captionEl.value = txt.trim();
+    }
+    const res = await _v11PrevCreatePost.apply(this, arguments);
+    if (inkEl) inkEl.checked = false;
+    if (xrayEl) xrayEl.checked = false;
+    return res;
+  };
+}
+
+if (typeof renderProfile === "function") {
+  const _v11PrevRenderProfile = renderProfile;
+  window.renderProfile = function () {
+    _v11PrevRenderProfile.apply(this, arguments);
+    const tools = document.querySelector("#profileView .profile-mega-tools");
+    if (tools && !tools.querySelector(".hof-btn")) {
+      const hofBtn = document.createElement("button");
+      hofBtn.type = "button";
+      hofBtn.className = "mega-pill-btn hof-btn";
+      hofBtn.textContent = "🏆 Hall of Fame";
+      hofBtn.onclick = openHallOfFameModal;
+      tools.appendChild(hofBtn);
+    }
+  };
+}
+
+
+
+// ================= VYBE v12.0: 10 AI-CREATIVE & SOCIAL UNIVERSE FEATURES =================
+
+// --- 1. LIVE LO-FI BEATMAKER PAD ---
+let lastBeatNotes = [];
+function openBeatmakerModal() {
+  if (typeof show === "function") show("beatmakerModal");
+}
+function triggerBeatPad(freq, waveType, name) {
+  lastBeatNotes.push(name);
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  if (!AudioCtx) return;
+  window._vybeBeatCtx = window._vybeBeatCtx || new AudioCtx();
+  const ctx = window._vybeBeatCtx;
+  if (ctx.state === "suspended") ctx.resume().catch(() => {});
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = waveType;
+  osc.frequency.setValueAtTime(freq, ctx.currentTime);
+  if (name === "Bass Kick") {
+    osc.frequency.exponentialRampToValueAtTime(38, ctx.currentTime + 0.18);
+  }
+  gain.gain.setValueAtTime(0.22, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start();
+  osc.stop(ctx.currentTime + 0.26);
+}
+function shareBeatJamPost() {
+  const combo = lastBeatNotes.slice(-4).join(" → ") || "Kick → Chord A → Hi-Hat";
+  lastBeatNotes = [];
+  if (typeof hide === "function") hide("beatmakerModal");
+  if (typeof openCreate === "function") openCreate();
+  const cap = document.getElementById("caption");
+  if (cap) cap.value = `🎹 Dropped a custom Lo-Fi Beat Jam: [${combo}] #lofi #vybebeats`;
+  if (typeof toast === "function") toast("🎹 Beat Jam attached to Create Post!");
+}
+
+// --- 2. MIRROR-TWIN AI MOOD AVATAR VISOR ---
+const mirrorMoodVisors = ["😎 Cyber Chill", "🔥 Hustle Visor", "🌌 Cosmic Zen", "⚡ Neon Overdrive"];
+let mirrorMoodIdx = 0;
+function cycleMirrorTwinMood() {
+  mirrorMoodIdx = (mirrorMoodIdx + 1) % mirrorMoodVisors.length;
+  if (typeof renderProfile === "function") renderProfile();
+  if (typeof toast === "function") toast(`🪞 Mirror-Twin Mood: ${mirrorMoodVisors[mirrorMoodIdx]}`);
+}
+if (typeof renderProfile === "function") {
+  const _v12PrevRenderProfile = renderProfile;
+  window.renderProfile = function () {
+    _v12PrevRenderProfile.apply(this, arguments);
+    const pic = document.querySelector("#profileView .profilepic");
+    if (pic && pic.parentElement) {
+      pic.parentElement.style.position = "relative";
+      if (!pic.parentElement.querySelector(".mirror-twin-badge")) {
+        const badge = document.createElement("button");
+        badge.type = "button";
+        badge.className = "mirror-twin-badge";
+        badge.textContent = mirrorMoodVisors[mirrorMoodIdx];
+        badge.onclick = cycleMirrorTwinMood;
+        pic.parentElement.appendChild(badge);
+      }
+    }
+  };
+}
+
+// --- 3. SECRET CIPHER / PASSCODE-LOCKED DROPS ---
+function enhanceCipherPosts() {
+  document.querySelectorAll("#feed article.post").forEach((article) => {
+    const captionEl = article.querySelector(".caption");
+    if (!captionEl) return;
+    const raw = captionEl.textContent || "";
+    const match = raw.match(/\[CIPHER:([^\]]+)\]/);
+    if (!match) return;
+    const code = match[1].toUpperCase();
+    captionEl.innerHTML = captionEl.innerHTML.replace(match[0], "").trim();
+    const stage = article.querySelector(".post-media-stage");
+    if (!stage || stage.dataset.cipherUnlocked === "true") return;
+
+    const origHtml = stage.innerHTML;
+    stage.dataset.cipherOriginal = origHtml;
+    stage.innerHTML = `
+      <div class="cipher-lock-overlay">
+        <span style="font-size:28px;">🔐</span>
+        <strong style="font-size:14px;color:#e9d5ff;">Secret Cipher Locked Drop</strong>
+        <p class="meta">Enter the creator's secret passcode to unlock</p>
+        <div style="display:flex;gap:6px;margin-top:4px;">
+          <input type="text" placeholder="Passcode..." style="margin:0;padding:7px 10px;font-size:12px;max-width:130px;text-transform:uppercase;">
+          <button type="button" class="primary" style="padding:7px 12px;font-size:11px;" onclick="unlockCipherPost(this, '${safe(code)}')">Unlock</button>
+        </div>
+      </div>`;
+  });
+}
+function unlockCipherPost(btn, expectedCode) {
+  const input = btn.previousElementSibling;
+  const entered = (input?.value || "").trim().toUpperCase();
+  if (entered !== expectedCode) {
+    if (typeof toast === "function") toast("❌ Incorrect secret passcode!");
+    return;
+  }
+  const stage = btn.closest(".post-media-stage");
+  if (!stage || !stage.dataset.cipherOriginal) return;
+  stage.dataset.cipherUnlocked = "true";
+  stage.innerHTML = stage.dataset.cipherOriginal;
+  if (typeof toast === "function") toast("🔓 Secret Cipher unlocked!");
+}
+
+// --- 4. LIVE TYPING DUEL IN DM ---
+let typingDuelStart = 0;
+function openTypingDuelModal() {
+  if (typeof show === "function") show("typingDuelModal");
+  typingDuelStart = 0;
+  const inp = document.getElementById("typingDuelInput");
+  const res = document.getElementById("typingDuelResult");
+  if (inp) { inp.value = ""; inp.focus(); }
+  if (res) res.textContent = "Start typing to start the clock!";
+}
+function checkTypingDuelProgress() {
+  const inp = document.getElementById("typingDuelInput");
+  const target = (document.getElementById("typingDuelTarget")?.textContent || "").trim();
+  const res = document.getElementById("typingDuelResult");
+  if (!inp) return;
+  if (!typingDuelStart && inp.value.length > 0) typingDuelStart = Date.now();
+  if (inp.value.trim().toLowerCase() === target.toLowerCase()) {
+    const secs = Math.max(1, (Date.now() - typingDuelStart) / 1000);
+    const wpm = Math.round((target.split(" ").length / secs) * 60);
+    if (res) res.textContent = `🏆 FINISHED! Speed: ${wpm} WPM (${secs.toFixed(1)}s)`;
+    if (typeof awardVybeCoins === "function") awardVybeCoins(15, "Typing Duel Victory");
+    const msgInput = document.getElementById("messageText");
+    if (msgInput && typeof sendMessage === "function") {
+      msgInput.value = `⌨️ Typing Duel Score: ${wpm} WPM in ${secs.toFixed(1)}s! Beat that 🔥`;
+      sendMessage();
+    }
+  }
+}
+
+// --- 5. SHOOTING STAR WISH DROP ---
+let wishList = JSON.parse(localStorage.getItem("vybe:wishes") || "null") || [
+  { user: "alex.design", text: "Build an app loved by millions 🚀" },
+  { user: "sarah.official", text: "Solo bike trip across the mountains 🏍️" }
+];
+function openWishStarModal() {
+  if (typeof show === "function") show("wishStarModal");
+  renderWishStarWall();
+}
+function launchShootingStarWish(e) {
+  e.preventDefault();
+  const inp = document.getElementById("wishStarInput");
+  const text = (inp?.value || "").trim();
+  if (!text) return;
+  inp.value = "";
+  const uname = (typeof currentProfile !== "undefined" && currentProfile) || "you";
+  wishList.unshift({ user: uname, text });
+  localStorage.setItem("vybe:wishes", JSON.stringify(wishList));
+  renderWishStarWall();
+  const star = document.createElement("div");
+  star.className = "shooting-star-streak";
+  star.textContent = "🌠✨";
+  document.body.appendChild(star);
+  setTimeout(() => star.remove(), 1350);
+  if (typeof toast === "function") toast("🌠 Wish launched into the VYBE sky!");
+}
+function renderWishStarWall() {
+  const wall = document.getElementById("wishStarWall");
+  if (!wall) return;
+  wall.innerHTML = wishList
+    .map(
+      (w) => `
+      <div class="glass" style="padding:10px 12px;border-radius:12px;">
+        <strong style="font-size:11px;color:#7dd3fc;">🌠 @${safe(w.user)}</strong>
+        <p style="font-size:12px;color:#fff;margin-top:3px;">${safe(w.text)}</p>
+      </div>`
+    )
+    .join("");
+}
+
+// --- 6. RETRO FILM-STRIP 4-FRAME BOOTH ---
+function openFilmStripModal() {
+  if (typeof show === "function") show("filmStripModal");
+  renderSampleFilmStrip();
+}
+function renderSampleFilmStrip() {
+  const canvas = document.getElementById("filmStripCanvas");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#090d16";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  const colors = ["#0284c7", "#7e22ce", "#059669", "#e11d48"];
+  const labels = ["01 • VYBE", "02 • NIGHT", "03 • RIDE", "04 • BELONG"];
+  for (let i = 0; i < 4; i++) {
+    const y = 16 + i * 102;
+    ctx.fillStyle = colors[(i + Math.floor(Math.random() * 4)) % 4];
+    ctx.fillRect(24, y, 212, 88);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 14px sans-serif";
+    ctx.fillText(labels[i], 36, y + 50);
+    // Film sprocket holes
+    ctx.fillStyle = "#facc15";
+    ctx.fillRect(8, y + 18, 8, 12);
+    ctx.fillRect(8, y + 58, 8, 12);
+    ctx.fillRect(244, y + 18, 8, 12);
+    ctx.fillRect(244, y + 58, 8, 12);
+  }
+}
+function useFilmStripInPost() {
+  const canvas = document.getElementById("filmStripCanvas");
+  if (!canvas) return;
+  canvas.toBlob((blob) => {
+    if (!blob) return;
+    const file = new File([blob], `vybe-filmstrip-${Date.now()}.png`, { type: "image/png" });
+    if (typeof hide === "function") hide("filmStripModal");
+    const input = document.getElementById("mediaUploadInput");
+    if (input && typeof assignFileToInput === "function") assignFileToInput(input, file);
+  }, "image/png");
+}
+
+// --- 7. SPATIAL 3D AUDIO PANNING ON REELS ---
+let spatialAudioOn = false;
+function toggleSpatialReelsAudio() {
+  spatialAudioOn = !spatialAudioOn;
+  if (typeof toast === "function") {
+    toast(spatialAudioOn ? "🎧 3D Spatial Theatre Audio ON" : "🎧 Standard Stereo Audio");
+  }
+}
+if (typeof renderReels === "function") {
+  const _v12PrevRenderReels = renderReels;
+  window.renderReels = function () {
+    _v12PrevRenderReels.apply(this, arguments);
+    document.querySelectorAll("#reelList .reel-side").forEach((side) => {
+      if (side.querySelector(".reel-spatial-btn")) return;
+      const spBtn = document.createElement("button");
+      spBtn.type = "button";
+      spBtn.className = "reel-dj-btn reel-spatial-btn";
+      spBtn.textContent = "🎧 3D";
+      spBtn.title = "Spatial 3D Audio Toggle";
+      spBtn.onclick = toggleSpatialReelsAudio;
+      side.appendChild(spBtn);
+    });
+  };
+}
+
+// --- 8. VIBE PASSPORT & CITY STAMPS ---
+let passportStamps = JSON.parse(localStorage.getItem("vybe:passport") || "null") || [
+  { city: "HOSUR • HQ", date: "2026" },
+  { city: "MADURAI • VIBE", date: "2026" },
+  { city: "BENGALURU • TECH", date: "2026" }
+];
+function openPassportModal() {
+  if (typeof show === "function") show("passportModal");
+  renderPassportStamps();
+}
+function renderPassportStamps() {
+  const grid = document.getElementById("passportStampsGrid");
+  if (!grid) return;
+  grid.innerHTML = passportStamps
+    .map((s) => `<div class="passport-stamp">🛂 ${safe(s.city)}<br><small style="font-size:10px;color:#94a3b8;">VERIFIED ${safe(s.date)}</small></div>`)
+    .join("");
+}
+function addPassportStamp() {
+  const inp = document.getElementById("newPassportCityInput");
+  const city = (inp?.value || "").trim().toUpperCase();
+  if (!city) return;
+  inp.value = "";
+  passportStamps.unshift({ city, date: new Date().toLocaleDateString() });
+  localStorage.setItem("vybe:passport", JSON.stringify(passportStamps));
+  renderPassportStamps();
+  if (typeof awardVybeCoins === "function") awardVybeCoins(10, "New Passport Stamp");
+  if (typeof toast === "function") toast(`🛂 Stamped ${city} in your Vibe Passport!`);
+}
+
+// --- 9. SQUAD HANGOUT & SPLIT-BILL PLANNER IN DM ---
+function openHangoutPlannerModal() {
+  if (typeof show === "function") show("hangoutPlannerModal");
+  calcHangoutSplit();
+}
+function calcHangoutSplit() {
+  const total = Number(document.getElementById("hangoutTotalInput")?.value || 0);
+  const ppl = Math.max(1, Number(document.getElementById("hangoutPeopleInput")?.value || 1));
+  const each = Math.round(total / ppl);
+  const prev = document.getElementById("hangoutSplitPreview");
+  if (prev) prev.textContent = `₹${each.toLocaleString()} per person (${ppl} split)`;
+}
+function sendHangoutCardToDM() {
+  const title = (document.getElementById("hangoutTitleInput")?.value || "Squad Hangout").trim();
+  const total = Number(document.getElementById("hangoutTotalInput")?.value || 0);
+  const ppl = Math.max(1, Number(document.getElementById("hangoutPeopleInput")?.value || 1));
+  const each = Math.round(total / ppl);
+  if (typeof hide === "function") hide("hangoutPlannerModal");
+  const msgInput = document.getElementById("messageText");
+  if (msgInput && typeof sendMessage === "function") {
+    msgInput.value = `🧾 [HANGOUT PLAN] ${title} • Total: ₹${total} ÷ ${ppl} = ₹${each}/person! Who's in?`;
+    sendMessage();
+  }
+}
+
+// --- 10. ZERO-GRAVITY FLOAT MODE ---
+let zeroGActive = false;
+function toggleZeroGravityMode() {
+  zeroGActive = !zeroGActive;
+  document.body.classList.toggle("zero-g-mode", zeroGActive);
+  if (typeof toast === "function") {
+    toast(zeroGActive ? "🌌 Zero-Gravity Float Mode ACTIVATED!" : "🌍 Gravity Restored");
+  }
+}
+
+// Hook Cipher posts into renderFeed & createPost
+if (typeof renderFeed === "function") {
+  const _v12PrevRenderFeed = renderFeed;
+  window.renderFeed = function () {
+    _v12PrevRenderFeed.apply(this, arguments);
+    enhanceCipherPosts();
+  };
+}
+
+if (typeof createPost === "function") {
+  const _v12PrevCreatePost = createPost;
+  window.createPost = async function () {
+    const captionEl = document.getElementById("caption");
+    const cipherEl = document.getElementById("postCipherCodeInput");
+    if (captionEl && cipherEl?.value.trim()) {
+      const code = cipherEl.value.trim().toUpperCase().replace(/\]/g, "");
+      captionEl.value = `${captionEl.value.trim()} [CIPHER:${code}]`.trim();
+    }
+    const res = await _v12PrevCreatePost.apply(this, arguments);
+    if (cipherEl) cipherEl.value = "";
+    return res;
+  };
+}
+
+
+
+// ================= VYBE v13.0: 10 NEURAL, AR & INTERACTIVE FEATURES =================
+
+// --- 1. AR CYBER FACE-MASK & VISOR FILTER STUDIO ---
+function setCameraARMask(mask, btn) {
+  document.querySelectorAll(".ar-visor-strip .qv-chip").forEach((c) => c.classList.remove("active"));
+  if (btn) btn.classList.add("active");
+  const overlay = document.getElementById("cameraAROverlay");
+  if (!overlay) return;
+  const map = { none: "", visor: "🥽", crown: "👑", laser: "⚡👀⚡" };
+  overlay.textContent = map[mask] || "";
+}
+
+// --- 2. LIVE COLLABORATIVE PIXEL-CANVAS WALL (r/Place Style) ---
+let selectedPixelColor = "#38bdf8";
+function openPixelWallModal() {
+  if (typeof show === "function") show("pixelWallModal");
+  renderSharedPixelGrid();
+}
+function setPixelWallColor(c) {
+  selectedPixelColor = c;
+}
+function renderSharedPixelGrid() {
+  const grid = document.getElementById("sharedPixelGrid");
+  if (!grid) return;
+  const savedPixels = JSON.parse(localStorage.getItem("vybe:pixel-wall") || "{}");
+  let html = "";
+  for (let i = 0; i < 144; i++) {
+    const bg = savedPixels[i] || "#0f172a";
+    html += `<div class="pixel-cell" style="background:${bg}" onclick="paintSharedPixel(${i}, this)"></div>`;
+  }
+  grid.innerHTML = html;
+}
+function paintSharedPixel(idx, el) {
+  el.style.background = selectedPixelColor;
+  const savedPixels = JSON.parse(localStorage.getItem("vybe:pixel-wall") || "{}");
+  savedPixels[idx] = selectedPixelColor;
+  localStorage.setItem("vybe:pixel-wall", JSON.stringify(savedPixels));
+  if (typeof awardVybeCoins === "function") awardVybeCoins(1, "Pixel Wall Tile");
+}
+
+// --- 3. WHISPER-ECHO VOICE REPLIES ON REELS ---
+if (typeof renderReels === "function") {
+  const _v13PrevRenderReels = renderReels;
+  window.renderReels = function () {
+    _v13PrevRenderReels.apply(this, arguments);
+    document.querySelectorAll("#reelList .reel-side").forEach((side) => {
+      if (side.querySelector(".reel-echo-btn")) return;
+      const echoBtn = document.createElement("button");
+      echoBtn.type = "button";
+      echoBtn.className = "reel-dj-btn reel-echo-btn";
+      echoBtn.textContent = "🗣️ Echo";
+      echoBtn.title = "Drop 3s Whisper-Echo Voice Reply";
+      echoBtn.onclick = () => {
+        if (typeof toast === "function") toast("🗣️ 3s Whisper-Echo recorded & pinned to Reel!");
+        if (typeof awardVybeCoins === "function") awardVybeCoins(5, "Whisper Echo Reply");
+      };
+      side.appendChild(echoBtn);
+    });
+  };
+}
+
+// --- 4. SHOCKWAVE REACTION RIPPLE (Screen-Wide Pulse) ---
+document.addEventListener("dblclick", (e) => {
+  const wave = document.createElement("div");
+  wave.className = "shockwave-ring";
+  wave.style.left = e.clientX + "px";
+  wave.style.top = e.clientY + "px";
+  document.body.appendChild(wave);
+  setTimeout(() => wave.remove(), 660);
+});
+
+// --- 5. SATELLITE NIGHT-SKY CONSTELLATION MAP ---
+function openConstellationModal() {
+  if (typeof show === "function") show("constellationModal");
+  const layer = document.getElementById("constellationStarsLayer");
+  if (!layer) return;
+  const list = (typeof users !== "undefined" ? users : []).slice(0, 4);
+  const coords = [
+    { top: "24%", left: "24%" },
+    { top: "22%", left: "76%" },
+    { top: "76%", left: "78%" },
+    { top: "76%", left: "22%" }
+  ];
+  layer.innerHTML = list
+    .map((u, i) => {
+      const pos = coords[i % coords.length];
+      return `<button type="button" class="constellation-star" style="top:${pos.top};left:${pos.left}" onclick="hide('constellationModal');openChat('${u.id}')">✨ @${safe(u.username)}</button>`;
+    })
+    .join("");
+}
+
+// --- 6. SELF-SHREDDING BURN-AFTER-READING POST MODE ---
+function enhanceBurnPosts() {
+  const burnCounts = JSON.parse(localStorage.getItem("vybe:burn-counts") || "{}");
+  document.querySelectorAll("#feed article.post").forEach((article) => {
+    const feedId = article.dataset.feedId || "";
+    const captionEl = article.querySelector(".caption");
+    if (!captionEl) return;
+    const raw = captionEl.textContent || "";
+    if (!raw.includes("[BURN]") && article.dataset.isBurn !== "true") return;
+    article.dataset.isBurn = "true";
+    captionEl.innerHTML = captionEl.innerHTML.replace("[BURN]", "").trim();
+    const stage = article.querySelector(".post-media-stage");
+    if (!stage) return;
+
+    burnCounts[feedId] = (burnCounts[feedId] || 0) + 1;
+    localStorage.setItem("vybe:burn-counts", JSON.stringify(burnCounts));
+
+    if (burnCounts[feedId] > 3) {
+      stage.classList.add("burn-shredded");
+      if (!article.querySelector(".burn-notice")) {
+        const note = document.createElement("div");
+        note.className = "burn-notice";
+        note.style.cssText = "padding:6px 16px;font-size:11px;color:#f87171;font-weight:700;";
+        note.textContent = "🔥 Self-Shredded: Maximum 3 views reached!";
+        stage.insertAdjacentElement("afterend", note);
+      }
+    }
+  });
+}
+
+// --- 7. VOICE-PITCH THEREMIN SYNTH IN DM ---
+let thereminNotesCount = 0;
+function openThereminModal() {
+  if (typeof show === "function") show("thereminModal");
+  thereminNotesCount = 0;
+}
+function playThereminSlide(e) {
+  const pad = document.getElementById("thereminPad");
+  if (!pad) return;
+  const rect = pad.getBoundingClientRect();
+  const ratioX = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+  const freq = Math.round(220 + ratioX * 660);
+  thereminNotesCount++;
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  if (!AudioCtx) return;
+  window._vybeThereminCtx = window._vybeThereminCtx || new AudioCtx();
+  const ctx = window._vybeThereminCtx;
+  if (ctx.state === "suspended") ctx.resume().catch(() => {});
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(freq, ctx.currentTime);
+  gain.gain.setValueAtTime(0.08, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.14);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start();
+  osc.stop(ctx.currentTime + 0.15);
+}
+function sendThereminMelodyDM() {
+  if (typeof hide === "function") hide("thereminModal");
+  const msgInput = document.getElementById("messageText");
+  if (msgInput && typeof sendMessage === "function") {
+    msgInput.value = `〰️ [NEON THEREMIN MELODY] Composed a ${Math.max(4, thereminNotesCount)}-note sci-fi synth riff for you! 🎶`;
+    sendMessage();
+  }
+}
+
+// --- 8. CUSTOM NEON TITLE & BIO GLOW GENERATOR ---
+const bioGlowClasses = ["bio-glow-cyber", "bio-glow-gold", "bio-glow-matrix"];
+let bioGlowIdx = 0;
+function cycleBioGlowStyle() {
+  bioGlowIdx = (bioGlowIdx + 1) % bioGlowClasses.length;
+  if (typeof renderProfile === "function") renderProfile();
+  if (typeof toast === "function") toast("✨ Bio Neon Glow style switched!");
+}
+if (typeof renderProfile === "function") {
+  const _v13PrevRenderProfile = renderProfile;
+  window.renderProfile = function () {
+    _v13PrevRenderProfile.apply(this, arguments);
+    const bioEl = document.querySelector("#profileView .profile-bio");
+    if (bioEl) bioEl.classList.add(bioGlowClasses[bioGlowIdx]);
+    const tools = document.querySelector("#profileView .profile-mega-tools");
+    if (tools && !tools.querySelector(".bio-glow-btn")) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "mega-pill-btn bio-glow-btn";
+      btn.textContent = "✨ Bio Glow";
+      btn.onclick = cycleBioGlowStyle;
+      tools.appendChild(btn);
+    }
+  };
+}
+
+// --- 9. MINI RETRO ARCADE REACTION GAME (CATCH THE VIBE) ---
+let arcadeScore = 0;
+let arcadeTimer = null;
+let arcadeSpawnTimer = null;
+function openArcadeModal() {
+  if (typeof show === "function") show("arcadeModal");
+}
+function closeArcadeModal() {
+  clearInterval(arcadeTimer);
+  clearInterval(arcadeSpawnTimer);
+  if (typeof hide === "function") hide("arcadeModal");
+}
+function startVibeArcade() {
+  clearInterval(arcadeTimer);
+  clearInterval(arcadeSpawnTimer);
+  arcadeScore = 0;
+  let timeLeft = 15;
+  const arena = document.getElementById("arcadeArena");
+  const scoreLbl = document.getElementById("arcadeScoreLabel");
+  const timeLbl = document.getElementById("arcadeTimerLabel");
+  if (scoreLbl) scoreLbl.textContent = "Score: 0";
+  if (timeLbl) timeLbl.textContent = "Time: 15s";
+  if (arena) arena.innerHTML = "";
+
+  arcadeSpawnTimer = setInterval(() => {
+    if (!arena) return;
+    const orb = document.createElement("div");
+    orb.className = "arcade-orb";
+    orb.textContent = "⚡";
+    orb.style.left = Math.floor(10 + Math.random() * 75) + "%";
+    orb.style.top = Math.floor(10 + Math.random() * 70) + "%";
+    orb.onclick = () => {
+      arcadeScore += 10;
+      if (scoreLbl) scoreLbl.textContent = `Score: ${arcadeScore}`;
+      orb.remove();
+    };
+    arena.appendChild(orb);
+    setTimeout(() => orb.remove(), 950);
+  }, 650);
+
+  arcadeTimer = setInterval(() => {
+    timeLeft--;
+    if (timeLbl) timeLbl.textContent = `Time: ${timeLeft}s`;
+    if (timeLeft <= 0) {
+      clearInterval(arcadeTimer);
+      clearInterval(arcadeSpawnTimer);
+      if (arena) arena.innerHTML = `<div style="padding-top:75px;font-weight:800;color:#fde047;">🏆 Final Score: ${arcadeScore} pts!</div>`;
+      const reward = Math.max(5, Math.floor(arcadeScore / 5));
+      if (typeof awardVybeCoins === "function") awardVybeCoins(reward, "Arcade High Score");
+      if (typeof toast === "function") toast(`🕹️ Earned +${reward} VYBE Coins in Arcade!`);
+    }
+  }, 1000);
+}
+
+// --- 10. AUTO-CIRCADIAN SUNSET/MIDNIGHT THEME SHIFT ---
+const circadianModes = ["midnight", "sunset", "morning"];
+let circadianIdx = 0;
+function cycleCircadianTheme() {
+  circadianIdx = (circadianIdx + 1) % circadianModes.length;
+  const mode = circadianModes[circadianIdx];
+  if (mode === "midnight") document.body.removeAttribute("data-circadian");
+  else document.body.setAttribute("data-circadian", mode);
+  if (typeof toast === "function") toast(`🌗 Sky Lighting: ${mode.toUpperCase()}`);
+}
+
+// Hook Burn-After-Reading posts into renderFeed & createPost
+if (typeof renderFeed === "function") {
+  const _v13PrevRenderFeed = renderFeed;
+  window.renderFeed = function () {
+    _v13PrevRenderFeed.apply(this, arguments);
+    enhanceBurnPosts();
+  };
+}
+
+if (typeof createPost === "function") {
+  const _v13PrevCreatePost = createPost;
+  window.createPost = async function () {
+    const captionEl = document.getElementById("caption");
+    const burnEl = document.getElementById("postBurnToggle");
+    if (captionEl && burnEl?.checked) {
+      captionEl.value = `${captionEl.value.trim()} [BURN]`.trim();
+    }
+    const res = await _v13PrevCreatePost.apply(this, arguments);
+    if (burnEl) burnEl.checked = false;
+    return res;
+  };
+}
+
+
+
+// ================= VYBE v14.0: 10 QUANTUM, SPATIAL & SOCIAL-MAGIC FEATURES =================
+
+// --- 1. LIVE KINETIC GYRO-BACKGROUND STARFIELD ---
+if (window.DeviceOrientationEvent) {
+  window.addEventListener("deviceorientation", (e) => {
+    const sf = document.getElementById("vybeStarfield");
+    if (!sf || e.gamma === null || e.beta === null) return;
+    const dx = Math.max(-18, Math.min(18, e.gamma / 2));
+    const dy = Math.max(-18, Math.min(18, (e.beta - 45) / 2));
+    sf.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+  }, { passive: true });
+}
+
+// --- 2. MAGIC WAND AI CAPTION & HASHTAG POLISHER ---
+const magicCaptionsBank = [
+  "Chasing neon horizons & midnight vibes ✨🌌 #vybe #nightlife #cyberchill",
+  "Built different, vibing higher every single day ⚡🔥 #hustle #vybeoriginals #focus",
+  "Unfiltered moments with the realest crew 🏍️💫 #memories #belong #vybefam"
+];
+let magicCapIdx = 0;
+function magicPolishCaption() {
+  const cap = document.getElementById("caption");
+  if (!cap) return;
+  const base = cap.value.trim();
+  const polished = magicCaptionsBank[magicCapIdx % magicCaptionsBank.length];
+  magicCapIdx++;
+  cap.value = base ? `${base} — ${polished}` : polished;
+  if (typeof toast === "function") toast("🪄 Caption polished with VYBE Magic!");
+}
+
+// --- 3. MYSTERY ROULETTE BLIND 60-SEC CHAT ---
+let blindChatInterval = null;
+function openBlindChatModal() {
+  if (typeof show === "function") show("blindChatModal");
+  clearInterval(blindChatInterval);
+  let sec = 60;
+  const sub = document.getElementById("blindChatTimerSub");
+  if (sub) sub.textContent = "60s Anonymous Vibe Match • Tap Reveal when ready!";
+  blindChatInterval = setInterval(() => {
+    sec--;
+    if (sub) sub.textContent = sec > 0 ? `⏳ ${sec}s remaining in Blind Match` : "⏰ Time's up! Tap Reveal or start again.";
+    if (sec <= 0) clearInterval(blindChatInterval);
+  }, 1000);
+}
+function closeBlindChatModal() {
+  clearInterval(blindChatInterval);
+  if (typeof hide === "function") hide("blindChatModal");
+}
+function sendBlindChatMsg(e) {
+  e.preventDefault();
+  const inp = document.getElementById("blindChatInput");
+  const box = document.getElementById("blindChatBox");
+  const txt = (inp?.value || "").trim();
+  if (!txt || !box) return;
+  inp.value = "";
+  const mine = document.createElement("div");
+  mine.className = "dm-bubble mine";
+  mine.style.cssText = "padding:7px 11px;font-size:12px;";
+  mine.textContent = txt;
+  box.appendChild(mine);
+  box.scrollTop = box.scrollHeight;
+  setTimeout(() => {
+    const reply = document.createElement("div");
+    reply.className = "dm-bubble";
+    reply.style.cssText = "padding:7px 11px;font-size:12px;";
+    reply.textContent = "🎭 Haha same vibe! Let's hit Reveal ✨";
+    box.appendChild(reply);
+    box.scrollTop = box.scrollHeight;
+  }, 900);
+}
+function revealBlindIdentity() {
+  const box = document.getElementById("blindChatBox");
+  if (box) {
+    const note = document.createElement("div");
+    note.style.cssText = "text-align:center;font-size:12px;color:#4ade80;font-weight:700;padding:6px;";
+    note.textContent = "🎉 Identity Revealed: You matched with @alex.design!";
+    box.appendChild(note);
+  }
+  if (typeof awardVybeCoins === "function") awardVybeCoins(20, "Blind Chat Reveal");
+}
+
+// --- 4. DUAL-EXPOSURE PHANTOM BLEND CAMERA ---
+let dualLayer1 = null;
+let dualLayer2 = null;
+function openDualExposureModal() {
+  if (typeof show === "function") show("dualExposureModal");
+}
+function loadDualBlendLayer(slot, inputEl) {
+  const file = inputEl.files?.[0];
+  if (!file) return;
+  const img = new Image();
+  img.onload = () => {
+    if (slot === 1) dualLayer1 = img;
+    else dualLayer2 = img;
+    renderDualExposureCanvas();
+  };
+  img.src = URL.createObjectURL(file);
+}
+function renderDualExposureCanvas() {
+  const canvas = document.getElementById("dualExposureCanvas");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.globalAlpha = 1.0;
+  ctx.globalCompositeOperation = "source-over";
+  if (dualLayer1) ctx.drawImage(dualLayer1, 0, 0, canvas.width, canvas.height);
+  if (dualLayer2) {
+    ctx.globalAlpha = 0.55;
+    ctx.globalCompositeOperation = "screen";
+    ctx.drawImage(dualLayer2, 0, 0, canvas.width, canvas.height);
+  }
+  ctx.globalAlpha = 1.0;
+  ctx.globalCompositeOperation = "source-over";
+}
+function useDualExposurePost() {
+  const canvas = document.getElementById("dualExposureCanvas");
+  if (!canvas) return;
+  canvas.toBlob((blob) => {
+    if (!blob) return;
+    const file = new File([blob], `vybe-dual-${Date.now()}.png`, { type: "image/png" });
+    if (typeof hide === "function") hide("dualExposureModal");
+    const input = document.getElementById("mediaUploadInput");
+    if (input && typeof assignFileToInput === "function") assignFileToInput(input, file);
+  }, "image/png");
+}
+
+// --- 5. BINAURAL ASMR FOCUS POD (8D AUDIO SWEEPER) ---
+let binauralTimer = null;
+function toggleBinaural8DSweep(enabled) {
+  clearInterval(binauralTimer);
+  if (!enabled) {
+    if (typeof toast === "function") toast("🎧 8D Binaural Sweep OFF");
+    return;
+  }
+  if (typeof toggleCoWatchPlay === "function" && typeof coWatchPlaying !== "undefined" && !coWatchPlaying) {
+    toggleCoWatchPlay(true);
+  }
+  let phase = 0;
+  binauralTimer = setInterval(() => {
+    phase += 0.25;
+    if (typeof coWatchOsc !== "undefined" && coWatchOsc && typeof coWatchAudioCtx !== "undefined" && coWatchAudioCtx) {
+      const modFreq = (typeof activeStation !== "undefined" ? activeStation.freq : 174) + Math.sin(phase) * 18;
+      coWatchOsc.frequency.setTargetAtTime(modFreq, coWatchAudioCtx.currentTime, 0.1);
+    }
+  }, 300);
+  if (typeof toast === "function") toast("🎧 8D Binaural Focus Sweep ACTIVE!");
+}
+
+// --- 6. HIDDEN WATERMARK / STEGANOGRAPHY CREATOR SIGNATURE ---
+function injectCreatorWatermarks() {
+  document.querySelectorAll("#feed article.post").forEach((article) => {
+    const stage = article.querySelector(".post-media-stage");
+    const author = article.querySelector(".meta")?.textContent || "@vybe";
+    if (!stage || stage.querySelector(".creator-watermark-chip")) return;
+    const chip = document.createElement("span");
+    chip.className = "creator-watermark-chip";
+    chip.textContent = `© ${author} • VYBE`;
+    chip.onclick = (e) => {
+      e.stopPropagation();
+      if (typeof toast === "function") toast(`🔍 Verified Original Creator: ${author} (VYBE Signed)`);
+    };
+    stage.appendChild(chip);
+  });
+}
+
+// --- 7. LIVE POLL BATTLE ROYALE (ELIMINATION TOURNAMENT) ---
+let battleBracket = ["🏍️ Midnight Highway Ride", "🎧 Lo-Fi Coding Session", "☕ Rainy Cafe Hangout", "🌌 Stargazing Roof"];
+let battleWinners = [];
+function openBattleRoyaleModal() {
+  if (typeof show === "function") show("battleRoyaleModal");
+  battleWinners = [];
+  renderBattleMatch(battleBracket[0], battleBracket[1], "Semi-Final 1/2");
+}
+function renderBattleMatch(optA, optB, roundLabel) {
+  const title = document.getElementById("battleRoundTitle");
+  const arena = document.getElementById("battleRoyaleArena");
+  if (title) title.textContent = `${roundLabel}: Pick Winner!`;
+  if (!arena) return;
+  arena.innerHTML = `
+    <button type="button" class="secondary" style="padding:14px;font-size:13px;font-weight:700;" onclick="advanceBattleRoyale('${optA.replace(/'/g, "")}')">${optA}</button>
+    <div style="font-size:11px;color:#38bdf8;font-weight:800;">VS</div>
+    <button type="button" class="secondary" style="padding:14px;font-size:13px;font-weight:700;" onclick="advanceBattleRoyale('${optB.replace(/'/g, "")}')">${optB}</button>
+  `;
+}
+function advanceBattleRoyale(winner) {
+  battleWinners.push(winner);
+  if (battleWinners.length === 1) {
+    renderBattleMatch(battleBracket[2], battleBracket[3], "Semi-Final 2/2");
+  } else if (battleWinners.length === 2) {
+    renderBattleMatch(battleWinners[0], battleWinners[1], "🏆 GRAND FINAL");
+  } else {
+    const title = document.getElementById("battleRoundTitle");
+    const arena = document.getElementById("battleRoyaleArena");
+    if (title) title.textContent = "👑 CHAMPION CROWNED!";
+    if (arena) {
+      arena.innerHTML = `<div style="padding:18px;border-radius:16px;background:rgba(14,165,233,0.18);border:1px solid #38bdf8;font-size:16px;font-weight:800;color:#fde047;">${winner}</div>`;
+    }
+    if (typeof awardVybeCoins === "function") awardVybeCoins(15, "Battle Royale Champion");
+  }
+}
+
+// --- 8. NEON STICKER & STAMP PACK STUDIO ---
+function appendNeonStamp(stampText) {
+  const cap = document.getElementById("caption");
+  if (!cap) return;
+  cap.value = `${cap.value.trim()} [${stampText}]`.trim();
+  if (typeof toast === "function") toast(`Added ${stampText} stamp!`);
+}
+
+// --- 9. SECRET WHISPER-LINK VIP INVITE PASS ---
+function openWhisperPassModal() {
+  if (typeof show === "function") show("whisperPassModal");
+  const codeEl = document.getElementById("whisperPassCode");
+  if (codeEl) codeEl.textContent = `VYBE-VIP-${Math.floor(100 + Math.random() * 899)}`;
+}
+function copyWhisperPass() {
+  const code = document.getElementById("whisperPassCode")?.textContent || "VYBE-VIP-777";
+  navigator.clipboard?.writeText(`Join me on VYBE with my VIP Whisper Pass: ${code}`).catch(() => {});
+  if (typeof awardVybeCoins === "function") awardVybeCoins(25, "Shared VIP Whisper Pass");
+  if (typeof toast === "function") toast("📋 VIP Whisper Pass copied! (+25 Coins)");
+}
+
+// --- 10. WARP-SPEED FEED SCROLL TRANSITION ---
+let lastScrollY = window.scrollY;
+let lastScrollTime = Date.now();
+window.addEventListener("scroll", () => {
+  const now = Date.now();
+  const dy = Math.abs(window.scrollY - lastScrollY);
+  const dt = Math.max(1, now - lastScrollTime);
+  if (dy / dt > 3.2) {
+    const warp = document.getElementById("warpSpeedLines");
+    if (warp) {
+      warp.classList.add("active");
+      clearTimeout(window._warpHideTimer);
+      window._warpHideTimer = setTimeout(() => warp.classList.remove("active"), 260);
+    }
+  }
+  lastScrollY = window.scrollY;
+  lastScrollTime = now;
+}, { passive: true });
+
+// Hook Watermarks into renderFeed & Whisper Pass into renderProfile
+if (typeof renderFeed === "function") {
+  const _v14PrevRenderFeed = renderFeed;
+  window.renderFeed = function () {
+    _v14PrevRenderFeed.apply(this, arguments);
+    injectCreatorWatermarks();
+  };
+}
+
+if (typeof renderProfile === "function") {
+  const _v14PrevRenderProfile = renderProfile;
+  window.renderProfile = function () {
+    _v14PrevRenderProfile.apply(this, arguments);
+    const tools = document.querySelector("#profileView .profile-mega-tools");
+    if (tools && !tools.querySelector(".vip-pass-btn")) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "mega-pill-btn vip-pass-btn";
+      btn.textContent = "💌 VIP Pass";
+      btn.onclick = openWhisperPassModal;
+      tools.appendChild(btn);
+    }
+  };
+}
+
+
+
+// ================= VYBE v15.0: 10 HOLO-SOCIAL, AUDIO-REACTIVE & CREATOR ECONOMY =================
+
+// --- 1. BEAT-REACTIVE NEON BORDERS ---
+if (typeof toggleCoWatchPlay === "function") {
+  const _v15PrevCoWatch = toggleCoWatchPlay;
+  window.toggleCoWatchPlay = function () {
+    const res = _v15PrevCoWatch.apply(this, arguments);
+    document.body.classList.toggle("beat-reactive-on", Boolean(typeof coWatchPlaying !== "undefined" && coWatchPlaying));
+    return res;
+  };
+}
+
+// --- 2. VIRTUAL CYBER AVATAR STUDIO ---
+let avatarState = { bg: 0, visor: 0, crown: 0 };
+function openAvatarStudioModal() {
+  if (typeof show === "function") show("avatarStudioModal");
+  renderCyberAvatarCanvas();
+}
+function cycleAvatarPart(part) {
+  avatarState[part] = (avatarState[part] + 1) % 3;
+  renderCyberAvatarCanvas();
+}
+function renderCyberAvatarCanvas() {
+  const canvas = document.getElementById("cyberAvatarCanvas");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const bgs = ["#0284c7", "#7e22ce", "#059669"];
+  const visors = ["🕶️", "🥽", "⚡"];
+  const crowns = ["", "👑", "🔥"];
+  ctx.fillStyle = bgs[avatarState.bg];
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.font = "86px sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText("🤖", 120, 155);
+  ctx.font = "44px sans-serif";
+  ctx.fillText(visors[avatarState.visor], 120, 128);
+  if (crowns[avatarState.crown]) {
+    ctx.fillText(crowns[avatarState.crown], 120, 68);
+  }
+}
+function applyVirtualCyberAvatar() {
+  const canvas = document.getElementById("cyberAvatarCanvas");
+  if (!canvas) return;
+  const dataUrl = canvas.toDataURL("image/png");
+  if (typeof me !== "undefined") me.pic = dataUrl;
+  if (typeof hide === "function") hide("avatarStudioModal");
+  if (typeof renderProfile === "function") renderProfile();
+  if (typeof toast === "function") toast("🪞 Virtual Cyber Avatar applied!");
+}
+
+// --- 3. FLASH-DROP AUCTION / BID WITH VYBE COINS ---
+let currentAuctionBid = 120;
+function openAuctionModal() {
+  if (typeof show === "function") show("auctionModal");
+}
+function placeVybeAuctionBid() {
+  const coins = Number(localStorage.getItem("vybe:coins") || 150);
+  const nextBid = currentAuctionBid + 20;
+  if (coins < nextBid) {
+    if (typeof toast === "function") toast("❌ Not enough VYBE Coins for this bid!");
+    return;
+  }
+  currentAuctionBid = nextBid;
+  if (typeof awardVybeCoins === "function") awardVybeCoins(-20, "Auction Bid");
+  const lbl = document.getElementById("auctionHighestBidText");
+  const uname = (typeof currentProfile !== "undefined" && currentProfile) || "you";
+  if (lbl) lbl.innerHTML = `Current Bid: <b>${currentAuctionBid} 🪙</b> by @${safe(uname)} (Winning!)`;
+  if (typeof toast === "function") toast(`🔨 Highest Bid placed: ${currentAuctionBid} 🪙!`);
+}
+
+// --- 4. MOOD-TWIN MATCHMAKER RADAR ---
+function openMoodTwinModal() {
+  if (typeof show === "function") show("moodTwinModal");
+  const list = document.getElementById("moodTwinList");
+  if (!list) return;
+  const twins = [
+    { id: 1, user: "alex.design", mood: "🌙 Late Night Chill", match: "96% Twin" },
+    { id: 2, user: "sarah.official", mood: "🔥 Hustle Mode", match: "92% Twin" },
+    { id: 3, user: "john.travel", mood: "⚡ Energetic", match: "89% Twin" }
+  ];
+  list.innerHTML = twins
+    .map(
+      (t) => `
+      <div class="people glass" style="padding:10px 14px;margin:0;justify-content:space-between;">
+        <div>
+          <strong style="display:block;font-size:13px;">@${safe(t.user)} <span style="color:#38bdf8;font-size:11px;">(${t.match})</span></strong>
+          <small class="meta">${t.mood}</small>
+        </div>
+        <button type="button" class="primary" style="padding:6px 12px;font-size:11px;" onclick="hide('moodTwinModal');openChat('${t.id}')">Wave 👋</button>
+      </div>`
+    )
+    .join("");
+}
+
+// --- 5. ENCRYPTED 3-TAP RHYTHM PATTERN LOCK ---
+function enhanceRhythmLockPosts() {
+  document.querySelectorAll("#feed article.post").forEach((article) => {
+    const captionEl = article.querySelector(".caption");
+    if (!captionEl) return;
+    const raw = captionEl.textContent || "";
+    if (!raw.includes("[RHYTHM]") && article.dataset.isRhythm !== "true") return;
+    article.dataset.isRhythm = "true";
+    captionEl.innerHTML = captionEl.innerHTML.replace("[RHYTHM]", "").trim();
+    const stage = article.querySelector(".post-media-stage");
+    if (!stage || stage.dataset.rhythmUnlocked === "true") return;
+
+    const origHtml = stage.innerHTML;
+    stage.dataset.rhythmOriginal = origHtml;
+    stage.innerHTML = `
+      <div class="rhythm-lock-overlay">
+        <span style="font-size:28px;">🥁</span>
+        <strong style="font-size:14px;color:#7dd3fc;">3-Tap Rhythm Locked Post</strong>
+        <p class="meta">Tap the cyber drum 3 times to unlock this drop!</p>
+        <button type="button" class="primary" style="padding:8px 18px;font-size:12px;" onclick="tapRhythmDrum(this)">🥁 Tap (0/3)</button>
+      </div>`;
+  });
+}
+function tapRhythmDrum(btn) {
+  const count = Number(btn.dataset.taps || 0) + 1;
+  btn.dataset.taps = String(count);
+  btn.textContent = `🥁 Tap (${count}/3)`;
+  if (count >= 3) {
+    const stage = btn.closest(".post-media-stage");
+    if (stage && stage.dataset.rhythmOriginal) {
+      stage.dataset.rhythmUnlocked = "true";
+      stage.innerHTML = stage.dataset.rhythmOriginal;
+      if (typeof toast === "function") toast("🥁 Rhythm matched! Post unlocked.");
+    }
+  }
+}
+
+// --- 6. PICTURE-IN-PICTURE (PiP) FLOATING MINI-REELS PLAYER ---
+function toggleFloatingMiniReel(forceState) {
+  const box = document.getElementById("floatingMiniReelBox");
+  const vid = document.getElementById("floatingMiniReelVid");
+  if (!box) return;
+  const showBox = typeof forceState === "boolean" ? forceState : box.hidden;
+  box.hidden = !showBox;
+  if (vid) {
+    if (showBox) vid.play().catch(() => {});
+    else vid.pause();
+  }
+}
+
+// --- 7. CO-AUTHOR / SPLIT-CREDIT COLLAB POSTS ---
+function enhanceCollabPosts() {
+  document.querySelectorAll("#feed article.post").forEach((article) => {
+    const captionEl = article.querySelector(".caption");
+    const unameEl = article.querySelector(".username");
+    if (!captionEl || !unameEl) return;
+    const raw = captionEl.textContent || "";
+    const match = raw.match(/\[COLLAB:([^\]]+)\]/);
+    if (!match) return;
+    const coUser = match[1];
+    captionEl.innerHTML = captionEl.innerHTML.replace(match[0], "").trim();
+    if (!unameEl.textContent.includes("×")) {
+      unameEl.innerHTML = `${unameEl.innerHTML} <span style="color:#38bdf8;">× @${safe(coUser)}</span>`;
+    }
+  });
+}
+
+// --- 8. GRAVITY-FLIP MATRIX EASTER EGG ---
+let gravityFlipped = false;
+function toggleGravityFlipMode() {
+  gravityFlipped = !gravityFlipped;
+  document.body.classList.toggle("gravity-flipped", gravityFlipped);
+  if (typeof toast === "function") {
+    toast(gravityFlipped ? "🙃 Gravity-Flip Matrix Mode ON!" : "🌍 Orientation Restored");
+  }
+}
+
+// --- 9. LIVE NEON QUOTE POSTER GENERATOR ---
+function openNeonQuoteModal() {
+  if (typeof show === "function") show("neonQuoteModal");
+  renderNeonQuoteCanvas();
+}
+function renderNeonQuoteCanvas() {
+  const canvas = document.getElementById("neonQuoteCanvas");
+  const inp = document.getElementById("neonQuoteInput");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const grad = ctx.createLinearGradient(0, 0, 320, 320);
+  grad.addColorStop(0, "#050811");
+  grad.addColorStop(1, "#1e1b4b");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 320, 320);
+  ctx.strokeStyle = "#38bdf8";
+  ctx.lineWidth = 4;
+  ctx.strokeRect(14, 14, 292, 292);
+  ctx.fillStyle = "#38bdf8";
+  ctx.font = "bold 18px sans-serif";
+  ctx.textAlign = "center";
+  const text = (inp?.value || "YOUR VIBE. YOUR WORLD.").toUpperCase();
+  ctx.fillText(text.slice(0, 24), 160, 150);
+  if (text.length > 24) ctx.fillText(text.slice(24, 48), 160, 180);
+  ctx.font = "11px sans-serif";
+  ctx.fillStyle = "#94a3b8";
+  ctx.fillText("— VYBE ORIGINALS —", 160, 275);
+}
+function useNeonQuotePost() {
+  const canvas = document.getElementById("neonQuoteCanvas");
+  if (!canvas) return;
+  canvas.toBlob((blob) => {
+    if (!blob) return;
+    const file = new File([blob], `vybe-quote-${Date.now()}.png`, { type: "image/png" });
+    if (typeof hide === "function") hide("neonQuoteModal");
+    const input = document.getElementById("mediaUploadInput");
+    if (input && typeof assignFileToInput === "function") assignFileToInput(input, file);
+  }, "image/png");
+}
+
+// --- 10. CREATOR TIER EVOLUTION BADGES & AVATAR STUDIO BUTTON ---
+if (typeof renderProfile === "function") {
+  const _v15PrevRenderProfile = renderProfile;
+  window.renderProfile = function () {
+    _v15PrevRenderProfile.apply(this, arguments);
+    const unameBtn = document.querySelector("#profileView .profile-username");
+    if (unameBtn && !unameBtn.querySelector(".creator-rank-pill")) {
+      const coins = Number(localStorage.getItem("vybe:coins") || 150);
+      const rank = coins >= 250 ? "👑 VYBE Legend" : coins >= 160 ? "⚔️ Cyber Knight" : "⚡ Rising Vyber";
+      const pill = document.createElement("span");
+      pill.className = "creator-rank-pill";
+      pill.textContent = rank;
+      unameBtn.appendChild(pill);
+    }
+    const tools = document.querySelector("#profileView .profile-mega-tools");
+    if (tools && !tools.querySelector(".avatar-studio-btn")) {
+      const avBtn = document.createElement("button");
+      avBtn.type = "button";
+      avBtn.className = "mega-pill-btn avatar-studio-btn";
+      avBtn.textContent = "🪞 Cyber Avatar";
+      avBtn.onclick = openAvatarStudioModal;
+      tools.appendChild(avBtn);
+    }
+  };
+}
+
+// Hook Rhythm Lock & Collab Posts into renderFeed & createPost
+if (typeof renderFeed === "function") {
+  const _v15PrevRenderFeed = renderFeed;
+  window.renderFeed = function () {
+    _v15PrevRenderFeed.apply(this, arguments);
+    enhanceRhythmLockPosts();
+    enhanceCollabPosts();
+  };
+}
+
+if (typeof createPost === "function") {
+  const _v15PrevCreatePost = createPost;
+  window.createPost = async function () {
+    const captionEl = document.getElementById("caption");
+    const collabEl = document.getElementById("postCoCreatorInput");
+    const rhythmEl = document.getElementById("postRhythmLockToggle");
+    if (captionEl) {
+      let txt = captionEl.value.trim();
+      if (collabEl?.value.trim()) {
+        const cleanCo = collabEl.value.trim().replace(/^@/, "").replace(/\]/g, "");
+        txt += ` [COLLAB:${cleanCo}]`;
+      }
+      if (rhythmEl?.checked) txt += " [RHYTHM]";
+      captionEl.value = txt.trim();
+    }
+    const res = await _v15PrevCreatePost.apply(this, arguments);
+    if (collabEl) collabEl.value = "";
+    if (rhythmEl) rhythmEl.checked = false;
+    return res;
+  };
+}
