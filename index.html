@@ -51,6 +51,13 @@
   </section>
  </div>
  <div class="top-actions">
+  <button class="icon-btn" type="button" aria-label="360 Cyber Panorama" title="360° Cyber Panorama Viewer" data-vybe-feature="panorama_360" data-vybe-label="🧭 360° Cyber Panorama Viewer" data-vybe-desc="Explore wide scenic photos in interactive 360° pan mode" data-vybe-guide="Idhu enna pannum: Wide scenic photos-ai 360° interactive panorama view-la kaattum. Eppadi use panradhu: Top bar-la 🧭 icon tap panni photo mela finger drag panna 360° panoramic view rotate aagum." onclick="openPanoramaModal()">🧭</button>
+  <button class="icon-btn" type="button" aria-label="Live Audio Space Stage" title="Live Podcast / Audio Space Stage" data-vybe-feature="audio_stage" data-vybe-label="🎙️ Live Podcast / Audio Stage" data-vybe-desc="Host or join live voice hangout rooms with emoji reactions" data-vybe-guide="Idhu enna pannum: Friends kooda live voice stage hangout nadathalaam. Eppadi use panradhu: Top bar-la 🎙️ icon tap panni Mic Toggle on pannunga, audience emojis (🔥👏❤️) anuppalaam." onclick="openAudioStageModal()">🎙️</button>
+  <button class="icon-btn" type="button" aria-label="Cyber Creator Trading Card" title="Interactive Trading Card Profile" data-vybe-feature="cyber_card" data-vybe-label="🃏 Cyber Creator Trading Card" data-vybe-desc="Generate your holographic stats trading card" data-vybe-guide="Idhu enna pannum: Unga streak, coins & creator rank base panni holographic trading card generate pannum. Eppadi use panradhu: Top bar-la 🃏 icon tap panni card-ai paathu friends-kku share pannunga." onclick="openCyberCardModal()">🃏</button>
+  <button class="icon-btn" type="button" aria-label="Daily Brain-Teaser Trivia" title="Daily Trivia (+30 VYBE Coins)" data-vybe-feature="daily_trivia" data-vybe-label="🧠 Daily Brain-Teaser Trivia" data-vybe-desc="Answer 1 daily rapid-fire question to win +30 VYBE Coins" data-vybe-guide="Idhu enna pannum: Daily 1 tech/pop-culture question kettu +30 VYBE Coins tharum. Eppadi use panradhu: Top bar-la 🧠 icon tap panni correct answer option-ai select pannunga." onclick="openDailyTriviaModal()">🧠</button>
+  <button id="edgeAuraBtn" class="icon-btn" type="button" aria-label="Neon Edge-Lighting Aura" title="Neon Edge-Lighting Notification Aura" data-vybe-feature="edge_aura" data-vybe-label="🌈 Neon Edge-Lighting Aura" data-vybe-desc="Glowing cyber neon border pulse around your screen" data-vybe-guide="Idhu enna pannum: Screen borders-la glowing cyber blue & purple neon edge lighting pulse aagum. Eppadi use panradhu: Top bar-la 🌈 icon tap panna Edge Aura ON/OFF aagum." onclick="toggleEdgeLightingAura()">🌈</button>
+  <button class="icon-btn" type="button" aria-label="Pinned Top-3 Showcase" title="Pinned Top-3 Profile Showcase" data-vybe-feature="pinned_showcase" data-vybe-label="📌 Pinned Top-3 Showcase" data-vybe-desc="Highlight your top 3 featured drops in a VIP showcase" data-vybe-guide="Idhu enna pannum: Unga best 3 featured drops-ai VIP showcase-la pin panni kaattum. Eppadi use panradhu: Top bar-la 📌 icon tap panni unga top 3 pinned showcase-ai view/update pannunga." onclick="openPinnedShowcaseModal()">📌</button>
+  <button id="privacyShieldBtn" class="icon-btn" type="button" aria-label="Anti-Screenshot Blur Shield" title="Hold-to-View Privacy Blur Shield" data-vybe-feature="privacy_shield" data-vybe-label="🛡️ Anti-Screenshot Blur Shield" data-vybe-desc="Blurs feed media until you press & hold to view" data-vybe-guide="Idhu enna pannum: Feed photos/videos-ai privacy blur shield-la lock pannum. Eppadi use panradhu: Top bar-la 🛡️ icon tap panna feed blur aagum; photo mela finger hold panna mattum clear-aa theriyum." onclick="togglePrivacyBlurShield()">🛡️</button>
   <button data-vybe-feature="coins_quests" id="vybeCoinsBtn" class="coins-pill" type="button" title="Daily Micro-Quests & VYBE Coins" onclick="openQuestsModal()">🪙 150</button>
   <button class="icon-btn" type="button" aria-label="Flash-Drop Auction" title="60s VYBE Coins Live Auction" data-vybe-feature="auction" onclick="openAuctionModal()">🔨</button>
   <button class="icon-btn" type="button" aria-label="Mood-Twin Matchmaker" title="Mood-Twin Live Compatibility Radar" data-vybe-feature="mood_twin" onclick="openMoodTwinModal()">🧬</button>
@@ -160,6 +167,7 @@
    <button class="dm-header-button dm-back" id="dmBackButton" type="button" aria-label="Back to inbox" onclick="showDMInbox()" style="display:none">←</button>
    <img class="dm-header-avatar" id="dmHeaderAvatar" src="" alt="" style="display:none">
    <div class="dm-header-copy"><span class="dm-header-title" id="dmTitle">Messages</span><span class="dm-header-subtitle" id="dmSubtitle">Your conversations</span></div>
+      <button class="dm-header-button" type="button" aria-label="Icebreaker Spin Prompt" title="1-Tap Icebreaker Question" data-vybe-feature="dm_icebreaker" data-vybe-label="🎲 DM Icebreaker Spin-Prompt" data-vybe-desc="Generate fun conversation starter questions inside DM" data-vybe-guide="Idhu enna pannum: Chat-la enna pesuradhu nu theriyalana instant fun question generate panni anuppum. Eppadi use panradhu: DM chat open panni header-la irukkira 🎲 icon-ai tap pannunga." onclick="sendDMIcebreakerPrompt()" style="margin-right:4px;color:#38bdf8;">🎲</button>
    <button class="dm-header-button" type="button" aria-label="Neon Theremin Synth" title="Voice-Pitch Theremin Melody" data-vybe-feature="dm_theremin" onclick="openThereminModal()" style="margin-right:4px;color:#c084fc;">〰️</button>
    <button class="dm-header-button" type="button" aria-label="Live Typing Duel" title="15-Sec Typing Race" data-vybe-feature="dm_typing_duel" onclick="openTypingDuelModal()" style="margin-right:4px;color:#fde047;">⌨️</button>
    <button class="dm-header-button" type="button" aria-label="Squad Hangout Planner" title="Hangout & Split-Bill Planner" data-vybe-feature="dm_hangout" onclick="openHangoutPlannerModal()" style="margin-right:4px;color:#34d399;">🧾</button>
@@ -291,6 +299,8 @@
   <button class="media-picker" type="button" style="border-color:#facc15;color:#fef08a;" data-vybe-feature="film_strip" onclick="openFilmStripModal()">🎞️ Film Strip</button>
   <button class="media-picker" type="button" style="border-color:#f43f5e;color:#fda4af;" data-vybe-feature="dual_blend" onclick="openDualExposureModal()">📸 Dual Blend</button>
   <button class="media-picker" type="button" style="border-color:#34d399;color:#a7f3d0;" data-vybe-feature="quote_poster" onclick="openNeonQuoteModal()">🖼️ Quote Poster</button>
+  <button class="media-picker" type="button" style="border-color:#fb923c;color:#fed7aa;" data-vybe-feature="vhs_camcorder" data-vybe-label="📸 Vintage 1998 Camcorder" data-vybe-desc="Add REC 1998 retro camcorder stamp in Create Post" data-vybe-guide="Idhu enna pannum: Create Post-la 1998 VHS camcorder date stamp & retro filter-ai post-kku add pannum. Eppadi use panradhu: Create Post open panni 📸 1998 Cam button tap pannunga." onclick="attachVHSCamcorderTag()">📸 1998 Cam</button>
+  <button class="media-picker" type="button" style="border-color:#22d3ee;color:#a5f3fc;" data-vybe-feature="time_warp_reveal" data-vybe-label="⏳ Time-Warp Scan Reveal" data-vybe-desc="Add interactive time-warp scan line reveal to posts" data-vybe-guide="Idhu enna pannum: Post media-la interactive Time-Warp scan line reveal effect set pannum. Eppadi use panradhu: Create Post-la ⏳ Time-Warp button tap panni post podunga; viewers tap panna scan line reveal aagum." onclick="attachTimeWarpTag()">⏳ Time-Warp</button>
  </div>
  <textarea id="caption" maxlength="2200" placeholder="Write a caption... Add hashtags with #"></textarea>
  <div style="display:flex;gap:6px;margin:-4px 0 8px;flex-wrap:wrap;">
@@ -470,7 +480,7 @@
   <div class="settings-handle"></div>
   <header class="settings-header"><button id="settingsBackButton" class="settings-close" type="button" aria-label="Back to settings" onclick="showSettingsHome()" style="display:none">←</button><h2 id="settingsSheetTitle">Settings</h2><button class="settings-close" type="button" aria-label="Close settings" onclick="closeSettingsSheet()">✕</button></header>
   <div id="settingsHome">
-   <div class="settings-version">VYBE v16.0 (Clean Topbar + Settings Futures Control Hub)</div>
+   <div class="settings-version">VYBE v17.0 (Next-Gen Spatial, Audio & Creator Futures + Info Guide)</div>
    <div class="settings-menu">
     <button type="button" style="border-color:#38bdf8;background:linear-gradient(135deg,rgba(14,165,233,0.18),rgba(168,85,247,0.18));" onclick="showSettingsSubview('futures')">✨ Futures (Feature Controls) <span>ON / OFF ›</span></button>
     <button type="button" onclick="openSavedCollection()">Saved <span>›</span></button>
@@ -1211,6 +1221,108 @@
     <input id="neonQuoteInput" type="text" maxlength="80" placeholder="Type quote (e.g. BUILD YOUR OWN UNIVERSE)" oninput="renderNeonQuoteCanvas()" style="margin:0 0 10px;padding:10px;font-size:13px;">
     <canvas id="neonQuoteCanvas" width="320" height="320" style="width:100%;max-width:250px;aspect-ratio:1;border-radius:16px;border:1px solid #34d399;background:#050811;"></canvas>
     <button type="button" class="primary" style="width:100%;margin-top:10px;" onclick="useNeonQuotePost()">✨ Use Poster in Post</button>
+  </div>
+</div>
+
+
+<!-- V17 EDGE LIGHTING OVERLAY -->
+<div id="neonEdgeAuraFrame" class="neon-edge-aura-frame" hidden aria-hidden="true"></div>
+
+<!-- FUTURE INFO GUIDE MODAL (Opened via 'i' button in Settings -> Futures) -->
+<div class="modal" id="futureInfoModal" onclick="if(event.target===this)hide('futureInfoModal')">
+  <div class="modalbox glass" style="max-width:380px;">
+    <button class="close" type="button" onclick="hide('futureInfoModal')">×</button>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+      <span style="width:34px;height:34px;border-radius:50%;background:rgba(14,165,233,0.2);border:1px solid #38bdf8;color:#38bdf8;display:grid;place-items:center;font-weight:800;font-family:Georgia,serif;">i</span>
+      <h2 id="futureInfoTitle" style="font-size:17px;margin:0;">Feature Guide</h2>
+    </div>
+    <p id="futureInfoSummary" class="meta" style="color:#7dd3fc;margin-bottom:10px;"></p>
+    <div id="futureInfoBody" style="padding:12px 14px;border-radius:14px;background:rgba(15,23,42,0.85);border:1px solid rgba(56,189,248,0.25);font-size:13px;line-height:1.6;color:#f1f5f9;"></div>
+  </div>
+</div>
+
+<!-- V17 MODALS -->
+<!-- 1. 360 CYBER PANORAMA VIEWER -->
+<div class="modal" id="panoramaModal" onclick="if(event.target===this)hide('panoramaModal')">
+  <div class="modalbox glass" style="text-align:center;">
+    <button class="close" type="button" onclick="hide('panoramaModal')">×</button>
+    <h2 style="margin-bottom:4px;">🧭 360° Cyber Panorama</h2>
+    <p class="meta" style="margin-bottom:10px;">Drag left or right across the horizon to pan 360°!</p>
+    <div id="panoramaViewport" class="panorama-viewport" onpointermove="panPanoramaView(event)" onpointerdown="startPanoramaDrag(event)">
+      <div id="panoramaStrip" class="panorama-strip"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 2. LIVE PODCAST / AUDIO SPACE STAGE -->
+<div class="modal" id="audioStageModal" onclick="if(event.target===this)hide('audioStageModal')">
+  <div class="modalbox glass" style="text-align:center;">
+    <button class="close" type="button" onclick="hide('audioStageModal')">×</button>
+    <h2 style="margin-bottom:4px;">🎙️ Live Audio Space Stage</h2>
+    <p class="meta" style="margin-bottom:12px;">Live creator voice room • Tap mic to speak or drop reactions!</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;">
+      <div class="glass" style="padding:10px;border-radius:14px;border-color:#38bdf8;">
+        <span style="font-size:24px;">🎧</span>
+        <strong style="display:block;font-size:11px;margin-top:4px;">@you (Host)</strong>
+        <small id="stageMicStatus" style="font-size:10px;color:#4ade80;">● Mic Live</small>
+      </div>
+      <div class="glass" style="padding:10px;border-radius:14px;">
+        <span style="font-size:24px;">🔥</span>
+        <strong style="display:block;font-size:11px;margin-top:4px;">@alex.design</strong>
+        <small style="font-size:10px;color:#94a3b8;">Speaker</small>
+      </div>
+      <div class="glass" style="padding:10px;border-radius:14px;">
+        <span style="font-size:24px;">✨</span>
+        <strong style="display:block;font-size:11px;margin-top:4px;">@sarah.official</strong>
+        <small style="font-size:10px;color:#94a3b8;">Listening</small>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:center;">
+      <button type="button" class="primary" style="flex:1;" onclick="toggleAudioStageMic()">🎙️ Toggle Mic</button>
+      <button type="button" class="secondary" onclick="toast('👏 Applause sent to stage!')">👏</button>
+      <button type="button" class="secondary" onclick="toast('🔥 Fire reaction sent!')">🔥</button>
+    </div>
+  </div>
+</div>
+
+<!-- 3. INTERACTIVE TRADING CARD PROFILE GENERATOR -->
+<div class="modal" id="cyberCardModal" onclick="if(event.target===this)hide('cyberCardModal')">
+  <div class="modalbox glass" style="text-align:center;max-width:350px;">
+    <button class="close" type="button" onclick="hide('cyberCardModal')">×</button>
+    <h2 style="margin-bottom:6px;">🃏 Cyber Creator Card</h2>
+    <div id="cyberTradingCardBody" class="cyber-trading-card"></div>
+    <button type="button" class="primary" style="width:100%;margin-top:12px;" onclick="toast('🃏 Cyber Trading Card copied to share!')">↗ Share Creator Card</button>
+  </div>
+</div>
+
+<!-- 4. DAILY BRAIN-TEASER TRIVIA -->
+<div class="modal" id="dailyTriviaModal" onclick="if(event.target===this)hide('dailyTriviaModal')">
+  <div class="modalbox glass" style="text-align:center;max-width:370px;">
+    <button class="close" type="button" onclick="hide('dailyTriviaModal')">×</button>
+    <h2 style="margin-bottom:4px;">🧠 Daily VYBE Trivia</h2>
+    <p class="meta" style="margin-bottom:12px;">Answer today's question to win <b>+30 🪙 VYBE Coins</b>!</p>
+    <div style="padding:12px;border-radius:14px;background:rgba(15,23,42,0.85);border:1px solid #38bdf8;margin-bottom:12px;">
+      <strong style="font-size:14px;color:#fff;">Which protocol powers real-time instant chat & live sync in modern web apps?</strong>
+    </div>
+    <div style="display:grid;gap:8px;">
+      <button type="button" class="secondary" onclick="submitDailyTrivia(true)">⚡ WebSockets / Realtime</button>
+      <button type="button" class="secondary" onclick="submitDailyTrivia(false)">📠 Fax Machine</button>
+      <button type="button" class="secondary" onclick="submitDailyTrivia(false)">📼 VHS Tape</button>
+    </div>
+  </div>
+</div>
+
+<!-- 5. PINNED TOP-3 PROFILE SHOWCASE -->
+<div class="modal" id="pinnedShowcaseModal" onclick="if(event.target===this)hide('pinnedShowcaseModal')">
+  <div class="modalbox glass" style="text-align:center;">
+    <button class="close" type="button" onclick="hide('pinnedShowcaseModal')">×</button>
+    <h2 style="margin-bottom:4px;">📌 Pinned Top-3 Showcase</h2>
+    <p class="meta" style="margin-bottom:12px;">Your top 3 highlighted moments on VYBE</p>
+    <div class="grid" style="grid-template-columns:repeat(3,1fr);gap:8px;">
+      <div class="tile" style="height:130px;"><img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=400"><span>#1 Top Vibe</span></div>
+      <div class="tile" style="height:130px;"><img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400"><span>#2 Night Ride</span></div>
+      <div class="tile" style="height:130px;"><img src="https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=400"><span>#3 Horizon</span></div>
+    </div>
   </div>
 </div>
 

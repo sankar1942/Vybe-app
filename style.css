@@ -2349,3 +2349,115 @@ body.gravity-flipped #vybe-shell {
   padding: 8px 10px;
   font-size: 12px;
 }
+
+
+
+/* ================= V17.0: FUTURES INFO BUTTON & V17 VISUALS ================= */
+.future-info-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  background: rgba(14, 165, 233, 0.16);
+  color: #38bdf8;
+  font-size: 12px;
+  font-weight: 800;
+  font-family: Georgia, serif;
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.future-info-btn:active {
+  transform: scale(0.9);
+}
+
+/* 1. 360 Panorama Strip */
+.panorama-viewport {
+  width: 100%;
+  height: 210px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #38bdf8;
+  cursor: grab;
+  touch-action: none;
+  position: relative;
+}
+.panorama-strip {
+  width: 240%;
+  height: 100%;
+  background: url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1400') center/cover repeat-x;
+  transform: translateX(-20%);
+}
+
+/* 3. Cyber Trading Card */
+.cyber-trading-card {
+  padding: 18px;
+  border-radius: 20px;
+  background: linear-gradient(145deg, #0c1e3e, #1e1b4b, #0f172a);
+  border: 2px solid #38bdf8;
+  box-shadow: 0 0 28px rgba(56, 189, 248, 0.4);
+  text-align: center;
+}
+
+/* 4. Time-Warp Scan Line Reveal */
+.time-warp-stage {
+  position: relative;
+}
+.time-warp-curtain {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(14, 165, 233, 0.85), rgba(15, 23, 42, 0.95));
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  z-index: 6;
+  transition: clip-path 0.7s ease-in-out, opacity 0.5s ease;
+  clip-path: inset(0 0 0 0);
+}
+.time-warp-curtain.warped {
+  clip-path: inset(100% 0 0 0);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 6. Neon Edge-Lighting Notification Aura */
+.neon-edge-aura-frame {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+  box-shadow: inset 0 0 26px #38bdf8, inset 0 0 54px rgba(168, 85, 247, 0.75);
+  animation: edgeAuraPulse 1.6s infinite alternate ease-in-out;
+}
+@keyframes edgeAuraPulse {
+  from { opacity: 0.45; }
+  to { opacity: 1; }
+}
+
+/* 9. Vintage 1998 Camcorder Stamp */
+.vhs-camcorder-overlay {
+  position: absolute;
+  top: 12px;
+  left: 14px;
+  z-index: 6;
+  font-family: monospace;
+  font-size: 12px;
+  font-weight: 800;
+  color: #f87171;
+  text-shadow: 0 1px 4px #000;
+  pointer-events: none;
+}
+
+/* 10. Anti-Screenshot Privacy Blur Shield */
+body.privacy-shield-on #feed .post-media-stage img,
+body.privacy-shield-on #feed .post-media-stage video {
+  filter: blur(18px);
+  transition: filter 0.25s ease;
+}
+body.privacy-shield-on #feed .post-media-stage:active img,
+body.privacy-shield-on #feed .post-media-stage:active video {
+  filter: blur(0px);
+}

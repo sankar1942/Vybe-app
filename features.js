@@ -3850,3 +3850,410 @@ if (typeof renderProfile === "function") {
     }
   };
 }
+
+
+
+// ================= VYBE v16.1: UNIVERSAL AUTO-DISCOVERY FUTURES ENGINE =================
+// Any future button/section added anywhere with data-vybe-feature="key" (and optional
+// data-vybe-label / data-vybe-desc) automatically appears inside Profile -> Settings -> Futures!
+function getDynamicFuturesCatalog() {
+  const byKey = new Map();
+  VYBE_FUTURES_CATALOG.forEach((item) => {
+    byKey.set(item.key, { ...item });
+  });
+
+  document.querySelectorAll("[data-vybe-feature]").forEach((el) => {
+    const key = (el.getAttribute("data-vybe-feature") || "").trim();
+    if (!key) return;
+    if (!byKey.has(key)) {
+      const customLabel =
+        el.getAttribute("data-vybe-label") ||
+        el.getAttribute("title") ||
+        el.getAttribute("aria-label") ||
+        el.textContent?.trim().slice(0, 32) ||
+        key.replace(/_/g, " ").toUpperCase();
+      const customDesc =
+        el.getAttribute("data-vybe-desc") ||
+        "Auto-discovered VYBE add-on feature";
+      byKey.set(key, { key, label: customLabel, desc: customDesc });
+    }
+  });
+
+  return Array.from(byKey.values());
+}
+
+// Override getEnabledFuturesMap to include auto-discovered keys (default false = clean UI)
+window.getEnabledFuturesMap = function () {
+  let saved = {};
+  try {
+    const parsed = JSON.parse(localStorage.getItem(VYBE_FUTURES_STORAGE_KEY) || "null");
+    if (parsed && typeof parsed === "object") saved = parsed;
+  } catch (_) {}
+
+  const result = {};
+  getDynamicFuturesCatalog().forEach((f) => {
+    result[f.key] = Boolean(saved[f.key]);
+  });
+  return result;
+};
+
+// Override setAllVybeFutures to toggle all static + auto-discovered features
+window.setAllVybeFutures = function (enableAll) {
+  const map = {};
+  getDynamicFuturesCatalog().forEach((f) => {
+    map[f.key] = Boolean(enableAll);
+  });
+  localStorage.setItem(VYBE_FUTURES_STORAGE_KEY, JSON.stringify(map));
+  applyVybeFuturesVisibility();
+  renderFuturesSettingsSubview();
+  if (typeof toast === "function") {
+    toast(enableAll ? "✨ All Futures Enabled!" : "🧹 All Extra Futures Turned OFF");
+  }
+};
+
+// Override renderFuturesSettingsSubview to render static + auto-discovered features
+window.renderFuturesSettingsSubview = function () {
+  const subview = document.getElementById("settingsSubview");
+  if (!subview) return;
+  const catalog = getDynamicFuturesCatalog();
+  const map = getEnabledFuturesMap();
+  subview.innerHTML = `
+    <p class="meta" style="margin-bottom:10px;">Turn ON only the extra features you want to see (${catalog.length} features synced):</p>
+    <div class="futures-bulk-actions">
+      <button type="button" class="primary" onclick="setAllVybeFutures(true)">Turn ON All</button>
+      <button type="button" class="secondary" onclick="setAllVybeFutures(false)">Turn OFF All (Clean)</button>
+    </div>
+    <div class="futures-control-list">
+      ${catalog
+        .map(
+          (f) => `
+        <label class="futures-toggle-row">
+          <div>
+            <strong>${safe(f.label)}</strong>
+            <small>${safe(f.desc)}</small>
+          </div>
+          <input type="checkbox" class="settings-toggle" ${map[f.key] ? "checked" : ""} onchange="toggleVybeFuture('${safe(f.key)}', this.checked)">
+        </label>`
+        )
+        .join("")}
+    </div>
+  `;
+};
+
+// MutationObserver: automatically hide any dynamically injected [data-vybe-feature] element unless enabled
+const vybeFuturesObserver = new MutationObserver((mutations) => {
+  let needsSync = false;
+  for (const m of mutations) {
+    if (m.addedNodes && m.addedNodes.length) {
+      for (const node of m.addedNodes) {
+        if (node.nodeType === 1 && (node.hasAttribute?.("data-vybe-feature") || node.querySelector?.("[data-vybe-feature]"))) {
+          needsSync = true;
+          break;
+        }
+      }
+    }
+    if (needsSync) break;
+  }
+  if (needsSync) applyVybeFuturesVisibility();
+});
+vybeFuturesObserver.observe(document.documentElement, { childList: true, subtree: true });
+applyVybeFuturesVisibility();
+
+
+
+// ================= VYBE v17.0: STRICT BUTTON-ONLY FUTURES HUB + INFO ('i') GUIDE =================
+const VYBE_DEFAULT_GUIDES = {
+  coins_quests: "Idhu enna pannum: Unga VYBE Coins balance & daily micro-quests kaattum. Eppadi use panradhu: Top bar-la 🪙 pill tap panni daily quests complete panni coins earn pannunga.",
+  cowatch_bar: "Idhu enna pannum: Friends kooda live lo-fi music & 8D soundscape kekka udhavum. Eppadi use panradhu: Screen keela irukkira Co-Watch bar-la ▶ tap panni station select pannunga.",
+  quick_vibe_strip: "Idhu enna pannum: Home feed mela live status chips, Chain Story, Montage & Live Bubbles-ai kaattum. Eppadi use panradhu: Home tab top-la irukkira chips-ai tap pannunga.",
+  mood_filter: "Idhu enna pannum: Chill, Hustle, Energetic, Late Night mood-kku etha posts mattum filter pannum. Eppadi use panradhu: Home feed-la mood chip-ai tap pannunga.",
+  vibe_radar: "Idhu enna pannum: Pakkathula active-aa irukkira creators & Vibe Compass kaattum. Eppadi use panradhu: Top bar-la 📡 icon tap panni nearby creators-kku Wave anuppunga.",
+  ghost_rooms: "Idhu enna pannum: 24 hours-la automatic-aa vanish aagura ephemeral chat rooms create pannum. Eppadi use panradhu: Top bar-la 👻 icon tap panni room join pannunga.",
+  vibe_roulette: "Idhu enna pannum: Random-aa oru trending reel-ai spin panni play pannum. Eppadi use panradhu: Top bar-la 🎲 icon-ai tap pannunga.",
+  crowd_shutter: "Idhu enna pannum: Squad kooda 3-2-1 synchronized flash photo edukka udhavum. Eppadi use panradhu: Top bar-la ⚡ icon tap panni Trigger Sync Flash press pannunga.",
+  confession_booth: "Idhu enna pannum: Night-only anonymous confession wall-la unga thoughts share pannalaam. Eppadi use panradhu: Top bar-la 🕯️ icon tap panni confession drop pannunga.",
+  future_letter: "Idhu enna pannum: Future date-la mattum open aagura secret time-lock letter seal pannum. Eppadi use panradhu: Top bar-la 🔮 icon tap panni date & message seal pannunga.",
+  streak_leaderboard: "Idhu enna pannum: Unga daily streak & top creators XP leaderboard kaattum. Eppadi use panradhu: Top bar-la 🔥 streak badge-ai tap pannunga.",
+  persona: "Idhu enna pannum: Main profile & Shadow Alter-Ego mode-kku idaiyila switch pannum. Eppadi use panradhu: Top bar-la 🎭 Main pill tap panni persona maathunga.",
+  watch_party: "Idhu enna pannum: Friend kooda Reels scrolling-ai real-time-la sync pannum. Eppadi use panradhu: Top bar-la 🤝 icon tap panni Party Code share/join pannunga.",
+  vibe_oracle: "Idhu enna pannum: Daily lucky cyber aura & creator mission fortune card kaattum. Eppadi use panradhu: Top bar-la 🎴 icon tap panni card-ai flip pannunga.",
+  spin_wheel: "Idhu enna pannum: Squad Truth-or-Dare cyber wheel spin pannum. Eppadi use panradhu: Top bar-la 🎡 icon tap panni Spin press pannunga.",
+  vibe_duel: "Idhu enna pannum: 2 drops naduvula live 1v1 tug-of-war vote battle nadathum. Eppadi use panradhu: Top bar-la ⚔️ icon tap panni unga favorite side-kku push pannunga.",
+  loot_box: "Idhu enna pannum: Daily mystery chest open panni +50 VYBE Coins tharum. Eppadi use panradhu: Top bar-la 🎁 icon tap panni chest-ai click pannunga.",
+  zero_g: "Idhu enna pannum: Feed cards-ai zero-gravity floating mode-la maathum. Eppadi use panradhu: Top bar-la 🌌 icon tap panni ON/OFF pannunga.",
+  passport: "Idhu enna pannum: Neenga visit panna cities-ai VYBE Digital Passport-la stamp pannum. Eppadi use panradhu: Top bar-la 🛂 icon tap panni city name add pannunga.",
+  wish_star: "Idhu enna pannum: Night sky wish wall-la shooting star wish launch pannum. Eppadi use panradhu: Top bar-la 🌠 icon tap panni wish type panni Launch press pannunga.",
+  beatmaker: "Idhu enna pannum: 8-pad live lo-fi synth & drum pad studio open pannum. Eppadi use panradhu: Top bar-la 🎹 icon tap panni pads-ai play panni feed-la share pannunga.",
+  circadian: "Idhu enna pannum: Midnight, Sunset & Morning sky lighting themes maathum. Eppadi use panradhu: Top bar-la 🌗 icon-ai tap pannunga.",
+  arcade: "Idhu enna pannum: 15-second Catch the Vibe reflex game play panni coins earn pannalaam. Eppadi use panradhu: Top bar-la 🕹️ icon tap panni glowing orbs-ai tap pannunga.",
+  constellation: "Idhu enna pannum: Close friends-ai star constellation map-la kaattum. Eppadi use panradhu: Top bar-la 🛰️ icon tap panni star username click panna DM open aagum.",
+  pixel_wall: "Idhu enna pannum: Ellarum serndhu paint panra shared community pixel canvas. Eppadi use panradhu: Top bar-la 🧩 icon tap panni color select panni tiles-ai paint pannunga.",
+  battle_royale: "Idhu enna pannum: Knockout tournament bracket poll nadathum. Eppadi use panradhu: Top bar-la 🏟️ icon tap panni semi-finals & final winner select pannunga.",
+  blind_chat: "Idhu enna pannum: 60-second anonymous blind chat & mutual identity reveal. Eppadi use panradhu: Top bar-la 🎭 icon tap panni chat panni Reveal press pannunga.",
+  gravity_flip: "Idhu enna pannum: Full app screen-ai 180° matrix flip mode-la thiruppum. Eppadi use panradhu: Top bar-la 🙃 icon tap panni flip pannunga.",
+  mood_twin: "Idhu enna pannum: Same mood frequency-la irukkira creators-ai match pannum. Eppadi use panradhu: Top bar-la 🧬 icon tap panni Wave 👋 anuppunga.",
+  auction: "Idhu enna pannum: Exclusive Cyber Founder Badge-kku VYBE Coins bid pannalaam. Eppadi use panradhu: Top bar-la 🔨 icon tap panni Bid +20 Coins press pannunga.",
+  split_cam: "Idhu enna pannum: Front + Back dual camera reaction photo edukkum. Eppadi use panradhu: Create Post-la 🪞 Split Cam tap panni 2 steps snap pannunga.",
+  neon_draw: "Idhu enna pannum: Finger-la glowing neon art draw panni post podalaam. Eppadi use panradhu: Create Post-la 🎨 Neon Draw tap panni draw pannunga.",
+  film_strip: "Idhu enna pannum: 4-frame retro cinema film-strip collage generate pannum. Eppadi use panradhu: Create Post-la 🎞️ Film Strip tap panni Use Film Strip press pannunga.",
+  dual_blend: "Idhu enna pannum: 2 photos-ai double-exposure art-aa blend pannum. Eppadi use panradhu: Create Post-la 📸 Dual Blend tap panni 2 photos select pannunga.",
+  quote_poster: "Idhu enna pannum: Text quote-ai glowing typography poster image-aa maathum. Eppadi use panradhu: Create Post-la 🖼️ Quote Poster tap panni quote type pannunga.",
+  magic_caption: "Idhu enna pannum: 1-tap-la trending caption & hashtags polish pannum. Eppadi use panradhu: Create Post-la 🪄 Magic Caption Polish button tap pannunga.",
+  create_extras: "Idhu enna pannum: Time-Capsule lock, 3-Tap Rhythm, Cipher passcode, X-Ray, Puzzle & Polls options tharum. Eppadi use panradhu: Create Post drawer keela irukkira options-ai use pannunga.",
+  dm_pulse_sync: "Idhu enna pannum: Chat friend-kku live haptic heartbeat vibration anuppum. Eppadi use panradhu: DM header-la 💓 icon tap panni HOLD button press pannunga.",
+  dm_walkie: "Idhu enna pannum: Push-to-talk walkie-talkie audio message anuppum. Eppadi use panradhu: DM header-la 📻 icon-ai press & hold panni pesi release pannunga.",
+  dm_hangout: "Idhu enna pannum: Squad trip/food bill split panni chat card-aa anuppum. Eppadi use panradhu: DM header-la 🧾 icon tap panni amount & people enter pannunga.",
+  dm_typing_duel: "Idhu enna pannum: Friend kooda 15s typing WPM speed race nadathum. Eppadi use panradhu: DM header-la ⌨️ icon tap panni phrase-ai fast-aa type pannunga.",
+  dm_theremin: "Idhu enna pannum: Finger slide panni sci-fi synth melody compose panni chat-la anuppum. Eppadi use panradhu: DM header-la 〰️ icon tap panni pad mela slide pannunga.",
+  dm_view_once: "Idhu enna pannum: Self-destruct view-once bomb message anuppum. Eppadi use panradhu: DM input pakkathula 💣 icon tap panni message send pannunga.",
+  dm_voice_fx: "Idhu enna pannum: Voice notes-kku Cyber Droid, Chipmunk, Deep Bass FX set pannum. Eppadi use panradhu: DM input pakkathula 🤖 icon tap panni FX select pannunga."
+};
+
+// Strictly register ONLY features that actually have a button/element in the UI ([data-vybe-feature])
+window.getDynamicFuturesCatalog = function () {
+  const staticByKey = new Map(VYBE_FUTURES_CATALOG.map((item) => [item.key, item]));
+  const discovered = new Map();
+
+  document.querySelectorAll("[data-vybe-feature]").forEach((el) => {
+    const key = (el.getAttribute("data-vybe-feature") || "").trim();
+    if (!key || discovered.has(key)) return;
+    const base = staticByKey.get(key);
+    const label =
+      el.getAttribute("data-vybe-label") ||
+      base?.label ||
+      el.getAttribute("title") ||
+      el.getAttribute("aria-label") ||
+      key.replace(/_/g, " ").toUpperCase();
+    const desc =
+      el.getAttribute("data-vybe-desc") ||
+      base?.desc ||
+      "Optional VYBE feature button";
+    const guide =
+      el.getAttribute("data-vybe-guide") ||
+      VYBE_DEFAULT_GUIDES[key] ||
+      `${desc}. Settings-la ON panna indha button app-la show aagum.`;
+    discovered.set(key, { key, label, desc, guide });
+  });
+
+  return Array.from(discovered.values());
+};
+
+function openFutureInfoModal(key) {
+  const item = getDynamicFuturesCatalog().find((f) => f.key === key);
+  if (!item) return;
+  const titleEl = document.getElementById("futureInfoTitle");
+  const sumEl = document.getElementById("futureInfoSummary");
+  const bodyEl = document.getElementById("futureInfoBody");
+  if (titleEl) titleEl.textContent = item.label;
+  if (sumEl) sumEl.textContent = item.desc;
+  if (bodyEl) bodyEl.textContent = item.guide;
+  if (typeof show === "function") show("futureInfoModal");
+}
+
+// Render Settings -> Futures with ON/OFF toggle + 'i' Info button next to every switch
+window.renderFuturesSettingsSubview = function () {
+  const subview = document.getElementById("settingsSubview");
+  if (!subview) return;
+  const catalog = getDynamicFuturesCatalog();
+  const map = getEnabledFuturesMap();
+  subview.innerHTML = `
+    <p class="meta" style="margin-bottom:10px;">Tap <b>i</b> next to any toggle to see how it works (${catalog.length} button features):</p>
+    <div class="futures-bulk-actions">
+      <button type="button" class="primary" onclick="setAllVybeFutures(true)">Turn ON All</button>
+      <button type="button" class="secondary" onclick="setAllVybeFutures(false)">Turn OFF All (Clean)</button>
+    </div>
+    <div class="futures-control-list">
+      ${catalog
+        .map(
+          (f) => `
+        <div class="futures-toggle-row">
+          <div style="flex:1;min-width:0;">
+            <strong>${safe(f.label)}</strong>
+            <small>${safe(f.desc)}</small>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+            <button type="button" class="future-info-btn" aria-label="How ${safe(f.label)} works" title="How it works" onclick="openFutureInfoModal('${safe(f.key)}')">i</button>
+            <input type="checkbox" class="settings-toggle" ${map[f.key] ? "checked" : ""} onchange="toggleVybeFuture('${safe(f.key)}', this.checked)">
+          </div>
+        </div>`
+        )
+        .join("")}
+    </div>
+  `;
+};
+
+// ================= 10 V17 FEATURES IMPLEMENTATION =================
+// 1. 360 Cyber Panorama Viewer
+let panoDragging = false;
+let panoStartX = 0;
+let panoOffset = -20;
+function openPanoramaModal() {
+  if (typeof show === "function") show("panoramaModal");
+}
+function startPanoramaDrag(e) {
+  panoDragging = true;
+  panoStartX = e.clientX;
+}
+function panPanoramaView(e) {
+  if (!panoDragging) return;
+  const dx = e.clientX - panoStartX;
+  panoStartX = e.clientX;
+  panoOffset = Math.max(-55, Math.min(0, panoOffset + dx * 0.15));
+  const strip = document.getElementById("panoramaStrip");
+  if (strip) strip.style.transform = `translateX(${panoOffset}%)`;
+}
+window.addEventListener("pointerup", () => { panoDragging = false; });
+
+// 2. Live Podcast / Audio Space Stage
+let stageMicLive = true;
+function openAudioStageModal() {
+  if (typeof show === "function") show("audioStageModal");
+}
+function toggleAudioStageMic() {
+  stageMicLive = !stageMicLive;
+  const st = document.getElementById("stageMicStatus");
+  if (st) {
+    st.textContent = stageMicLive ? "● Mic Live" : "🔇 Muted";
+    st.style.color = stageMicLive ? "#4ade80" : "#f87171";
+  }
+}
+
+// 3. Interactive Trading Card Profile Generator
+function openCyberCardModal() {
+  if (typeof show === "function") show("cyberCardModal");
+  const body = document.getElementById("cyberTradingCardBody");
+  if (!body) return;
+  const uname = (typeof currentProfile !== "undefined" && currentProfile) || "vyber";
+  const streak = localStorage.getItem("vybe:streak-count") || "1";
+  const coins = localStorage.getItem("vybe:coins") || "150";
+  body.innerHTML = `
+    <div style="font-size:11px;color:#38bdf8;font-weight:800;letter-spacing:2px;">VYBE GENESIS EDITION</div>
+    <div style="font-size:44px;margin:8px 0;">⚡</div>
+    <h3 style="font-size:18px;color:#fff;">@${safe(uname)}</h3>
+    <p style="font-size:12px;color:#fde047;margin:4px 0 12px;">🔥 ${streak}d Streak • 🪙 ${coins} Coins</p>
+    <div style="display:flex;justify-content:space-around;padding-top:10px;border-top:1px solid rgba(56,189,248,0.25);font-size:11px;color:#cbd5e1;">
+      <div><b>98</b><br>VIBE</div>
+      <div><b>95</b><br>STYLE</div>
+      <div><b>99</b><br>AURA</div>
+    </div>
+  `;
+}
+
+// 4 & 9. Time-Warp Reveal & Vintage 1998 Camcorder Tags in Create Post
+function attachTimeWarpTag() {
+  const cap = document.getElementById("caption");
+  if (cap && !cap.value.includes("[TIMEWARP]")) {
+    cap.value = `${cap.value.trim()} [TIMEWARP]`.trim();
+    if (typeof toast === "function") toast("⏳ Time-Warp Scan Reveal attached!");
+  }
+}
+function attachVHSCamcorderTag() {
+  const cap = document.getElementById("caption");
+  if (cap && !cap.value.includes("[VHS1998]")) {
+    cap.value = `${cap.value.trim()} [VHS1998]`.trim();
+    if (typeof toast === "function") toast("📸 Vintage 1998 Camcorder stamp attached!");
+  }
+}
+function enhanceV17FeedPosts() {
+  document.querySelectorAll("#feed article.post").forEach((article) => {
+    const captionEl = article.querySelector(".caption");
+    const stage = article.querySelector(".post-media-stage");
+    if (!captionEl || !stage) return;
+    const raw = captionEl.textContent || "";
+
+    if (raw.includes("[TIMEWARP]") || article.dataset.isTimeWarp === "true") {
+      article.dataset.isTimeWarp = "true";
+      captionEl.innerHTML = captionEl.innerHTML.replace("[TIMEWARP]", "").trim();
+      if (!stage.querySelector(".time-warp-curtain")) {
+        stage.classList.add("time-warp-stage");
+        const curtain = document.createElement("div");
+        curtain.className = "time-warp-curtain";
+        curtain.textContent = "⏳ Tap to Time-Warp Reveal";
+        curtain.onclick = () => curtain.classList.add("warped");
+        stage.appendChild(curtain);
+      }
+    }
+
+    if (raw.includes("[VHS1998]") || article.dataset.isVhs === "true") {
+      article.dataset.isVhs = "true";
+      captionEl.innerHTML = captionEl.innerHTML.replace("[VHS1998]", "").trim();
+      if (!stage.querySelector(".vhs-camcorder-overlay")) {
+        const stamp = document.createElement("div");
+        stamp.className = "vhs-camcorder-overlay";
+        stamp.textContent = "REC ● 1998-11-13  11:42 PM";
+        stage.appendChild(stamp);
+      }
+    }
+  });
+}
+
+// 5. Daily Brain-Teaser Trivia
+function openDailyTriviaModal() {
+  if (typeof show === "function") show("dailyTriviaModal");
+}
+function submitDailyTrivia(isCorrect) {
+  if (!isCorrect) {
+    if (typeof toast === "function") toast("❌ Wrong answer! Try again.");
+    return;
+  }
+  const today = new Date().toISOString().slice(0, 10);
+  if (localStorage.getItem("vybe:trivia-won") === today) {
+    if (typeof toast === "function") toast("✅ Already claimed today's +30 Coins!");
+    return;
+  }
+  localStorage.setItem("vybe:trivia-won", today);
+  if (typeof awardVybeCoins === "function") awardVybeCoins(30, "Daily Trivia");
+  if (typeof hide === "function") hide("dailyTriviaModal");
+  if (typeof toast === "function") toast("🎉 Correct! +30 🪙 VYBE Coins added!");
+}
+
+// 6. Neon Edge-Lighting Notification Aura
+let edgeAuraActive = false;
+function toggleEdgeLightingAura() {
+  edgeAuraActive = !edgeAuraActive;
+  const frame = document.getElementById("neonEdgeAuraFrame");
+  if (frame) frame.hidden = !edgeAuraActive;
+  if (typeof toast === "function") {
+    toast(edgeAuraActive ? "🌈 Neon Edge-Lighting Aura ON!" : "🌈 Neon Edge Aura OFF");
+  }
+}
+
+// 7. Pinned Top-3 Profile Showcase
+function openPinnedShowcaseModal() {
+  if (typeof show === "function") show("pinnedShowcaseModal");
+}
+
+// 8. Icebreaker Spin-Prompt in DM
+const dmIcebreakers = [
+  "🎲 Icebreaker: If we could teleport anywhere tonight for street food, where are we going?",
+  "🎲 Icebreaker: What song have you had on repeat all week? 🎧",
+  "🎲 Icebreaker: Night owl 🦉 or early bird ☀️?",
+  "🎲 Icebreaker: What's one crazy goal you're chasing right now? 🔥"
+];
+function sendDMIcebreakerPrompt() {
+  const input = document.getElementById("messageText");
+  if (!input) return;
+  input.value = dmIcebreakers[Math.floor(Math.random() * dmIcebreakers.length)];
+  if (typeof sendMessage === "function") sendMessage();
+}
+
+// 10. Anti-Screenshot Privacy Blur Shield
+let privacyShieldOn = false;
+function togglePrivacyBlurShield() {
+  privacyShieldOn = !privacyShieldOn;
+  document.body.classList.toggle("privacy-shield-on", privacyShieldOn);
+  if (typeof toast === "function") {
+    toast(privacyShieldOn ? "🛡️ Privacy Blur Shield ON (Hold photo to view)" : "🛡️ Privacy Blur Shield OFF");
+  }
+}
+
+// Hook V17 enhancers & visibility sync into renderFeed
+if (typeof renderFeed === "function") {
+  const _v17PrevRenderFeed = renderFeed;
+  window.renderFeed = function () {
+    _v17PrevRenderFeed.apply(this, arguments);
+    enhanceV17FeedPosts();
+    applyVybeFuturesVisibility();
+  };
+}
+applyVybeFuturesVisibility();
