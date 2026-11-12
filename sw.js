@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vybe-v2';
+const CACHE_NAME = 'vybe-v5';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
