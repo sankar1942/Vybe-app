@@ -3691,3 +3691,162 @@ if (typeof createPost === "function") {
     return res;
   };
 }
+
+
+
+// ================= VYBE v16.0: SETTINGS -> FUTURES ON/OFF CONTROL HUB =================
+const VYBE_FUTURES_CATALOG = [
+  { key: "coins_quests", label: "🪙 VYBE Coins & Daily Quests", desc: "Topbar coins wallet & daily tasks" },
+  { key: "cowatch_bar", label: "🎧 Co-Watch Live Music Bar", desc: "Floating music player & 8D soundscape" },
+  { key: "quick_vibe_strip", label: "⚡ Quick Vibe Status & Chain Stories", desc: "Home top status chips, Montage & Live Bubbles" },
+  { key: "mood_filter", label: "🎭 Mood Sync Feed Filter", desc: "Chill, Hustle, Energetic & Late Night filter bar" },
+  { key: "vibe_radar", label: "📡 Proximity Vibe Radar", desc: "Nearby creators & Vibe Compass" },
+  { key: "ghost_rooms", label: "👻 Ghost Mode 24h Live Rooms", desc: "Ephemeral vanishing group chat rooms" },
+  { key: "vibe_roulette", label: "🎲 Random Vibe Roulette", desc: "Spin for a random reel drop" },
+  { key: "crowd_shutter", label: "⚡ Crowd-Drop Group Shutter", desc: "3-2-1 squad sync flash camera" },
+  { key: "confession_booth", label: "🕯️ 3 AM Confession Booth", desc: "Anonymous late-night confession wall" },
+  { key: "future_letter", label: "🔮 Future-Self Time-Lock Letter", desc: "Seal a message for a future date" },
+  { key: "streak_leaderboard", label: "🔥 Daily Streak & Legends Board", desc: "Streak counter & top creators rank" },
+  { key: "persona", label: "🎭 Alter-Ego Persona Switcher", desc: "Switch between Main & Shadow persona" },
+  { key: "watch_party", label: "🤝 Co-Browsing Reels Watch Party", desc: "Sync Reels live with friends" },
+  { key: "vibe_oracle", label: "🎴 AI Vibe Oracle Fortune Card", desc: "Daily holographic fortune card" },
+  { key: "spin_wheel", label: "🎡 Truth-or-Dare Spin Wheel", desc: "Interactive squad challenge wheel" },
+  { key: "vibe_duel", label: "⚔️ Live 1v1 Vibe Duel Arena", desc: "Tug-of-war battle between 2 posts" },
+  { key: "loot_box", label: "🎁 Daily Mystery Loot Box", desc: "Daily chest coin rewards" },
+  { key: "zero_g", label: "🌌 Zero-Gravity Float Mode", desc: "Floating feed cards physics toggle" },
+  { key: "passport", label: "🛂 VYBE Digital Passport", desc: "Collect city check-in stamps" },
+  { key: "wish_star", label: "🌠 Shooting Star Wish Drop", desc: "Launch wishes into the night sky" },
+  { key: "beatmaker", label: "🎹 Live Lo-Fi Beatmaker Pad", desc: "8-pad synth & drum jam studio" },
+  { key: "circadian", label: "🌗 Auto-Circadian Sky Lighting", desc: "Switch Midnight, Sunset & Morning themes" },
+  { key: "arcade", label: "🕹️ Catch the Vibe Mini-Arcade", desc: "15-second reflex orb game" },
+  { key: "constellation", label: "🛰️ Friend Constellation Map", desc: "Interactive star map of close friends" },
+  { key: "pixel_wall", label: "🧩 Collaborative Pixel Wall", desc: "Shared community pixel canvas" },
+  { key: "battle_royale", label: "🏟️ Poll Battle Royale Tournament", desc: "Knockout bracket vibe poll" },
+  { key: "blind_chat", label: "🎭 Mystery 60s Blind Chat", desc: "Anonymous icebreaker match chat" },
+  { key: "gravity_flip", label: "🙃 Gravity-Flip Matrix Mode", desc: "Upside-down 180° HUD flip" },
+  { key: "mood_twin", label: "🧬 Mood-Twin Matchmaker", desc: "Find creators in your exact mood" },
+  { key: "auction", label: "🔨 Flash-Drop VYBE Coins Auction", desc: "Bid coins for exclusive badges" },
+  { key: "split_cam", label: "🪞 Split-Reality Dual Cam", desc: "Dual front+back camera in Create Post" },
+  { key: "neon_draw", label: "🎨 Live Neon Graffiti Canvas", desc: "Finger-draw neon art in Create Post" },
+  { key: "film_strip", label: "🎞️ Retro 4-Frame Film Strip", desc: "Collage booth in Create Post" },
+  { key: "dual_blend", label: "📸 Dual-Exposure Phantom Blend", desc: "Blend 2 photos in Create Post" },
+  { key: "quote_poster", label: "🖼️ Neon Quote Poster Maker", desc: "Typography poster maker in Create Post" },
+  { key: "magic_caption", label: "🪄 Magic Caption & Neon Stamps", desc: "1-tap AI caption polish & stamps" },
+  { key: "create_extras", label: "⚙️ Advanced Post Locks & Polls", desc: "Time-Capsule, Cipher, X-Ray, Puzzle & Polls" },
+  { key: "dm_pulse_sync", label: "💓 DM Heartbeat Pulse Sync", desc: "Live haptic heartbeat in chat" },
+  { key: "dm_walkie", label: "📻 DM Walkie-Talkie", desc: "Push-to-talk audio in chat" },
+  { key: "dm_hangout", label: "🧾 DM Split-Bill Hangout Planner", desc: "Split expenses card in chat" },
+  { key: "dm_typing_duel", label: "⌨️ DM 15-Sec Typing Speed Duel", desc: "WPM typing race in chat" },
+  { key: "dm_theremin", label: "〰️ DM Neon Theremin Synth", desc: "Sci-fi slide melody pad in chat" },
+  { key: "dm_view_once", label: "💣 DM View-Once Self-Destruct", desc: "Vanishing bomb message toggle" },
+  { key: "dm_voice_fx", label: "🤖 DM Voice-Changer FX", desc: "Droid, Chipmunk & Deep Bass filters" }
+];
+
+const VYBE_FUTURES_STORAGE_KEY = "vybe:enabled-futures-v16";
+
+function getEnabledFuturesMap() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(VYBE_FUTURES_STORAGE_KEY) || "null");
+    if (saved && typeof saved === "object") return saved;
+  } catch (_) {}
+  // Default: ALL extra buttons OFF so the app stays super clean until user turns them ON in Settings -> Futures
+  const defaults = {};
+  VYBE_FUTURES_CATALOG.forEach((f) => { defaults[f.key] = false; });
+  return defaults;
+}
+
+function applyVybeFuturesVisibility() {
+  const map = getEnabledFuturesMap();
+  document.querySelectorAll("[data-vybe-feature]").forEach((el) => {
+    const key = el.getAttribute("data-vybe-feature");
+    const isEnabled = Boolean(map[key]);
+    el.classList.toggle("feature-disabled", !isEnabled);
+  });
+}
+
+function toggleVybeFuture(key, enabled) {
+  const map = getEnabledFuturesMap();
+  map[key] = Boolean(enabled);
+  localStorage.setItem(VYBE_FUTURES_STORAGE_KEY, JSON.stringify(map));
+  applyVybeFuturesVisibility();
+}
+
+function setAllVybeFutures(enableAll) {
+  const map = {};
+  VYBE_FUTURES_CATALOG.forEach((f) => { map[f.key] = Boolean(enableAll); });
+  localStorage.setItem(VYBE_FUTURES_STORAGE_KEY, JSON.stringify(map));
+  applyVybeFuturesVisibility();
+  renderFuturesSettingsSubview();
+  if (typeof toast === "function") {
+    toast(enableAll ? "✨ All Futures Enabled!" : "🧹 All Extra Futures Turned OFF");
+  }
+}
+
+function renderFuturesSettingsSubview() {
+  const subview = document.getElementById("settingsSubview");
+  if (!subview) return;
+  const map = getEnabledFuturesMap();
+  subview.innerHTML = `
+    <p class="meta" style="margin-bottom:10px;">Turn ON only the extra features you want to see in your app:</p>
+    <div class="futures-bulk-actions">
+      <button type="button" class="primary" onclick="setAllVybeFutures(true)">Turn ON All</button>
+      <button type="button" class="secondary" onclick="setAllVybeFutures(false)">Turn OFF All (Clean)</button>
+    </div>
+    <div class="futures-control-list">
+      ${VYBE_FUTURES_CATALOG.map(
+        (f) => `
+        <label class="futures-toggle-row">
+          <div>
+            <strong>${f.label}</strong>
+            <small>${f.desc}</small>
+          </div>
+          <input type="checkbox" class="settings-toggle" ${map[f.key] ? "checked" : ""} onchange="toggleVybeFuture('${f.key}', this.checked)">
+        </label>`
+      ).join("")}
+    </div>
+  `;
+}
+
+// Hook 'futures' into showSettingsSubview
+if (typeof showSettingsSubview === "function") {
+  const _v16PrevShowSettingsSubview = showSettingsSubview;
+  window.showSettingsSubview = function (name) {
+    if (name === "futures") {
+      const subview = document.getElementById("settingsSubview");
+      if (!subview) return;
+      settingsSubviewName = "futures";
+      document.getElementById("settingsHome").style.display = "none";
+      document.getElementById("settingsBackButton").style.display = "block";
+      subview.classList.add("active");
+      document.getElementById("settingsSheetTitle").textContent = "✨ Futures";
+      renderFuturesSettingsSubview();
+      return;
+    }
+    return _v16PrevShowSettingsSubview.apply(this, arguments);
+  };
+}
+
+// Apply clean visibility immediately on load and after any dynamic render
+applyVybeFuturesVisibility();
+document.addEventListener("DOMContentLoaded", applyVybeFuturesVisibility);
+if (typeof renderFeed === "function") {
+  const _v16PrevRenderFeed = renderFeed;
+  window.renderFeed = function () {
+    _v16PrevRenderFeed.apply(this, arguments);
+    applyVybeFuturesVisibility();
+  };
+}
+if (typeof renderProfile === "function") {
+  const _v16PrevRenderProfile = renderProfile;
+  window.renderProfile = function () {
+    _v16PrevRenderProfile.apply(this, arguments);
+    const map = getEnabledFuturesMap();
+    const megaTools = document.querySelector("#profileView .profile-mega-tools");
+    if (megaTools && !map.create_extras && !map.persona) {
+      // Keep Vault & Analytics visible, hide extra v8-v15 pills unless enabled
+      megaTools.querySelectorAll(".aura-cycle-btn, .hof-btn, .bio-glow-btn, .vip-pass-btn, .avatar-studio-btn").forEach((b) => {
+        b.style.display = map.persona ? "" : "none";
+      });
+    }
+  };
+}

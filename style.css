@@ -2307,3 +2307,45 @@ body.gravity-flipped #vybe-shell {
   font-weight: 800;
   vertical-align: middle;
 }
+
+
+
+/* ================= V16.0: CLEAN TOPBAR + SETTINGS FUTURES CONTROL HUB ================= */
+[data-vybe-feature].feature-disabled {
+  display: none !important;
+}
+.futures-control-list {
+  display: grid;
+  gap: 8px;
+  max-height: 55vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.futures-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.78);
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  font-size: 13px;
+  color: #f8fafc;
+}
+.futures-toggle-row small {
+  display: block;
+  font-size: 10px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+.futures-bulk-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.futures-bulk-actions button {
+  flex: 1;
+  padding: 8px 10px;
+  font-size: 12px;
+}

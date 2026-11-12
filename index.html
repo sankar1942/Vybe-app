@@ -51,33 +51,33 @@
   </section>
  </div>
  <div class="top-actions">
-  <button id="vybeCoinsBtn" class="coins-pill" type="button" title="Daily Micro-Quests & VYBE Coins" onclick="openQuestsModal()">🪙 150</button>
-  <button class="icon-btn" type="button" aria-label="Flash-Drop Auction" title="60s VYBE Coins Live Auction" onclick="openAuctionModal()">🔨</button>
-  <button class="icon-btn" type="button" aria-label="Mood-Twin Matchmaker" title="Mood-Twin Live Compatibility Radar" onclick="openMoodTwinModal()">🧬</button>
-  <button id="gravityFlipBtn" class="icon-btn" type="button" aria-label="Gravity-Flip Matrix Mode" title="Upside-Down Matrix Flip Mode" onclick="toggleGravityFlipMode()">🙃</button>
-  <button class="icon-btn" type="button" aria-label="Mystery Blind Chat" title="Mystery Roulette 60s Blind Chat" onclick="openBlindChatModal()">🎭</button>
-  <button class="icon-btn" type="button" aria-label="Poll Battle Royale" title="Live Poll Battle Royale Tournament" onclick="openBattleRoyaleModal()">🏟️</button>
-  <button class="icon-btn" type="button" aria-label="Collaborative Pixel Wall" title="Live Collaborative Pixel-Canvas Wall" onclick="openPixelWallModal()">🧩</button>
-  <button class="icon-btn" type="button" aria-label="Friend Constellation Map" title="Satellite Night-Sky Constellation Map" onclick="openConstellationModal()">🛰️</button>
-  <button class="icon-btn" type="button" aria-label="Mini Retro Arcade" title="Catch the Vibe Arcade Game" onclick="openArcadeModal()">🕹️</button>
-  <button class="icon-btn" type="button" aria-label="Auto-Circadian Theme Shift" title="Cycle Circadian Sky Lighting" onclick="cycleCircadianTheme()">🌗</button>
-  <button class="icon-btn" type="button" aria-label="Lo-Fi Beatmaker Pad" title="Live Lo-Fi Beatmaker Pad" onclick="openBeatmakerModal()">🎹</button>
-  <button class="icon-btn" type="button" aria-label="Shooting Star Wish" title="Shooting Star Wish Drop" onclick="openWishStarModal()">🌠</button>
-  <button class="icon-btn" type="button" aria-label="Vibe Passport" title="Vibe Passport & City Stamps" onclick="openPassportModal()">🛂</button>
-  <button id="zeroGButton" class="icon-btn" type="button" aria-label="Zero-Gravity Float Mode" title="Zero-Gravity Float Mode" onclick="toggleZeroGravityMode()">🌌</button>
-  <button class="icon-btn" type="button" aria-label="Mystery Loot Box" title="Daily Mystery Loot Box" onclick="openLootBoxModal()">🎁</button>
-  <button class="icon-btn" type="button" aria-label="1v1 Vibe Duel" title="Live 1v1 Vibe Duel Arena" onclick="openVibeDuelModal()">⚔️</button>
-  <button class="icon-btn" type="button" aria-label="Truth or Dare Spin Wheel" title="Squad Truth-or-Dare Wheel" onclick="openSpinWheelModal()">🎡</button>
-  <button class="icon-btn" type="button" aria-label="AI Vibe Oracle" title="AI Vibe Oracle & Fortune Card" onclick="openVibeOracleModal()">🎴</button>
-  <button class="icon-btn" type="button" aria-label="Live Watch Party" title="Co-Browsing Reels Watch Party" onclick="openWatchPartyModal()">🤝</button>
-  <button id="personaBadgeBtn" class="persona-pill" type="button" title="Switch Alter-Ego Persona" onclick="toggleVybePersona()">🎭 Main</button>
-  <button id="vibeStreakBadge" class="streak-pill" type="button" title="Daily Vibe Streak" onclick="openVibeLeaderboard()">🔥 1d 🏆</button>
-  <button class="icon-btn" type="button" aria-label="Future-Self Time-Lock Letter" title="Future-Self Time-Lock Letter" onclick="openFutureLetterModal()">🔮</button>
-  <button class="icon-btn" type="button" aria-label="3 AM Confession Booth" title="3 AM Confession Booth" onclick="openConfessionBooth()">🕯️</button>
-  <button class="icon-btn" type="button" aria-label="Crowd-Drop Group Shutter" title="Crowd-Drop Group Shutter" onclick="openCrowdShutter()">⚡</button>
-  <button class="icon-btn" type="button" aria-label="Ghost Mode 24h Rooms" title="Ghost Mode 24h Rooms" onclick="openGhostRoomsModal()">👻</button>
-  <button class="icon-btn" type="button" aria-label="Vibe Roulette" title="Vibe Roulette" onclick="spinVibeRoulette()">🎲</button>
-  <button class="icon-btn" type="button" aria-label="Proximity Vibe Radar" title="Proximity Vibe Radar" onclick="openVibeRadar()">📡</button>
+  <button data-vybe-feature="coins_quests" id="vybeCoinsBtn" class="coins-pill" type="button" title="Daily Micro-Quests & VYBE Coins" onclick="openQuestsModal()">🪙 150</button>
+  <button class="icon-btn" type="button" aria-label="Flash-Drop Auction" title="60s VYBE Coins Live Auction" data-vybe-feature="auction" onclick="openAuctionModal()">🔨</button>
+  <button class="icon-btn" type="button" aria-label="Mood-Twin Matchmaker" title="Mood-Twin Live Compatibility Radar" data-vybe-feature="mood_twin" onclick="openMoodTwinModal()">🧬</button>
+  <button data-vybe-feature="gravity_flip" id="gravityFlipBtn" class="icon-btn" type="button" aria-label="Gravity-Flip Matrix Mode" title="Upside-Down Matrix Flip Mode" onclick="toggleGravityFlipMode()">🙃</button>
+  <button class="icon-btn" type="button" aria-label="Mystery Blind Chat" title="Mystery Roulette 60s Blind Chat" data-vybe-feature="blind_chat" onclick="openBlindChatModal()">🎭</button>
+  <button class="icon-btn" type="button" aria-label="Poll Battle Royale" title="Live Poll Battle Royale Tournament" data-vybe-feature="battle_royale" onclick="openBattleRoyaleModal()">🏟️</button>
+  <button class="icon-btn" type="button" aria-label="Collaborative Pixel Wall" title="Live Collaborative Pixel-Canvas Wall" data-vybe-feature="pixel_wall" onclick="openPixelWallModal()">🧩</button>
+  <button class="icon-btn" type="button" aria-label="Friend Constellation Map" title="Satellite Night-Sky Constellation Map" data-vybe-feature="constellation" onclick="openConstellationModal()">🛰️</button>
+  <button class="icon-btn" type="button" aria-label="Mini Retro Arcade" title="Catch the Vibe Arcade Game" data-vybe-feature="arcade" onclick="openArcadeModal()">🕹️</button>
+  <button class="icon-btn" type="button" aria-label="Auto-Circadian Theme Shift" title="Cycle Circadian Sky Lighting" data-vybe-feature="circadian" onclick="cycleCircadianTheme()">🌗</button>
+  <button class="icon-btn" type="button" aria-label="Lo-Fi Beatmaker Pad" title="Live Lo-Fi Beatmaker Pad" data-vybe-feature="beatmaker" onclick="openBeatmakerModal()">🎹</button>
+  <button class="icon-btn" type="button" aria-label="Shooting Star Wish" title="Shooting Star Wish Drop" data-vybe-feature="wish_star" onclick="openWishStarModal()">🌠</button>
+  <button class="icon-btn" type="button" aria-label="Vibe Passport" title="Vibe Passport & City Stamps" data-vybe-feature="passport" onclick="openPassportModal()">🛂</button>
+  <button data-vybe-feature="zero_g" id="zeroGButton" class="icon-btn" type="button" aria-label="Zero-Gravity Float Mode" title="Zero-Gravity Float Mode" onclick="toggleZeroGravityMode()">🌌</button>
+  <button class="icon-btn" type="button" aria-label="Mystery Loot Box" title="Daily Mystery Loot Box" data-vybe-feature="loot_box" onclick="openLootBoxModal()">🎁</button>
+  <button class="icon-btn" type="button" aria-label="1v1 Vibe Duel" title="Live 1v1 Vibe Duel Arena" data-vybe-feature="vibe_duel" onclick="openVibeDuelModal()">⚔️</button>
+  <button class="icon-btn" type="button" aria-label="Truth or Dare Spin Wheel" title="Squad Truth-or-Dare Wheel" data-vybe-feature="spin_wheel" onclick="openSpinWheelModal()">🎡</button>
+  <button class="icon-btn" type="button" aria-label="AI Vibe Oracle" title="AI Vibe Oracle & Fortune Card" data-vybe-feature="vibe_oracle" onclick="openVibeOracleModal()">🎴</button>
+  <button class="icon-btn" type="button" aria-label="Live Watch Party" title="Co-Browsing Reels Watch Party" data-vybe-feature="watch_party" onclick="openWatchPartyModal()">🤝</button>
+  <button data-vybe-feature="persona" id="personaBadgeBtn" class="persona-pill" type="button" title="Switch Alter-Ego Persona" onclick="toggleVybePersona()">🎭 Main</button>
+  <button data-vybe-feature="streak_leaderboard" id="vibeStreakBadge" class="streak-pill" type="button" title="Daily Vibe Streak" onclick="openVibeLeaderboard()">🔥 1d 🏆</button>
+  <button class="icon-btn" type="button" aria-label="Future-Self Time-Lock Letter" title="Future-Self Time-Lock Letter" data-vybe-feature="future_letter" onclick="openFutureLetterModal()">🔮</button>
+  <button class="icon-btn" type="button" aria-label="3 AM Confession Booth" title="3 AM Confession Booth" data-vybe-feature="confession_booth" onclick="openConfessionBooth()">🕯️</button>
+  <button class="icon-btn" type="button" aria-label="Crowd-Drop Group Shutter" title="Crowd-Drop Group Shutter" data-vybe-feature="crowd_shutter" onclick="openCrowdShutter()">⚡</button>
+  <button class="icon-btn" type="button" aria-label="Ghost Mode 24h Rooms" title="Ghost Mode 24h Rooms" data-vybe-feature="ghost_rooms" onclick="openGhostRoomsModal()">👻</button>
+  <button class="icon-btn" type="button" aria-label="Vibe Roulette" title="Vibe Roulette" data-vybe-feature="vibe_roulette" onclick="spinVibeRoulette()">🎲</button>
+  <button class="icon-btn" type="button" aria-label="Proximity Vibe Radar" title="Proximity Vibe Radar" data-vybe-feature="vibe_radar" onclick="openVibeRadar()">📡</button>
   <button id="activityButton" class="icon-btn activity-icon" type="button" aria-label="Activity" onclick="toggleActivityDrawer()">
    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></svg>
    <span id="notificationDot" class="notification-dot" hidden></span>
@@ -99,7 +99,7 @@
 </section>
 
 <section id="home" class="page">
- <div class="quick-vibe-strip" aria-label="Quick Vibe Status">
+ <div data-vybe-feature="quick_vibe_strip" class="quick-vibe-strip" aria-label="Quick Vibe Status">
    <span style="font-size:11px;color:#7dd3fc;font-weight:700;white-space:nowrap;">⚡ My Vibe:</span>
    <button type="button" class="qv-chip" onclick="setQuickVibeStatus('🏍️ Riding')">🏍️ Riding</button>
    <button type="button" class="qv-chip" onclick="setQuickVibeStatus('💻 Coding')">💻 Coding</button>
@@ -116,7 +116,7 @@
  <div class="stories glass" id="stories"></div>
  <div class="home-feed-header"><h2 class="heading">Your Feed</h2><div class="home-feed-switcher" role="tablist" aria-label="Home feed"><button id="forYouTab" class="active" type="button" role="tab" aria-selected="true" onclick="setHomeFeedMode('forYou')">For You</button><button id="followingTab" type="button" role="tab" aria-selected="false" onclick="setHomeFeedMode('following')">Following</button><button type="button" onclick="go('reels')">Reels</button></div></div>
  <div id="feedRefreshIndicator" class="feed-refresh-indicator" aria-live="polite"><span class="feed-refresh-spinner"></span><span id="feedRefreshText">Pull to refresh</span></div>
- <div class="mood-bar" role="group" aria-label="Mood Sync Filter">
+ <div data-vybe-feature="mood_filter" class="mood-bar" role="group" aria-label="Mood Sync Filter">
   <button type="button" class="mood-chip active" onclick="setMoodVibe('all', this)">✨ All Vibes</button>
   <button type="button" class="mood-chip" onclick="setMoodVibe('chill', this)">🌙 Chill</button>
   <button type="button" class="mood-chip" onclick="setMoodVibe('hustle', this)">🔥 Hustle</button>
@@ -160,11 +160,11 @@
    <button class="dm-header-button dm-back" id="dmBackButton" type="button" aria-label="Back to inbox" onclick="showDMInbox()" style="display:none">←</button>
    <img class="dm-header-avatar" id="dmHeaderAvatar" src="" alt="" style="display:none">
    <div class="dm-header-copy"><span class="dm-header-title" id="dmTitle">Messages</span><span class="dm-header-subtitle" id="dmSubtitle">Your conversations</span></div>
-   <button class="dm-header-button" type="button" aria-label="Neon Theremin Synth" title="Voice-Pitch Theremin Melody" onclick="openThereminModal()" style="margin-right:4px;color:#c084fc;">〰️</button>
-   <button class="dm-header-button" type="button" aria-label="Live Typing Duel" title="15-Sec Typing Race" onclick="openTypingDuelModal()" style="margin-right:4px;color:#fde047;">⌨️</button>
-   <button class="dm-header-button" type="button" aria-label="Squad Hangout Planner" title="Hangout & Split-Bill Planner" onclick="openHangoutPlannerModal()" style="margin-right:4px;color:#34d399;">🧾</button>
-   <button id="walkieTalkieBtn" class="dm-header-button" type="button" aria-label="Hold Walkie-Talkie" title="Hold to Talk (Walkie-Talkie)" onpointerdown="startWalkieTalkie()" onpointerup="stopWalkieTalkie()" onpointerleave="stopWalkieTalkie()" style="margin-right:4px;color:#38bdf8;">📻</button>
-   <button class="dm-header-button" type="button" aria-label="Heartbeat Pulse Sync" title="Heartbeat Pulse Sync" onclick="openPulseSyncModal()" style="margin-right:4px;color:#f43f5e;">💓</button>
+   <button class="dm-header-button" type="button" aria-label="Neon Theremin Synth" title="Voice-Pitch Theremin Melody" data-vybe-feature="dm_theremin" onclick="openThereminModal()" style="margin-right:4px;color:#c084fc;">〰️</button>
+   <button class="dm-header-button" type="button" aria-label="Live Typing Duel" title="15-Sec Typing Race" data-vybe-feature="dm_typing_duel" onclick="openTypingDuelModal()" style="margin-right:4px;color:#fde047;">⌨️</button>
+   <button class="dm-header-button" type="button" aria-label="Squad Hangout Planner" title="Hangout & Split-Bill Planner" data-vybe-feature="dm_hangout" onclick="openHangoutPlannerModal()" style="margin-right:4px;color:#34d399;">🧾</button>
+   <button data-vybe-feature="dm_walkie" id="walkieTalkieBtn" class="dm-header-button" type="button" aria-label="Hold Walkie-Talkie" title="Hold to Talk (Walkie-Talkie)" onpointerdown="startWalkieTalkie()" onpointerup="stopWalkieTalkie()" onpointerleave="stopWalkieTalkie()" style="margin-right:4px;color:#38bdf8;">📻</button>
+   <button class="dm-header-button" type="button" aria-label="Heartbeat Pulse Sync" title="Heartbeat Pulse Sync" data-vybe-feature="dm_pulse_sync" onclick="openPulseSyncModal()" style="margin-right:4px;color:#f43f5e;">💓</button>
    <button class="dm-header-button" type="button" aria-label="Close messages" onclick="closeDMDrawer()">✕</button>
   </header>
   <div class="dm-inbox" id="dmInbox"></div>
@@ -185,8 +185,8 @@
     </div>
    </div>
    <input id="messageText" type="text" maxlength="4000" autocomplete="off" placeholder="Message...">
-   <button class="dm-tool-button" id="dmViewOnceBtn" type="button" aria-label="Toggle View-Once Bomb" title="View-Once Self-Destruct Mode" onclick="toggleDMViewOnce()">💣</button>
-   <button class="dm-tool-button" id="dmVoiceFxBtn" type="button" aria-label="Voice Changer FX" title="Voice Changer Filter Studio" onclick="cycleVoiceChangerFX()" style="font-size:13px;font-weight:800;">🤖</button>
+   <button class="dm-tool-button" data-vybe-feature="dm_view_once" id="dmViewOnceBtn" type="button" aria-label="Toggle View-Once Bomb" title="View-Once Self-Destruct Mode" onclick="toggleDMViewOnce()">💣</button>
+   <button class="dm-tool-button" data-vybe-feature="dm_voice_fx" id="dmVoiceFxBtn" type="button" aria-label="Voice Changer FX" title="Voice Changer Filter Studio" onclick="cycleVoiceChangerFX()" style="font-size:13px;font-weight:800;">🤖</button>
    <button class="dm-tool-button" id="dmVoiceButton" type="button" aria-label="Record voice note" onclick="toggleVoiceNoteRecording()">🎙</button>
    <button class="dm-send" id="dmSendButton" type="submit">Send</button>
   </form>
@@ -286,20 +286,20 @@
  <div class="create-media-tools">
   <button class="media-picker" type="button" onclick="document.getElementById('mediaUploadInput')?.click()">Choose from Gallery</button>
   <button class="media-picker" type="button" onclick="openCameraView()">Open Camera</button>
-  <button class="media-picker" type="button" style="border-color:#38bdf8;color:#7dd3fc;" onclick="openSplitRealityCam()">🪞 Split Cam</button>
-  <button class="media-picker" type="button" style="border-color:#c084fc;color:#e9d5ff;" onclick="openNeonGraffitiModal()">🎨 Neon Draw</button>
-  <button class="media-picker" type="button" style="border-color:#facc15;color:#fef08a;" onclick="openFilmStripModal()">🎞️ Film Strip</button>
-  <button class="media-picker" type="button" style="border-color:#f43f5e;color:#fda4af;" onclick="openDualExposureModal()">📸 Dual Blend</button>
-  <button class="media-picker" type="button" style="border-color:#34d399;color:#a7f3d0;" onclick="openNeonQuoteModal()">🖼️ Quote Poster</button>
+  <button class="media-picker" type="button" style="border-color:#38bdf8;color:#7dd3fc;" data-vybe-feature="split_cam" onclick="openSplitRealityCam()">🪞 Split Cam</button>
+  <button class="media-picker" type="button" style="border-color:#c084fc;color:#e9d5ff;" data-vybe-feature="neon_draw" onclick="openNeonGraffitiModal()">🎨 Neon Draw</button>
+  <button class="media-picker" type="button" style="border-color:#facc15;color:#fef08a;" data-vybe-feature="film_strip" onclick="openFilmStripModal()">🎞️ Film Strip</button>
+  <button class="media-picker" type="button" style="border-color:#f43f5e;color:#fda4af;" data-vybe-feature="dual_blend" onclick="openDualExposureModal()">📸 Dual Blend</button>
+  <button class="media-picker" type="button" style="border-color:#34d399;color:#a7f3d0;" data-vybe-feature="quote_poster" onclick="openNeonQuoteModal()">🖼️ Quote Poster</button>
  </div>
  <textarea id="caption" maxlength="2200" placeholder="Write a caption... Add hashtags with #"></textarea>
  <div style="display:flex;gap:6px;margin:-4px 0 8px;flex-wrap:wrap;">
-  <button type="button" class="qv-chip" style="border-color:#38bdf8;color:#7dd3fc;" onclick="magicPolishCaption()">🪄 Magic Caption Polish</button>
+  <button type="button" class="qv-chip" style="border-color:#38bdf8;color:#7dd3fc;" data-vybe-feature="magic_caption" onclick="magicPolishCaption()">🪄 Magic Caption Polish</button>
   <button type="button" class="qv-chip" onclick="appendNeonStamp('🔥 VYBE')">+ 🔥 VYBE</button>
   <button type="button" class="qv-chip" onclick="appendNeonStamp('⚡ CYBER')">+ ⚡ CYBER</button>
   <button type="button" class="qv-chip" onclick="appendNeonStamp('🌙 3AM')">+ 🌙 3AM</button>
  </div>
- <div class="create-feature-box">
+ <div data-vybe-feature="create_extras" class="create-feature-box">
   <div class="create-feature-row">
    <label for="postMoodSelect">🎭 Vibe Mood Tag</label>
    <select id="postMoodSelect">
@@ -470,8 +470,9 @@
   <div class="settings-handle"></div>
   <header class="settings-header"><button id="settingsBackButton" class="settings-close" type="button" aria-label="Back to settings" onclick="showSettingsHome()" style="display:none">←</button><h2 id="settingsSheetTitle">Settings</h2><button class="settings-close" type="button" aria-label="Close settings" onclick="closeSettingsSheet()">✕</button></header>
   <div id="settingsHome">
-   <div class="settings-version">VYBE v15.0 (Holo-Social, Audio-Reactive & Creator Economy Edition)</div>
+   <div class="settings-version">VYBE v16.0 (Clean Topbar + Settings Futures Control Hub)</div>
    <div class="settings-menu">
+    <button type="button" style="border-color:#38bdf8;background:linear-gradient(135deg,rgba(14,165,233,0.18),rgba(168,85,247,0.18));" onclick="showSettingsSubview('futures')">✨ Futures (Feature Controls) <span>ON / OFF ›</span></button>
     <button type="button" onclick="openSavedCollection()">Saved <span>›</span></button>
     <button type="button" onclick="openArchiveCollection()">Archive <span>›</span></button>
     <button type="button" onclick="showSettingsSubview('activity')">Your Activity / Time Management <span id="dailyTimeSpent">Today: 0 min</span></button>
@@ -509,7 +510,7 @@
 
 
 <!-- PHASE 2: CO-WATCH LIVE MUSIC BAR -->
-<div id="coWatchBar" class="cowatch-bar glass" aria-label="Co-Watch Live Music">
+<div data-vybe-feature="cowatch_bar" id="coWatchBar" class="cowatch-bar glass" aria-label="Co-Watch Live Music">
   <div class="cowatch-eq" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
   <div class="cowatch-info" onclick="openCoWatchModal()">
     <strong id="coWatchTrackTitle">🎧 Cyber Lo-Fi Radio • Live Room</strong>
