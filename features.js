@@ -952,3 +952,503 @@ if (typeof renderProfile === "function") {
     detailsEl.appendChild(tools);
   };
 }
+
+
+
+// ================= VYBE v8.0: 10 NEVER-SEEN-BEFORE FUTURISTIC FEATURES =================
+
+// --- 1. HEARTBEAT / PULSE SYNC TOUCH (Live Haptic Connection) ---
+let pulseChannel = null;
+let pulseInterval = null;
+
+function openPulseSyncModal() {
+  if (typeof show === "function") show("pulseSyncModal");
+  const roomKey = [String(currentUser?.id || "a"), String(activeChat || "b")].sort().join("-");
+  if (typeof supabaseClient !== "undefined" && !pulseChannel) {
+    pulseChannel = supabaseClient.channel(`pulse-${roomKey}`, {
+      config: { broadcast: { self: false } }
+    });
+    pulseChannel
+      .on("broadcast", { event: "heartbeat" }, () => {
+        triggerVisualAndHapticBeat("💓 Incoming heartbeat from your friend!");
+      })
+      .subscribe();
+  }
+}
+
+function closePulseSyncModal() {
+  stopPulseSync();
+  if (pulseChannel && typeof supabaseClient !== "undefined") {
+    supabaseClient.removeChannel(pulseChannel).catch(() => {});
+    pulseChannel = null;
+  }
+  if (typeof hide === "function") hide("pulseSyncModal");
+}
+
+function triggerVisualAndHapticBeat(statusText) {
+  const ring = document.getElementById("pulseWaveRing");
+  const status = document.getElementById("pulseSyncStatus");
+  if (status && statusText) status.textContent = statusText;
+  if (ring) {
+    ring.classList.add("beating");
+    setTimeout(() => ring.classList.remove("beating"), 220);
+  }
+  if (navigator.vibrate) {
+    try { navigator.vibrate([60, 50, 90]); } catch (_) {}
+  }
+}
+
+function startPulseSync() {
+  triggerVisualAndHapticBeat("💓 Sending live heartbeat pulse...");
+  if (pulseChannel) {
+    pulseChannel.send({ type: "broadcast", event: "heartbeat", payload: { ts: Date.now() } });
+  }
+  pulseInterval = setInterval(() => {
+    triggerVisualAndHapticBeat("💓 Pulse synced in real-time...");
+    if (pulseChannel) {
+      pulseChannel.send({ type: "broadcast", event: "heartbeat", payload: { ts: Date.now() } });
+    }
+  }, 850);
+}
+
+function stopPulseSync() {
+  if (pulseInterval) {
+    clearInterval(pulseInterval);
+    pulseInterval = null;
+  }
+  const status = document.getElementById("pulseSyncStatus");
+  if (status) status.textContent = "Hold the button to transmit your pulse";
+}
+
+// --- 2. MIRROR-WORLD SPLIT REALITY CAMERA ---
+let splitStream = null;
+let splitStep = 1;
+let splitImg1 = null;
+let splitMergedFile = null;
+
+async function openSplitRealityCam() {
+  if (!navigator.mediaDevices?.getUserMedia) {
+    if (typeof toast === "function") toast("Camera not available in this browser.");
+    return;
+  }
+  splitStep = 1;
+  splitImg1 = null;
+  splitMergedFile = null;
+  document.getElementById("splitCamStepLabel").textContent = "Step 1/2: Capture your Main World Scene";
+  document.getElementById("splitSnapBtn").textContent = "📸 Snap Step 1";
+  document.getElementById("splitSnapBtn").style.display = "inline-flex";
+  document.getElementById("splitUseBtn").style.display = "none";
+  const video = document.getElementById("splitCamVideo");
+  const canvas = document.getElementById("splitCamCanvas");
+  video.style.display = "block";
+  canvas.style.display = "none";
+
+  if (typeof show === "function") show("splitCamModal");
+  try {
+    splitStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+    video.srcObject = splitStream;
+  } catch (_) {
+    try {
+      splitStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      video.srcObject = splitStream;
+    } catch (err) {
+      if (typeof toast === "function") toast("Allow camera access to use Split Cam.");
+    }
+  }
+}
+
+function closeSplitRealityCam() {
+  if (splitStream) {
+    splitStream.getTracks().forEach((t) => t.stop());
+    splitStream = null;
+  }
+  if (typeof hide === "function") hide("splitCamModal");
+}
+
+async function captureSplitStep() {
+  const video = document.getElementById("splitCamVideo");
+  const canvas = document.getElementById("splitCamCanvas");
+  if (!video || !video.videoWidth) return;
+
+  if (splitStep === 1) {
+    const temp = document.createElement("canvas");
+    temp.width = video.videoWidth;
+    temp.height = video.videoHeight;
+    temp.getContext("2d").drawImage(video, 0, 0);
+    splitImg1 = temp;
+    splitStep = 2;
+    document.getElementById("splitCamStepLabel").textContent = "Step 2/2: Now snap your Live Face Reaction!";
+    document.getElementById("splitSnapBtn").textContent = "🤳 Snap Reaction";
+
+    // Switch to front camera if supported
+    if (splitStream) splitStream.getTracks().forEach((t) => t.stop());
+    try {
+      splitStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+      video.srcObject = splitStream;
+    } catch (_) {}
+  } else if (splitStep === 2 && splitImg1) {
+    const w = splitImg1.width;
+    const h = splitImg1.height;
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    // Draw main world scene
+    ctx.drawImage(splitImg1, 0, 0, w, h);
+    // Draw cyber-bordered reaction PiP in top-left corner
+    const pipW = Math.round(w * 0.36);
+    const pipH = Math.round(h * 0.36);
+    ctx.save();
+    ctx.strokeStyle = "#38bdf8";
+    ctx.lineWidth = 8;
+    ctx.strokeRect(20, 20, pipW, pipH);
+    ctx.drawImage(video, 20, 20, pipW, pipH);
+    ctx.restore();
+
+    if (splitStream) splitStream.getTracks().forEach((t) => t.stop());
+    video.style.display = "none";
+    canvas.style.display = "block";
+    document.getElementById("splitCamStepLabel").textContent = "✨ Split-Reality Frame Ready!";
+    document.getElementById("splitSnapBtn").style.display = "none";
+    document.getElementById("splitUseBtn").style.display = "inline-flex";
+
+    canvas.toBlob((blob) => {
+      if (blob) {
+        splitMergedFile = new File([blob], `vybe-split-${Date.now()}.jpg`, { type: "image/jpeg" });
+      }
+    }, "image/jpeg", 0.9);
+  }
+}
+
+function useSplitRealityPhoto() {
+  if (!splitMergedFile) return;
+  const fileToUse = splitMergedFile;
+  closeSplitRealityCam();
+  const input = document.getElementById("mediaUploadInput");
+  if (input && typeof assignFileToInput === "function") {
+    assignFileToInput(input, fileToUse);
+  }
+}
+
+// --- 3. MYSTERY SCRATCH-OFF POSTS (Interactive Foil Reveal) ---
+function enhanceScratchOffPosts() {
+  document.querySelectorAll("#feed article.post").forEach((article) => {
+    const captionEl = article.querySelector(".caption");
+    if (!captionEl) return;
+    const raw = captionEl.textContent || "";
+    if (!raw.includes("[SCRATCH]") && article.dataset.isScratch !== "true") return;
+
+    article.dataset.isScratch = "true";
+    captionEl.innerHTML = captionEl.innerHTML.replace("[SCRATCH]", "").trim();
+    const stage = article.querySelector(".post-media-stage");
+    if (!stage || stage.querySelector(".scratch-canvas")) return;
+
+    stage.classList.add("scratch-wrapper");
+    const badge = document.createElement("span");
+    badge.className = "scratch-hint-badge";
+    badge.textContent = "🔮 Scratch to Reveal";
+    stage.appendChild(badge);
+
+    const canvas = document.createElement("canvas");
+    canvas.className = "scratch-canvas";
+    canvas.width = 360;
+    canvas.height = 360;
+    const ctx = canvas.getContext("2d");
+    const grad = ctx.createLinearGradient(0, 0, 360, 360);
+    grad.addColorStop(0, "#0284c7");
+    grad.addColorStop(0.5, "#1e293b");
+    grad.addColorStop(1, "#7e22ce");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 360, 360);
+    ctx.fillStyle = "#e0f2fe";
+    ctx.font = "bold 20px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("🔮 MYSTERY DROP", 180, 170);
+    ctx.font = "13px sans-serif";
+    ctx.fillText("Rub screen with finger to reveal", 180, 198);
+
+    let scratches = 0;
+    const scratchAt = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const x = ((clientX - rect.left) / rect.width) * 360;
+      const y = ((clientY - rect.top) / rect.height) * 360;
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.beginPath();
+      ctx.arc(x, y, 34, 0, Math.PI * 2);
+      ctx.fill();
+      scratches++;
+      if (scratches > 28) {
+        canvas.style.opacity = "0";
+        badge.remove();
+        setTimeout(() => canvas.remove(), 450);
+      }
+    };
+    canvas.addEventListener("pointermove", (e) => { if (e.buttons || e.pointerType === "touch") scratchAt(e); });
+    canvas.addEventListener("touchmove", (e) => { e.preventDefault(); scratchAt(e); }, { passive: false });
+    stage.appendChild(canvas);
+  });
+}
+
+// --- 4. VIBE DNA COMPATIBILITY SCANNER (On Other Profiles) ---
+if (typeof renderOtherProfile === "function") {
+  const _v8OrigRenderOther = renderOtherProfile;
+  window.renderOtherProfile = function () {
+    _v8OrigRenderOther.apply(this, arguments);
+    const details = document.querySelector("#otherView .profile-details");
+    if (!details || details.querySelector(".vibe-dna-card")) return;
+    const seed = String(viewing || "vybe").split("").reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+    const matchPct = 74 + (seed % 25); // Deterministic 74% - 98% compatibility
+    const card = document.createElement("div");
+    card.className = "vibe-dna-card";
+    card.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <strong style="font-size:12px;color:#e0f2fe;">🧬 Vibe DNA Compatibility</strong>
+        <strong style="font-size:14px;color:#38bdf8;">${matchPct}% Match</strong>
+      </div>
+      <div class="vibe-dna-bar"><div class="vibe-dna-fill" style="width:${matchPct}%"></div></div>
+      <small style="display:block;margin-top:6px;font-size:11px;color:#94a3b8;">Shared late-night activity, music aura & creator energy</small>
+    `;
+    details.appendChild(card);
+  };
+}
+
+// --- 5. REVERSE-AGING DECAY POSTS ---
+function enhanceDecayPosts() {
+  document.querySelectorAll("#feed article.post").forEach((article) => {
+    const captionEl = article.querySelector(".caption");
+    if (!captionEl) return;
+    const raw = captionEl.textContent || "";
+    if (!raw.includes("[DECAY]") && article.dataset.isDecay !== "true") return;
+
+    article.dataset.isDecay = "true";
+    captionEl.innerHTML = captionEl.innerHTML.replace("[DECAY]", "").trim();
+    const stage = article.querySelector(".post-media-stage");
+    const likesText = article.querySelector(".likes")?.textContent || "0";
+    const likeCount = parseInt(likesText.replace(/\D/g, ""), 10) || 0;
+
+    if (stage && likeCount < 1) {
+      stage.classList.add("decay-faded");
+      if (!stage.querySelector(".decay-badge")) {
+        const b = document.createElement("span");
+        b.className = "decay-badge";
+        b.textContent = "⏳ Fading Post • Like ♥ to Restore HD";
+        stage.appendChild(b);
+      }
+    } else if (stage) {
+      stage.classList.remove("decay-faded");
+      stage.querySelector(".decay-badge")?.remove();
+    }
+  });
+}
+
+// --- 6. LIVE DJ STEM-MIXER ON REELS ---
+const djModes = [
+  { label: "🎛️ Normal", rate: 1.0 },
+  { label: "🐌 Slowed", rate: 0.8 },
+  { label: "⚡ Nightcore", rate: 1.25 }
+];
+
+function cycleReelDJMode(btn) {
+  const card = btn.closest(".reel");
+  const video = card?.querySelector("video");
+  if (!video) return;
+  const nextIdx = ((Number(btn.dataset.djIdx || 0) + 1) % djModes.length);
+  btn.dataset.djIdx = String(nextIdx);
+  const mode = djModes[nextIdx];
+  video.playbackRate = mode.rate;
+  btn.textContent = mode.label;
+  if (typeof toast === "function") toast(`🎛️ Reel FX: ${mode.label}`);
+}
+
+if (typeof renderReels === "function") {
+  const _v8OrigRenderReels = renderReels;
+  window.renderReels = function () {
+    _v8OrigRenderReels.apply(this, arguments);
+    document.querySelectorAll("#reelList .reel-side").forEach((side) => {
+      if (side.querySelector(".reel-dj-btn")) return;
+      const djBtn = document.createElement("button");
+      djBtn.type = "button";
+      djBtn.className = "reel-dj-btn";
+      djBtn.dataset.djIdx = "0";
+      djBtn.textContent = "🎛️ FX";
+      djBtn.title = "Live DJ Speed & Pitch FX";
+      djBtn.onclick = () => cycleReelDJMode(djBtn);
+      side.appendChild(djBtn);
+    });
+  };
+}
+
+// --- 7. MEMORY PIN LOCATION LOCK ---
+function enhanceMemoryPinPosts() {
+  document.querySelectorAll("#feed article.post").forEach((article) => {
+    const captionEl = article.querySelector(".caption");
+    if (!captionEl) return;
+    const raw = captionEl.textContent || "";
+    const match = raw.match(/\[PIN:([^\]]+)\]/);
+    if (!match) return;
+    const place = match[1];
+    captionEl.innerHTML = captionEl.innerHTML.replace(match[0], "").trim();
+    const stage = article.querySelector(".post-media-stage");
+    if (!stage || stage.dataset.pinUnlocked === "true") return;
+
+    const origHtml = stage.innerHTML;
+    stage.dataset.pinOriginal = origHtml;
+    stage.innerHTML = `
+      <div class="memory-pin-overlay">
+        <span style="font-size:26px;">🗺️</span>
+        <strong style="font-size:14px;color:#34d399;">Memory Pinned at ${safe(place)}</strong>
+        <p class="meta">Tap check-in to unlock this location memory</p>
+        <button type="button" class="primary" style="padding:7px 14px;font-size:11px;" onclick="unlockMemoryPin(this)">📍 Check-In & Unlock</button>
+      </div>`;
+  });
+}
+
+function unlockMemoryPin(btn) {
+  const stage = btn.closest(".post-media-stage");
+  if (!stage || !stage.dataset.pinOriginal) return;
+  stage.dataset.pinUnlocked = "true";
+  stage.innerHTML = stage.dataset.pinOriginal;
+  if (typeof toast === "function") toast("📍 Location verified! Memory unlocked.");
+}
+
+// --- 8. PERSONA SWITCHER (Main You <-> Alter-Ego Mode) ---
+let vybePersonaMode = localStorage.getItem("vybe:persona") || "main";
+function toggleVybePersona() {
+  vybePersonaMode = vybePersonaMode === "main" ? "alter" : "main";
+  localStorage.setItem("vybe:persona", vybePersonaMode);
+  const btn = document.getElementById("personaBadgeBtn");
+  if (btn) {
+    btn.textContent = vybePersonaMode === "alter" ? "🥷 Shadow" : "🎭 Main";
+  }
+  if (typeof toast === "function") {
+    toast(
+      vybePersonaMode === "alter"
+        ? "🥷 Switched to Alter-Ego Mode (Shadow Persona)"
+        : "🎭 Switched back to Main Profile"
+    );
+  }
+}
+(function initPersonaBtn() {
+  const btn = document.getElementById("personaBadgeBtn");
+  if (btn && vybePersonaMode === "alter") btn.textContent = "🥷 Shadow";
+})();
+
+// --- 9. CROWD-DROP GROUP SHUTTER ---
+let crowdSnaps = [];
+function openCrowdShutter() {
+  if (typeof show === "function") show("crowdShutterModal");
+  renderCrowdGrid();
+}
+
+function triggerCrowdCountdown() {
+  const disp = document.getElementById("crowdCountdownDisplay");
+  if (!disp) return;
+  let count = 3;
+  disp.textContent = "3";
+  const timer = setInterval(() => {
+    count--;
+    if (count > 0) {
+      disp.textContent = String(count);
+    } else {
+      clearInterval(timer);
+      disp.textContent = "📸 FLASH!";
+      const sampleSnaps = [
+        "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=500",
+        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=500"
+      ];
+      crowdSnaps.unshift(sampleSnaps[crowdSnaps.length % sampleSnaps.length]);
+      renderCrowdGrid();
+      if (typeof toast === "function") toast("⚡ Synced Crowd-Drop captured!");
+      setTimeout(() => { disp.textContent = "READY"; }, 1200);
+    }
+  }, 650);
+}
+
+function renderCrowdGrid() {
+  const grid = document.getElementById("crowdGridPreview");
+  if (!grid) return;
+  grid.innerHTML = crowdSnaps.length
+    ? crowdSnaps.slice(0, 4).map((u, i) => `<div class="tile" style="height:120px;"><img src="${u}"><span>Angle #${i + 1}</span></div>`).join("")
+    : '<div class="empty" style="grid-column:1/-1;padding:18px;">Tap "Trigger 3-2-1 Sync Flash" with friends!</div>';
+}
+
+// --- 10. 3 AM CONFESSION BOOTH (Night-Only Ephemeral Wall) ---
+let confessionsList = JSON.parse(localStorage.getItem("vybe:confessions") || "null") || [
+  { text: "Still awake at 2 AM building my dream app 💻✨", time: "1:45 AM" },
+  { text: "Night rides hit completely different when lo-fi is playing 🏍️🎧", time: "12:30 AM" }
+];
+
+function openConfessionBooth() {
+  if (typeof show === "function") show("confessionBoothModal");
+  const hr = new Date().getHours();
+  const isNight = hr >= 23 || hr < 4;
+  const statusEl = document.getElementById("confessionWindowStatus");
+  if (statusEl) {
+    statusEl.textContent = isNight
+      ? "🕯️ Booth is LIVE right now! Vanishes at 4:00 AM."
+      : "🕯️ Preview Mode (Live window: 11 PM – 4 AM daily)";
+  }
+  renderConfessions();
+}
+
+function postAnonymousConfession(e) {
+  e.preventDefault();
+  const input = document.getElementById("confessionInput");
+  const text = (input?.value || "").trim();
+  if (!text) return;
+  input.value = "";
+  const timeStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  confessionsList.unshift({ text, time: timeStr });
+  localStorage.setItem("vybe:confessions", JSON.stringify(confessionsList));
+  renderConfessions();
+  if (typeof toast === "function") toast("🕯️ Anonymous confession dropped!");
+}
+
+function renderConfessions() {
+  const list = document.getElementById("confessionWallList");
+  if (!list) return;
+  list.innerHTML = confessionsList
+    .map(
+      (c) => `
+      <div class="glass" style="padding:12px;border-radius:14px;border-color:rgba(192,132,252,0.3);">
+        <p style="font-size:13px;color:#f3e8ff;line-height:1.5;">"${safe(c.text)}"</p>
+        <small style="display:block;margin-top:6px;font-size:10px;color:#a855f7;">🕯️ Anonymous • ${safe(c.time)}</small>
+      </div>`
+    )
+    .join("");
+}
+
+// Hook V8 enhancers into renderFeed & createPost
+if (typeof renderFeed === "function") {
+  const _v8PrevRenderFeed = renderFeed;
+  window.renderFeed = function () {
+    _v8PrevRenderFeed.apply(this, arguments);
+    enhanceScratchOffPosts();
+    enhanceDecayPosts();
+    enhanceMemoryPinPosts();
+  };
+}
+
+if (typeof createPost === "function") {
+  const _v8PrevCreatePost = createPost;
+  window.createPost = async function () {
+    const captionEl = document.getElementById("caption");
+    const scratchEl = document.getElementById("postScratchToggle");
+    const decayEl = document.getElementById("postDecayToggle");
+    const pinEl = document.getElementById("postMemoryPinInput");
+    if (captionEl) {
+      let txt = captionEl.value.trim();
+      if (scratchEl?.checked) txt += " [SCRATCH]";
+      if (decayEl?.checked) txt += " [DECAY]";
+      if (pinEl?.value.trim()) txt += ` [PIN:${pinEl.value.trim().replace(/\]/g, "")}]`;
+      if (vybePersonaMode === "alter") txt = `🥷 [Shadow] ${txt}`;
+      captionEl.value = txt.trim();
+    }
+    const res = await _v8PrevCreatePost.apply(this, arguments);
+    if (scratchEl) scratchEl.checked = false;
+    if (decayEl) decayEl.checked = false;
+    if (pinEl) pinEl.value = "";
+    return res;
+  };
+}

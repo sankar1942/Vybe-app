@@ -51,7 +51,10 @@
   </section>
  </div>
  <div class="top-actions">
+  <button id="personaBadgeBtn" class="persona-pill" type="button" title="Switch Alter-Ego Persona" onclick="toggleVybePersona()">🎭 Main</button>
   <button id="vibeStreakBadge" class="streak-pill" type="button" title="Daily Vibe Streak" onclick="toast('🔥 Daily Vibe Streak active! Keep visiting daily.')">🔥 1d</button>
+  <button class="icon-btn" type="button" aria-label="3 AM Confession Booth" title="3 AM Confession Booth" onclick="openConfessionBooth()">🕯️</button>
+  <button class="icon-btn" type="button" aria-label="Crowd-Drop Group Shutter" title="Crowd-Drop Group Shutter" onclick="openCrowdShutter()">⚡</button>
   <button class="icon-btn" type="button" aria-label="Ghost Mode 24h Rooms" title="Ghost Mode 24h Rooms" onclick="openGhostRoomsModal()">👻</button>
   <button class="icon-btn" type="button" aria-label="Vibe Roulette" title="Vibe Roulette" onclick="spinVibeRoulette()">🎲</button>
   <button class="icon-btn" type="button" aria-label="Proximity Vibe Radar" title="Proximity Vibe Radar" onclick="openVibeRadar()">📡</button>
@@ -132,6 +135,7 @@
    <button class="dm-header-button dm-back" id="dmBackButton" type="button" aria-label="Back to inbox" onclick="showDMInbox()" style="display:none">←</button>
    <img class="dm-header-avatar" id="dmHeaderAvatar" src="" alt="" style="display:none">
    <div class="dm-header-copy"><span class="dm-header-title" id="dmTitle">Messages</span><span class="dm-header-subtitle" id="dmSubtitle">Your conversations</span></div>
+   <button class="dm-header-button" type="button" aria-label="Heartbeat Pulse Sync" title="Heartbeat Pulse Sync" onclick="openPulseSyncModal()" style="margin-right:4px;color:#f43f5e;">💓</button>
    <button class="dm-header-button" type="button" aria-label="Close messages" onclick="closeDMDrawer()">✕</button>
   </header>
   <div class="dm-inbox" id="dmInbox"></div>
@@ -251,6 +255,7 @@
  <div class="create-media-tools">
   <button class="media-picker" type="button" onclick="document.getElementById('mediaUploadInput')?.click()">Choose from Gallery</button>
   <button class="media-picker" type="button" onclick="openCameraView()">Open Camera</button>
+  <button class="media-picker" type="button" style="border-color:#38bdf8;color:#7dd3fc;" onclick="openSplitRealityCam()">🪞 Split Cam</button>
  </div>
  <textarea id="caption" maxlength="2200" placeholder="Write a caption... Add hashtags with #"></textarea>
  <div class="create-feature-box">
@@ -267,6 +272,18 @@
   <div class="create-feature-row">
    <label for="postCapsuleTime">⏳ Time-Capsule Lock</label>
    <input type="datetime-local" id="postCapsuleTime">
+  </div>
+  <div class="create-feature-row">
+   <label for="postScratchToggle">🔮 Mystery Scratch-Off Foil</label>
+   <input type="checkbox" id="postScratchToggle" class="settings-toggle">
+  </div>
+  <div class="create-feature-row">
+   <label for="postDecayToggle">⏳ Reverse-Aging Decay Post</label>
+   <input type="checkbox" id="postDecayToggle" class="settings-toggle">
+  </div>
+  <div class="create-feature-row">
+   <label for="postMemoryPinInput">🗺️ Memory Pin Location Lock</label>
+   <input type="text" id="postMemoryPinInput" placeholder="e.g. Hosur / College / Cafe" style="margin:0;padding:6px 10px;font-size:12px;max-width:155px;">
   </div>
   <div class="create-feature-row" style="flex-direction:column;align-items:stretch;">
    <label for="postPollQuestion">🎯 Prediction Poll (Optional)</label>
@@ -373,7 +390,7 @@
   <div class="settings-handle"></div>
   <header class="settings-header"><button id="settingsBackButton" class="settings-close" type="button" aria-label="Back to settings" onclick="showSettingsHome()" style="display:none">←</button><h2 id="settingsSheetTitle">Settings</h2><button class="settings-close" type="button" aria-label="Close settings" onclick="closeSettingsSheet()">✕</button></header>
   <div id="settingsHome">
-   <div class="settings-version">VYBE v7.0 (10-Feature Mega Pack)</div>
+   <div class="settings-version">VYBE v8.0 (10 Original Futuristic Features)</div>
    <div class="settings-menu">
     <button type="button" onclick="openSavedCollection()">Saved <span>›</span></button>
     <button type="button" onclick="openArchiveCollection()">Archive <span>›</span></button>
@@ -540,6 +557,67 @@
     <h2 style="margin-bottom:4px;">📊 Creator Studio Analytics</h2>
     <p class="meta" style="margin-bottom:14px;">Real-time reach & engagement insights for your profile</p>
     <div id="creatorAnalyticsBody"></div>
+  </div>
+</div>
+
+
+<!-- V8 FUTURISTIC MODALS -->
+<!-- 1. HEARTBEAT / PULSE SYNC MODAL -->
+<div class="modal" id="pulseSyncModal" onclick="if(event.target===this)closePulseSyncModal()">
+  <div class="modalbox glass" style="text-align:center;max-width:360px;">
+    <button class="close" type="button" onclick="closePulseSyncModal()">×</button>
+    <h2 style="margin-bottom:4px;">💓 Heartbeat Pulse Sync</h2>
+    <p class="meta" style="margin-bottom:16px;">Press & hold the Pulse Pad to send live haptic heartbeats to your friend!</p>
+    <div id="pulseWaveRing" class="pulse-pad-ring">
+      <button id="pulseHoldBtn" type="button" class="pulse-hold-btn"
+        onpointerdown="startPulseSync()" onpointerup="stopPulseSync()" onpointerleave="stopPulseSync()">
+        💓<br><small style="font-size:10px;font-weight:700;">HOLD</small>
+      </button>
+    </div>
+    <p id="pulseSyncStatus" style="margin-top:14px;font-size:12px;color:#fda4af;">Waiting for pulse...</p>
+  </div>
+</div>
+
+<!-- 2. MIRROR-WORLD SPLIT REALITY CAMERA MODAL -->
+<div class="modal" id="splitCamModal" onclick="if(event.target===this)closeSplitRealityCam()">
+  <div class="modalbox glass" style="text-align:center;">
+    <button class="close" type="button" onclick="closeSplitRealityCam()">×</button>
+    <h2 style="margin-bottom:4px;">🪞 Split-Reality Dual Cam</h2>
+    <p id="splitCamStepLabel" class="meta" style="margin-bottom:12px;">Step 1/2: Capture your Main World Scene</p>
+    <div style="position:relative;border-radius:16px;overflow:hidden;background:#000;aspect-ratio:3/4;max-height:52vh;margin:0 auto;">
+      <video id="splitCamVideo" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover;"></video>
+      <canvas id="splitCamCanvas" style="display:none;width:100%;height:100%;object-fit:contain;"></canvas>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:12px;">
+      <button type="button" id="splitSnapBtn" class="primary" onclick="captureSplitStep()">📸 Snap Step 1</button>
+      <button type="button" id="splitUseBtn" class="primary" style="display:none;" onclick="useSplitRealityPhoto()">✓ Use Split Post</button>
+    </div>
+  </div>
+</div>
+
+<!-- 3. CROWD-DROP GROUP SHUTTER MODAL -->
+<div class="modal" id="crowdShutterModal" onclick="if(event.target===this)hide('crowdShutterModal')">
+  <div class="modalbox glass" style="text-align:center;">
+    <button class="close" type="button" onclick="hide('crowdShutterModal')">×</button>
+    <h2 style="margin-bottom:4px;">⚡ Crowd-Drop Group Shutter</h2>
+    <p class="meta" style="margin-bottom:12px;">Synchronized 3-2-1 flash capture with your hangout squad!</p>
+    <div id="crowdCountdownDisplay" style="font-size:42px;font-weight:900;color:#38bdf8;margin:10px 0;">READY</div>
+    <button type="button" class="primary" style="width:100%;margin-bottom:12px;" onclick="triggerCrowdCountdown()">⚡ Trigger 3-2-1 Sync Flash</button>
+    <div id="crowdGridPreview" class="grid" style="grid-template-columns:repeat(2,1fr);gap:6px;"></div>
+  </div>
+</div>
+
+<!-- 4. 3 AM CONFESSION BOOTH MODAL -->
+<div class="modal" id="confessionBoothModal" onclick="if(event.target===this)hide('confessionBoothModal')">
+  <div class="modalbox glass">
+    <button class="close" type="button" onclick="hide('confessionBoothModal')">×</button>
+    <h2 style="margin-bottom:4px;">🕯️ 3 AM Confession Booth</h2>
+    <p id="confessionWindowStatus" class="meta" style="margin-bottom:12px;color:#c084fc;">Night-Only Ephemeral Wall (11 PM – 4 AM) • Vanishes at sunrise</p>
+    <form onsubmit="postAnonymousConfession(event)" style="display:flex;gap:8px;margin-bottom:12px;">
+      <input id="confessionInput" type="text" maxlength="220" placeholder="Drop an anonymous midnight thought..." style="margin:0;padding:10px 12px;font-size:13px;">
+      <button type="submit" class="primary" style="padding:0 16px;">Drop</button>
+    </form>
+    <div id="confessionWallList" style="display:grid;gap:8px;max-height:46vh;overflow-y:auto;"></div>
   </div>
 </div>
 
