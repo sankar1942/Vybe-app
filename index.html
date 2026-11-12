@@ -51,12 +51,12 @@
   </section>
  </div>
  <div class="top-actions">
+  <button class="icon-btn" type="button" aria-label="Proximity Vibe Radar" title="Proximity Vibe Radar" onclick="openVibeRadar()">📡</button>
   <button id="activityButton" class="icon-btn activity-icon" type="button" aria-label="Activity" onclick="toggleActivityDrawer()">
    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></svg>
    <span id="notificationDot" class="notification-dot" hidden></span>
   </button>
-  <button class="icon-btn" aria-label="Messages" onclick="openDMDrawer()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4Z"/></svg></button>
-  <button id="authButton" class="secondary" onclick="currentUser ? go('profile') : openAuthModal('login')">Log In</button>
+  <button id="authButton" class="secondary" style="display:none" onclick="currentUser ? go('profile') : openAuthModal('login')">Log In</button>
   <button id="headerLogoutButton" class="secondary logout-button" onclick="logoutUser()" style="display:none" aria-label="Logout">
    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5M15 12H3"/><path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/></svg>
    Logout
@@ -382,6 +382,59 @@
   <header class="people-drawer-header"><h2 id="peopleDrawerTitle">People</h2><button class="people-drawer-close" type="button" aria-label="Close list" onclick="closePeopleDrawer()">✕</button></header>
   <div class="people-drawer-list" id="peopleDrawerList"></div>
  </section>
+</div>
+
+
+<!-- PHASE 2: CO-WATCH LIVE MUSIC BAR -->
+<div id="coWatchBar" class="cowatch-bar glass" aria-label="Co-Watch Live Music">
+  <div class="cowatch-eq" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+  <div class="cowatch-info" onclick="openCoWatchModal()">
+    <strong id="coWatchTrackTitle">🎧 Cyber Lo-Fi Radio • Live Room</strong>
+    <small id="coWatchTrackSub">Tap to sync vibe & listen with friends</small>
+  </div>
+  <button type="button" id="coWatchPlayBtn" class="cowatch-btn" onclick="toggleCoWatchPlay()">▶</button>
+</div>
+
+<!-- PHASE 2: CO-WATCH MUSIC MODAL -->
+<div class="modal" id="coWatchModal" onclick="if(event.target===this)hide('coWatchModal')">
+  <div class="modalbox glass">
+    <button class="close" type="button" onclick="hide('coWatchModal')">×</button>
+    <h2 style="margin-bottom:6px;">🎧 Co-Watch Music Room</h2>
+    <p class="meta" style="margin-bottom:14px;">Pick a live vibe station — everyone in VYBE hears the same beat!</p>
+    <div id="coWatchStationList" class="cowatch-stations"></div>
+  </div>
+</div>
+
+<!-- PHASE 2: PROXIMITY VIBE RADAR MODAL -->
+<div class="modal" id="vibeRadarModal" onclick="if(event.target===this)closeVibeRadar()">
+  <div class="modalbox glass" style="text-align:center;">
+    <button class="close" type="button" onclick="closeVibeRadar()">×</button>
+    <h2 style="margin-bottom:4px;">📡 Proximity Vibe Radar</h2>
+    <p class="meta" style="margin-bottom:14px;">Live creators & vibes active around you right now</p>
+    <div class="radar-stage">
+      <div class="radar-ring r1"></div>
+      <div class="radar-ring r2"></div>
+      <div class="radar-ring r3"></div>
+      <div class="radar-sweep"></div>
+      <div class="radar-center">YOU</div>
+      <div id="radarPins"></div>
+    </div>
+    <div id="radarUserList" style="margin-top:14px;text-align:left;display:grid;gap:8px;"></div>
+  </div>
+</div>
+
+
+<div class="modal" id="profileInfoModal" onclick="if(event.target===this)hide('profileInfoModal')">
+  <div class="modalbox glass" style="text-align:center;max-width:360px;">
+    <button class="close" type="button" onclick="hide('profileInfoModal')">×</button>
+    <div style="width:52px;height:52px;margin:0 auto 12px;border-radius:50%;display:grid;place-items:center;background:rgba(14,165,233,0.18);border:1px solid #38bdf8;color:#38bdf8;font-size:22px;font-weight:800;font-family:Georgia,serif;">i</div>
+    <h2 style="font-size:18px;margin-bottom:6px;">Account Info</h2>
+    <p id="profileInfoUsername" class="meta" style="margin-bottom:14px;color:#7dd3fc;">@user</p>
+    <div style="padding:14px;border-radius:14px;background:rgba(15,23,42,0.8);border:1px solid rgba(56,189,248,0.22);">
+      <span style="display:block;font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;">Member Since</span>
+      <strong id="profileJoinedDate" style="display:block;font-size:20px;color:#fff;margin-top:4px;font-variant-numeric:tabular-nums;">01.01.2026</strong>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>

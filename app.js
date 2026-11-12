@@ -184,10 +184,14 @@ async function syncCurrentProfile(){
   me.statusNote=profile.status_note || '';
   me.isPrivate=Boolean(profile.is_private);
   currentAccountPrivate=me.isPrivate;
-  if(!profile.username){
-    const { error: saveError }=await supabaseClient.from('profiles').upsert({id:profileUser.id,username:currentProfile},{onConflict:'id'});
-    if(saveError) console.error('Generated profile username could not be saved:',saveError);
-  }
+  const { error: saveError }=await supabaseClient.from('profiles').upsert({
+    id:profileUser.id,
+    username:currentProfile,
+    full_name:me.name,
+    bio:me.bio,
+    avatar_url:me.pic && !me.pic.startsWith('data:') ? me.pic : (profile.avatar_url || null)
+  },{onConflict:'id'});
+  if(saveError) console.error('Profile sync upsert notice:',saveError);
   updateAuthUI();
   renderStories();
   renderFeed();
@@ -258,7 +262,7 @@ function updateAuthUI(){
  const headerLogoutButton=document.getElementById('headerLogoutButton');
  const isLoggedIn=Boolean(currentUser);
  const displayName=isLoggedIn ? (currentProfile ? '@'+currentProfile : 'Account') : 'Log In';
- if(authButton){ authButton.textContent = displayName; }
+ if(authButton){ authButton.textContent = displayName; authButton.style.display = isLoggedIn ? 'none' : 'inline-flex'; }
  if(logoutButton){ logoutButton.style.display = isLoggedIn ? 'block' : 'none'; }
  if(headerLogoutButton){ headerLogoutButton.style.display = isLoggedIn ? 'flex' : 'none'; }
  if(!isLoggedIn && document.getElementById('authModal') && document.getElementById('authModal').classList.contains('show')) {
@@ -870,10 +874,45 @@ function go(id){
  if(id==='saved'){renderSaved();if(currentUser)void loadSavedReels();}
  if(id==='notifications')renderNotifications();
 }
-function viewProfile(id){
+async function viewProfile(id){
  if(id===0 || (currentUser && String(id)===String(currentUser.id))){go('profile');return}
- viewing=id;profileTab="posts";renderOtherProfile();go('other');
- void loadFollowData(id).catch(error=>{console.error('Profile follow count error:',error);toast(error?.message||'Unable to load follow counts.');});
+ viewing=String(id);profileTab="posts";
+ renderOtherProfile();go('other');
+ if(isValidUserUuid(String(id))){
+  try{
+   const [profRes, reelsRes] = await Promise.all([
+    supabaseClient.from('profiles').select('*').eq('id', id).maybeSingle(),
+    supabaseClient.from('reels').select('*').eq('user_id', id).order('created_at', {ascending:false})
+   ]);
+   if(profRes.data){
+    const p = profRes.data;
+    const uname = p.username || String(p.id).slice(0,8);
+    const fullUser = {
+     id: p.id,
+     name: p.full_name || p.display_name || p.name || uname,
+     username: uname,
+     pic: p.avatar_url || p.profile_avatar_url || avatarPlaceholder,
+     bio: p.bio || '',
+     created_at: p.created_at || '',
+     followers: 0,
+     following: 0
+    };
+    users = users.filter(u => String(u.id) !== String(p.id));
+    users.push(fullUser);
+   }
+   if(reelsRes.data){
+    const userReels = reelsRes.data.map(normalizeReel).filter(isPublicActiveReel);
+    const existingIds = new Set(reels.map(r => String(r.id)));
+    userReels.forEach(r => {
+     if(!existingIds.has(String(r.id))) reels.push(r);
+    });
+   }
+   renderOtherProfile();
+  }catch(err){
+   console.error('Other profile fetch error:', err);
+  }
+ }
+ void loadFollowData(id).catch(error=>{console.error('Profile follow count error:',error);});
 }
 function openSearchedProfile(id){
  const match=searchedProfiles.get(String(id));
@@ -2181,7 +2220,7 @@ function openStoryHighlight(highlightId){
 function renderProfile(){
  const profileView=document.getElementById('profileView');
  if(!profileView) return;
- if(!['posts','reels','likes'].includes(profileTab)) profileTab='posts';
+ if(!['posts','reels'].includes(profileTab)) profileTab='posts';
  const renderTiles=(items)=>items.map(item=>`<div class="profile-tile" onclick="${item.video?`playReelInPlayer('${safe(item.id)}')`:item.kind==='reel'?`openReel('${safe(item.id)}')`:`openPost(${item.id})`}">${item.kind==='reel'&&isOwnReel(item)?`<button class="profile-tile-menu" aria-label="Manage your post" onclick="event.stopPropagation();openReelMenu('${safe(item.id)}')">⋯</button>`:''}${item.video?`<video src="${safe(item.src)}" muted playsinline></video>`:`<img src="${safe(item.src)}" alt="Your post">`}</div>`).join('');
  const ownedReels=reels.filter(reel=>isOwnReel(reel));
  const userPosts=[...posts.filter(post=>post.user===0),...ownedReels];
@@ -2193,6 +2232,7 @@ function renderProfile(){
  const profileItemsContent=tabItems.length?renderTiles(tabItems):'<div class="profile-empty">Nothing to show yet.</div>';
  profileView.innerHTML=`
  <div class="profile-header glass">
+  <button class="profile-info-button" type="button" aria-label="Account Info" title="Account Info" onclick="openAccountInfoModal(currentUser?.id)">i</button>
   <button class="profile-settings-button" type="button" aria-label="Settings" onclick="openSettingsSheet()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"/><path d="m19.4 15 .1.1 1.4 1.1-1.4 2.4-1.7-.7a7.8 7.8 0 0 1-1.7 1l-.3 1.8h-2.8l-.3-1.8a7.8 7.8 0 0 1-1.7-1l-1.7.7-1.4-2.4L7.3 15a7.4 7.4 0 0 1 0-2l-1.4-1.1 1.4-2.4 1.7.7a7.8 7.8 0 0 1 1.7-1l.3-1.8h2.8l.3 1.8a7.8 7.8 0 0 1 1.7 1l1.7-.7 1.4 2.4-1.4 1.1a7.4 7.4 0 0 1-.1 2Z"/></svg></button>
   <div class="profile-top">
    <img class="profilepic" src="${safe(avatarSrc(me.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'">
@@ -2211,7 +2251,6 @@ function renderProfile(){
   <div class="profile-tabs">
     <button class="${profileTab==='posts'?'active':''}" onclick="setProfileTab('posts')">POSTS</button>
     <button class="${profileTab==='reels'?'active':''}" onclick="setProfileTab('reels')">REELS</button>
-    <button class="${profileTab==='likes'?'active':''}" onclick="setProfileTab('likes')">LIKES</button>
   </div>
   <div class="profile-grid">${profileItemsContent}</div>
  </div>`;
@@ -2232,6 +2271,7 @@ function renderOtherProfile(){
  ];
  otherView.innerHTML=`
  <div class="profile-header glass">
+  <button class="profile-info-button" type="button" aria-label="Account Info" title="Account Info" onclick="openAccountInfoModal('${safe(userData.id)}')">i</button>
   <div class="profile-top">
    <img class="profilepic" src="${safe(avatarSrc(userData.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'">
    <div class="profile-details">
@@ -2255,7 +2295,7 @@ function renderOtherProfile(){
 }
 
 function setProfileTab(tab){
- if(!['posts','reels','likes'].includes(tab)) return;
+ if(!['posts','reels'].includes(tab)) return;
  profileTab=tab; renderProfile();
 }
 
@@ -2844,16 +2884,19 @@ function activityActor(notification){
 
 function activityText(notification){
  const type=String(notification.type||'').toLowerCase();
- if(type==='like'||type==='reel_like') return 'liked your reel';
- if(type==='post_like') return 'liked your post';
+ if(type==='like'||type==='reel_like') return 'liked your reel ♥';
+ if(type==='post_like') return 'liked your post ♥';
  if(type==='comment'){
   const snippet=String(notification.comment_text||notification.content||'').trim();
-  return `commented: ${snippet?`${snippet.slice(0,70)}${snippet.length>70?'…':''}`:'on your post'}`;
+  return `commented on your post: ${snippet?`"${snippet.slice(0,70)}${snippet.length>70?'…':''}"`:''}`;
  }
- if(type==='reply') return 'replied to your comment';
- if(type==='comment_like') return 'liked your comment';
+ if(type==='reply'){
+  const snippet=String(notification.comment_text||notification.content||'').trim();
+  return `replied to your comment${snippet?`: "${snippet.slice(0,60)}"`:''}`;
+ }
+ if(type==='comment_like') return 'liked your comment ♥';
  if(type==='follow') return 'started following you';
- return notification.message||'interacted with you';
+ return notification.message||'interacted with your post';
 }
 
 function renderActivityNotifications(){
@@ -2963,12 +3006,17 @@ async function markActivityNotificationsRead(){
  }
 }
 
-async function createActivityNotification(recipientId,type,{reelId,commentText,silent=false}={}){
+async function createActivityNotification(recipientId,type,{reelId,commentText,silent=true}={}){
  if(!currentUser||!recipientId||!isValidUserUuid(String(recipientId))||String(recipientId)===String(currentUser.id)) return;
  const payload={receiver_id:recipientId,sender_id:currentUser.id,type,is_read:false};
  if(reelId!==undefined&&reelId!==null) payload.post_id=reelId;
  try {
-  const {data,error}=await supabaseClient.from('user_notifications').insert(payload).select('*').single();
+  let {data,error}=await supabaseClient.from('user_notifications').insert(payload).select('*').single();
+  if(error && payload.post_id !== undefined){
+   // Retry without post_id if post_id column type (uuid vs int) differs
+   const retry = await supabaseClient.from('user_notifications').insert({receiver_id:recipientId,sender_id:currentUser.id,type,is_read:false}).select('*').single();
+   data = retry.data; error = retry.error;
+  }
   if(error) throw error;
   if(data&&String(currentUser?.id)!==String(recipientId)){
    const existing=new Set(activityNotifications.map(item=>String(item.id)));
@@ -3634,7 +3682,12 @@ function syncActiveReelVideo(){
  window.isReelsMuted=muted;
  bestVideo.muted=muted;
  bestVideo.volume=muted?0:1.0;
- bestVideo.play().catch(error=>console.info('Reel autoplay was blocked:',error));
+ bestVideo.play().catch(error=>{
+  // Browser autoplay policy fallback: play muted first, then unmute on next tap
+  bestVideo.muted=true;
+  bestVideo.volume=0;
+  bestVideo.play().catch(()=>{});
+ });
 }
 
 function observeReelPlayback(){
@@ -4332,11 +4385,14 @@ function addComment(postId){
  if(!input) return;
  const text=input.value.trim();
  if(!text) return;
- const post=posts.find(p=>p.id===postId); if(!post) return;
+ const post=posts.find(p=>String(p.id)===String(postId)); if(!post) return;
  post.comments.push({user:0,text});
  triggerInteractionFeedback();
  input.value='';
  renderFeed();
+ if(currentUser && post.user && String(post.user)!==String(currentUser.id)){
+  void createActivityNotification(post.user,'comment',{reelId:post.id,commentText:text});
+ }
 }
 
 function openPost(id){

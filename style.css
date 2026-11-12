@@ -1001,3 +1001,288 @@ body[data-mood="latenight"] .app {
   width: auto;
   margin: 0;
 }
+
+
+
+/* ================= PHASE 2: RADAR, CO-WATCH MUSIC & DUAL-LAYER PROFILE ================= */
+.cowatch-bar {
+  position: fixed;
+  left: 50%;
+  bottom: calc(86px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  width: calc(100% - 28px);
+  max-width: 402px;
+  z-index: 28;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 18px;
+  background: rgba(11, 17, 32, 0.92);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.65);
+}
+.cowatch-eq {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 16px;
+  width: 18px;
+  flex-shrink: 0;
+}
+.cowatch-eq span {
+  width: 3px;
+  height: 5px;
+  background: #38bdf8;
+  border-radius: 99px;
+  transition: height 0.2s;
+}
+.cowatch-bar.playing .cowatch-eq span {
+  animation: eqPulse 0.7s infinite ease-in-out alternate;
+}
+.cowatch-bar.playing .cowatch-eq span:nth-child(2) { animation-delay: 0.15s; }
+.cowatch-bar.playing .cowatch-eq span:nth-child(3) { animation-delay: 0.3s; }
+.cowatch-bar.playing .cowatch-eq span:nth-child(4) { animation-delay: 0.1s; }
+.cowatch-info {
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+.cowatch-info strong {
+  display: block;
+  font-size: 12px;
+  color: #f8fafc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cowatch-info small {
+  display: block;
+  font-size: 10px;
+  color: #7dd3fc;
+  margin-top: 2px;
+}
+.cowatch-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  background: linear-gradient(135deg, #0284c7, #2563eb);
+  color: #fff;
+  font-size: 13px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.cowatch-stations {
+  display: grid;
+  gap: 8px;
+}
+.cowatch-station-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  background: rgba(15, 23, 42, 0.75);
+  color: #fff;
+  text-align: left;
+}
+.cowatch-station-item.active {
+  border-color: #38bdf8;
+  background: rgba(14, 165, 233, 0.18);
+}
+
+/* Proximity Vibe Radar */
+.radar-stage {
+  position: relative;
+  width: 230px;
+  height: 230px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.14) 0%, rgba(5, 8, 17, 0.95) 75%);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  overflow: hidden;
+}
+.radar-ring {
+  position: absolute;
+  inset: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 1px dashed rgba(56, 189, 248, 0.28);
+}
+.radar-ring.r1 { width: 76px; height: 76px; }
+.radar-ring.r2 { width: 148px; height: 148px; }
+.radar-ring.r3 { width: 216px; height: 216px; }
+.radar-sweep {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, rgba(56, 189, 248, 0.35), transparent 65deg);
+  animation: radarSpin 3.2s linear infinite;
+}
+@keyframes radarSpin {
+  to { transform: rotate(360deg); }
+}
+.radar-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0284c7, #38bdf8);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 0 18px rgba(56, 189, 248, 0.7);
+  z-index: 3;
+}
+.radar-pin {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid #38bdf8;
+  overflow: hidden;
+  transform: translate(-50%, -50%);
+  z-index: 4;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.65);
+  cursor: pointer;
+}
+.radar-pin img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Dual-Layer Profile Flip Card */
+.dual-profile-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  background: rgba(14, 165, 233, 0.14);
+  color: #7dd3fc;
+  font-size: 11px;
+  font-weight: 700;
+}
+.inner-circle-card {
+  margin-top: 14px;
+  padding: 16px;
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(14, 165, 233, 0.14), rgba(15, 23, 42, 0.9));
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  text-align: left;
+  animation: fadeIn 0.25s ease-out;
+}
+.status-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.status-chip {
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  background: rgba(5, 8, 17, 0.75);
+  color: #e2e8f0;
+  font-size: 11px;
+}
+.status-chip.active {
+  background: #0284c7;
+  color: #fff;
+  border-color: #38bdf8;
+}
+
+
+
+/* ================= FULL WIDTH RESPONSIVE FIX ================= */
+body {
+  display: block !important;
+  width: 100% !important;
+  overflow-x: hidden !important;
+}
+#vybe-shell,
+.app {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+}
+.main {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-left: 0 !important;
+}
+#reels.page.active {
+  left: 0 !important;
+  right: 0 !important;
+  transform: none !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  height: calc(100dvh - 82px) !important;
+  border-radius: 0 !important;
+}
+.reel,
+.reel-skeleton-card {
+  width: 100vw !important;
+  max-width: 100vw !important;
+  height: calc(100dvh - 82px) !important;
+}
+#bottom-dock.bottom {
+  width: calc(100% - 20px) !important;
+  max-width: 680px !important;
+}
+.cowatch-bar {
+  width: calc(100% - 24px) !important;
+  max-width: 660px !important;
+}
+.dm-drawer,
+.create-drawer,
+#authModal > .modalbox {
+  max-width: 100% !important;
+  width: 100% !important;
+}
+@media (min-width: 900px) {
+  .content {
+    max-width: 720px !important;
+    margin: 0 auto !important;
+  }
+  .dm-drawer,
+  .create-drawer,
+  #authModal > .modalbox {
+    max-width: 540px !important;
+  }
+}
+
+/* Profile Top-Left Info Circle Button */
+.profile-info-button {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.75);
+  color: #38bdf8;
+  font-size: 16px;
+  font-weight: 800;
+  font-family: Georgia, serif;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+  z-index: 5;
+}
+.profile-info-button:active {
+  transform: scale(0.94);
+}
