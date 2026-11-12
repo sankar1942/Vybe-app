@@ -466,3 +466,489 @@ document.addEventListener("pointerdown", function unlockReelsAudioOnce() {
     activeReelVideo.volume = 1.0;
   }
 }, { passive: true });
+
+
+
+// ================= VYBE v7.0: 10-FEATURE MEGA PACK =================
+
+// --- 1. DAILY VIBE STREAKS ---
+function initDailyVibeStreak() {
+  const today = new Date().toISOString().slice(0, 10);
+  const lastVisit = localStorage.getItem("vybe:last-visit");
+  let streak = Number(localStorage.getItem("vybe:streak-count") || 1);
+  if (lastVisit && lastVisit !== today) {
+    const diffDays = Math.round((new Date(today) - new Date(lastVisit)) / 86400000);
+    streak = diffDays === 1 ? streak + 1 : 1;
+  }
+  localStorage.setItem("vybe:last-visit", today);
+  localStorage.setItem("vybe:streak-count", String(streak));
+  const badge = document.getElementById("vibeStreakBadge");
+  if (badge) badge.textContent = `🔥 ${streak}d`;
+}
+initDailyVibeStreak();
+
+// --- 2. CUSTOM PROFILE THEME ACCENT ---
+function setVybeAccent(accent) {
+  if (accent === "blue") {
+    document.body.removeAttribute("data-accent");
+  } else {
+    document.body.setAttribute("data-accent", accent);
+  }
+  try {
+    localStorage.setItem("vybe:accent", accent);
+  } catch (_) {}
+  if (typeof toast === "function") toast(`🎨 Theme switched to ${accent.toUpperCase()}`);
+}
+(function restoreVybeAccent() {
+  const savedAccent = localStorage.getItem("vybe:accent");
+  if (savedAccent && savedAccent !== "blue") {
+    document.body.setAttribute("data-accent", savedAccent);
+  }
+})();
+
+// --- 3. QUICK VIBE STATUS BUBBLES ---
+function setQuickVibeStatus(statusText) {
+  document.querySelectorAll(".qv-chip").forEach((c) => {
+    c.classList.toggle("active", c.textContent.trim() === statusText);
+  });
+  if (typeof setInnerCircleStatus === "function") {
+    setInnerCircleStatus(statusText);
+  } else if (typeof toast === "function") {
+    toast(`⚡ Vibe status: ${statusText}`);
+  }
+}
+
+// --- 4. RANDOM VIBE ROULETTE ---
+function spinVibeRoulette() {
+  const pool = typeof reels !== "undefined" && reels.length ? reels : [];
+  if (!pool.length) {
+    if (typeof toast === "function") toast("🎲 No reels to spin yet—upload one first!");
+    return;
+  }
+  const pick = pool[Math.floor(Math.random() * pool.length)];
+  if (typeof toast === "function") toast("🎲 Vibe Roulette picked a random drop!");
+  if (pick.video && typeof playReelInPlayer === "function") {
+    playReelInPlayer(pick.id);
+  } else if (typeof openReel === "function") {
+    openReel(pick.id);
+  }
+}
+
+// --- 5. FLOATING QUICK-REPLY EMOJI BURST IN DM ---
+function sendQuickDMBurst(emoji) {
+  const input = document.getElementById("messageText");
+  if (!input) return;
+  input.value = emoji;
+  if (typeof sendMessage === "function") sendMessage();
+}
+
+// --- 6. GHOST MODE 24H LIVE ROOMS (Realtime Broadcast - 0 DB rows) ---
+let ghostRooms = [
+  { id: "midnight-riders", title: "🏍️ Midnight Riders Lounge", expires: "23h left" },
+  { id: "code-chill", title: "💻 Builders & Lo-Fi Chill", expires: "19h left" },
+  { id: "weekend-vibes", title: "🔥 Weekend Plans & Hangout", expires: "14h left" }
+];
+let activeGhostChannel = null;
+let activeGhostRoomId = null;
+
+function openGhostRoomsModal() {
+  if (typeof show === "function") show("ghostRoomsModal");
+  leaveGhostRoom();
+  renderGhostRoomList();
+}
+
+function closeGhostRoomsModal() {
+  leaveGhostRoom();
+  if (typeof hide === "function") hide("ghostRoomsModal");
+}
+
+function renderGhostRoomList() {
+  const list = document.getElementById("ghostRoomList");
+  if (!list) return;
+  list.innerHTML = ghostRooms
+    .map(
+      (r) => `
+      <div class="people glass" style="padding:10px 14px;margin:0;justify-content:space-between;">
+        <div>
+          <strong style="display:block;font-size:13px;">${r.title}</strong>
+          <small class="meta">Vanishes in ${r.expires} • Zero history</small>
+        </div>
+        <button type="button" class="primary" style="padding:6px 14px;font-size:11px;" onclick="joinGhostRoom('${r.id}', '${r.title.replace(/'/g, "")}')">Join</button>
+      </div>`
+    )
+    .join("");
+}
+
+function createGhostRoom() {
+  const input = document.getElementById("newGhostRoomInput");
+  const title = (input?.value || "").trim();
+  if (!title) return;
+  const id = "room-" + Date.now();
+  ghostRooms.unshift({ id, title: `👻 ${title}`, expires: "24h left" });
+  input.value = "";
+  renderGhostRoomList();
+  joinGhostRoom(id, `👻 ${title}`);
+}
+
+function joinGhostRoom(roomId, title) {
+  leaveGhostRoom();
+  activeGhostRoomId = roomId;
+  document.getElementById("ghostRoomLobby").style.display = "none";
+  document.getElementById("ghostRoomChat").style.display = "block";
+  document.getElementById("activeGhostRoomTitle").textContent = title;
+  const msgBox = document.getElementById("ghostMessagesList");
+  msgBox.innerHTML = `<div class="meta" style="text-align:center;">👻 Entered Ghost Room. Messages vanish when you leave!</div>`;
+
+  if (typeof supabaseClient !== "undefined") {
+    activeGhostChannel = supabaseClient.channel(`ghost-${roomId}`, {
+      config: { broadcast: { self: true } }
+    });
+    activeGhostChannel
+      .on("broadcast", { event: "ghost_msg" }, ({ payload }) => {
+        appendGhostBubble(payload.user, payload.text, payload.uid === currentUser?.id);
+      })
+      .subscribe();
+  }
+}
+
+function leaveGhostRoom() {
+  if (activeGhostChannel && typeof supabaseClient !== "undefined") {
+    supabaseClient.removeChannel(activeGhostChannel).catch(() => {});
+    activeGhostChannel = null;
+  }
+  activeGhostRoomId = null;
+  const lobby = document.getElementById("ghostRoomLobby");
+  const chat = document.getElementById("ghostRoomChat");
+  if (lobby) lobby.style.display = "block";
+  if (chat) chat.style.display = "none";
+}
+
+function appendGhostBubble(username, text, isMine) {
+  const box = document.getElementById("ghostMessagesList");
+  if (!box) return;
+  const div = document.createElement("div");
+  div.className = `dm-bubble ${isMine ? "mine" : ""}`;
+  div.style.padding = "8px 12px";
+  div.style.fontSize = "12px";
+  div.innerHTML = `<strong style="display:block;font-size:10px;opacity:0.8;">@${safe(username)}</strong>${safe(text)}`;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+function sendGhostMessage(e) {
+  e.preventDefault();
+  const input = document.getElementById("ghostMsgInput");
+  const text = (input?.value || "").trim();
+  if (!text) return;
+  input.value = "";
+  const uname = (typeof currentProfile !== "undefined" && currentProfile) || "vyber";
+  if (activeGhostChannel) {
+    activeGhostChannel.send({
+      type: "broadcast",
+      event: "ghost_msg",
+      payload: { user: uname, text, uid: currentUser?.id || "" }
+    });
+  } else {
+    appendGhostBubble(uname, text, true);
+  }
+}
+
+// --- 7. CHAIN STORIES (Pass-the-Vibe Collaborative Chains) ---
+let chainStories = JSON.parse(localStorage.getItem("vybe:chain-stories") || "null") || [
+  {
+    id: "chain-1",
+    prompt: "🏍️ Show your current ride or view!",
+    clips: [
+      { user: "alex.design", url: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=600" }
+    ]
+  },
+  {
+    id: "chain-2",
+    prompt: "💻 Late night setup & vibe check",
+    clips: [
+      { user: "sarah.official", url: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600" }
+    ]
+  }
+];
+let pendingChainId = null;
+
+function openChainStoryModal() {
+  if (typeof show === "function") show("chainStoryModal");
+  renderChainStories();
+}
+
+function renderChainStories() {
+  const list = document.getElementById("chainStoryList");
+  if (!list) return;
+  list.innerHTML = chainStories
+    .map(
+      (c) => `
+      <div class="glass" style="padding:12px;border-radius:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <strong style="font-size:13px;color:#fff;">${safe(c.prompt)}</strong>
+          <button type="button" class="primary" style="padding:5px 11px;font-size:11px;" onclick="triggerAddToChain('${c.id}')">+ Add Clip</button>
+        </div>
+        <div style="display:flex;gap:8px;overflow-x:auto;">
+          ${c.clips
+            .map(
+              (clip) => `
+            <div style="flex:0 0 74px;text-align:center;">
+              <img src="${safe(clip.url)}" style="width:74px;height:96px;object-fit:cover;border-radius:10px;border:1px solid #38bdf8;">
+              <small style="display:block;font-size:10px;color:#94a3b8;margin-top:3px;">@${safe(clip.user)}</small>
+            </div>`
+            )
+            .join("")}
+        </div>
+      </div>`
+    )
+    .join("");
+}
+
+function createChainPrompt() {
+  const input = document.getElementById("newChainPromptInput");
+  const prompt = (input?.value || "").trim();
+  if (!prompt) return;
+  chainStories.unshift({
+    id: "chain-" + Date.now(),
+    prompt: `🔗 ${prompt}`,
+    clips: [
+      {
+        user: (typeof currentProfile !== "undefined" && currentProfile) || "you",
+        url: "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=600"
+      }
+    ]
+  });
+  localStorage.setItem("vybe:chain-stories", JSON.stringify(chainStories));
+  input.value = "";
+  renderChainStories();
+  if (typeof toast === "function") toast("🔗 Chain Story started!");
+}
+
+function triggerAddToChain(chainId) {
+  pendingChainId = chainId;
+  document.getElementById("chainUploadInput")?.click();
+}
+
+document.getElementById("chainUploadInput")?.addEventListener("change", async function () {
+  const file = this.files?.[0];
+  if (!file || !pendingChainId) return;
+  if (typeof toast === "function") toast("Uploading clip to chain...");
+  try {
+    const url = await uploadToCloudinary(file);
+    const target = chainStories.find((c) => c.id === pendingChainId);
+    if (target) {
+      target.clips.push({
+        user: (typeof currentProfile !== "undefined" && currentProfile) || "you",
+        url
+      });
+      localStorage.setItem("vybe:chain-stories", JSON.stringify(chainStories));
+      renderChainStories();
+      if (typeof toast === "function") toast("🔗 Added your clip to the chain!");
+    }
+  } catch (err) {
+    if (typeof toast === "function") toast("Could not add clip to chain.");
+  } finally {
+    this.value = "";
+    pendingChainId = null;
+  }
+});
+
+// --- 8. REELS / FEED PREDICTION POLLS ---
+const pollVotesMap = JSON.parse(localStorage.getItem("vybe:poll-votes") || "{}");
+
+function voteVybePoll(postId, optionIdx) {
+  const key = String(postId);
+  if (!pollVotesMap[key]) pollVotesMap[key] = { a: 1, b: 1, voted: null };
+  if (pollVotesMap[key].voted === optionIdx) return;
+  if (pollVotesMap[key].voted === 0) pollVotesMap[key].a = Math.max(0, pollVotesMap[key].a - 1);
+  if (pollVotesMap[key].voted === 1) pollVotesMap[key].b = Math.max(0, pollVotesMap[key].b - 1);
+  if (optionIdx === 0) pollVotesMap[key].a += 1;
+  if (optionIdx === 1) pollVotesMap[key].b += 1;
+  pollVotesMap[key].voted = optionIdx;
+  localStorage.setItem("vybe:poll-votes", JSON.stringify(pollVotesMap));
+  enhancePredictionPollsInFeed();
+  if (typeof toast === "function") toast("🎯 Prediction vote locked!");
+}
+
+function enhancePredictionPollsInFeed() {
+  document.querySelectorAll("#feed article.post").forEach((article) => {
+    const feedId = article.dataset.feedId || "";
+    const id = feedId.split(":")[1] || "";
+    const captionEl = article.querySelector(".caption");
+    if (!captionEl) return;
+    const raw = captionEl.textContent || "";
+    const match = raw.match(/\[POLL:([^|\]]+)\|([^|\]]+)\|([^\]]+)\]/);
+    if (!match && !article.dataset.pollQ) return;
+
+    if (match) {
+      article.dataset.pollQ = match[1];
+      article.dataset.pollA = match[2];
+      article.dataset.pollB = match[3];
+      captionEl.innerHTML = captionEl.innerHTML.replace(match[0], "").trim();
+    }
+
+    const q = article.dataset.pollQ;
+    const optA = article.dataset.pollA;
+    const optB = article.dataset.pollB;
+    const stats = pollVotesMap[id] || { a: 1, b: 1, voted: null };
+    const total = Math.max(1, stats.a + stats.b);
+    const pctA = Math.round((stats.a / total) * 100);
+    const pctB = 100 - pctA;
+
+    let pollBox = article.querySelector(".vybe-poll-box");
+    if (!pollBox) {
+      pollBox = document.createElement("div");
+      pollBox.className = "vybe-poll-box";
+      captionEl.insertAdjacentElement("afterend", pollBox);
+    }
+    pollBox.innerHTML = `
+      <div class="vybe-poll-q">🎯 ${safe(q)}</div>
+      <button type="button" class="vybe-poll-opt" onclick="voteVybePoll('${id}', 0)">
+        <span class="vybe-poll-fill" style="width:${stats.voted !== null ? pctA : 0}%"></span>
+        <span style="position:relative;z-index:1;">${stats.voted === 0 ? "✅ " : ""}${safe(optA)}</span>
+        <span style="position:relative;z-index:1;">${stats.voted !== null ? pctA + "%" : ""}</span>
+      </button>
+      <button type="button" class="vybe-poll-opt" onclick="voteVybePoll('${id}', 1)">
+        <span class="vybe-poll-fill" style="width:${stats.voted !== null ? pctB : 0}%"></span>
+        <span style="position:relative;z-index:1;">${stats.voted === 1 ? "✅ " : ""}${safe(optB)}</span>
+        <span style="position:relative;z-index:1;">${stats.voted !== null ? pctB + "%" : ""}</span>
+      </button>`;
+  });
+}
+
+// --- 9. SECRET PIN VAULT ---
+function openSecretVault() {
+  if (typeof show === "function") show("secretVaultModal");
+  document.getElementById("vaultPinGate").style.display = "block";
+  document.getElementById("vaultContentArea").style.display = "none";
+  document.getElementById("vaultPinInput").value = "";
+}
+
+function unlockSecretVault() {
+  const entered = (document.getElementById("vaultPinInput")?.value || "").trim();
+  const savedPin = localStorage.getItem("vybe:vault-pin") || "1234";
+  if (entered !== savedPin) {
+    if (typeof toast === "function") toast("❌ Wrong PIN! (Default is 1234)");
+    return;
+  }
+  document.getElementById("vaultPinGate").style.display = "none";
+  document.getElementById("vaultContentArea").style.display = "block";
+  renderVaultItems();
+}
+
+function changeVaultPin() {
+  const nextPin = (window.prompt("Enter a new 4-digit PIN for your Secret Vault:") || "").replace(/\D/g, "").slice(0, 4);
+  if (nextPin.length !== 4) {
+    if (typeof toast === "function") toast("PIN must be 4 digits.");
+    return;
+  }
+  localStorage.setItem("vybe:vault-pin", nextPin);
+  if (typeof toast === "function") toast("🔒 Vault PIN updated!");
+}
+
+function renderVaultItems() {
+  const grid = document.getElementById("vaultGrid");
+  if (!grid) return;
+  const items = JSON.parse(localStorage.getItem("vybe:vault-items") || "[]");
+  grid.innerHTML = items.length
+    ? items
+        .map(
+          (url) =>
+            `<div class="tile" style="height:120px;"><img src="${safe(url)}" alt="Secret item"></div>`
+        )
+        .join("")
+    : '<div class="empty" style="grid-column:1/-1;padding:24px;">No hidden media yet. Tap "+ Hide Media" to store privately.</div>';
+}
+
+document.getElementById("vaultFileInput")?.addEventListener("change", async function () {
+  const file = this.files?.[0];
+  if (!file) return;
+  if (typeof toast === "function") toast("Encrypting & uploading to Secret Vault...");
+  try {
+    const url = await uploadToCloudinary(file);
+    const items = JSON.parse(localStorage.getItem("vybe:vault-items") || "[]");
+    items.unshift(url);
+    localStorage.setItem("vybe:vault-items", JSON.stringify(items));
+    renderVaultItems();
+    if (typeof toast === "function") toast("🔒 Saved to Secret Vault!");
+  } catch (_) {
+    if (typeof toast === "function") toast("Vault upload failed.");
+  } finally {
+    this.value = "";
+  }
+});
+
+// --- 10. MINI CREATOR ANALYTICS ---
+function openCreatorAnalytics() {
+  if (typeof show === "function") show("creatorAnalyticsModal");
+  const body = document.getElementById("creatorAnalyticsBody");
+  if (!body) return;
+  const myReels = (typeof reels !== "undefined" ? reels : []).filter((r) => isOwnReel(r));
+  const totalLikes = myReels.reduce((sum, r) => sum + Number(r.likes || 0), 0);
+  const totalComments = myReels.reduce((sum, r) => sum + Number(r.commentCount || 0), 0);
+  const estViews = myReels.reduce((sum, r) => sum + Math.max(Number(r.views_count || 0), Number(r.likes || 0) * 7 + 24), 0);
+  const engagement = estViews > 0 ? (((totalLikes + totalComments) / estViews) * 100).toFixed(1) : "0.0";
+
+  body.innerHTML = `
+    <div class="analytics-grid">
+      <div class="analytics-card"><b>${estViews.toLocaleString()}</b><span>Estimated Reach</span></div>
+      <div class="analytics-card"><b>${totalLikes.toLocaleString()}</b><span>Total Likes</span></div>
+      <div class="analytics-card"><b>${totalComments.toLocaleString()}</b><span>Total Comments</span></div>
+      <div class="analytics-card"><b>${engagement}%</b><span>Engagement Rate</span></div>
+    </div>
+    <p class="meta" style="margin-top:12px;text-align:center;">Based on ${myReels.length} active posts & reels on your profile.</p>
+  `;
+}
+
+// Hook Prediction Polls into renderFeed & createPost
+if (typeof renderFeed === "function") {
+  const _v7PrevRenderFeed = renderFeed;
+  window.renderFeed = function () {
+    _v7PrevRenderFeed.apply(this, arguments);
+    enhancePredictionPollsInFeed();
+  };
+}
+
+if (typeof createPost === "function") {
+  const _v7PrevCreatePost = createPost;
+  window.createPost = async function () {
+    const captionEl = document.getElementById("caption");
+    const qEl = document.getElementById("postPollQuestion");
+    const aEl = document.getElementById("postPollOpt1");
+    const bEl = document.getElementById("postPollOpt2");
+    if (captionEl && qEl?.value.trim()) {
+      const q = qEl.value.trim().replace(/[|\]]/g, "");
+      const a = (aEl?.value.trim() || "Yes").replace(/[|\]]/g, "");
+      const b = (bEl?.value.trim() || "No").replace(/[|\]]/g, "");
+      captionEl.value = `${captionEl.value.trim()} [POLL:${q}|${a}|${b}]`.trim();
+    }
+    const res = await _v7PrevCreatePost.apply(this, arguments);
+    if (qEl) qEl.value = "";
+    if (aEl) aEl.value = "";
+    if (bEl) bEl.value = "";
+    return res;
+  };
+}
+
+// Hook Vault, Analytics & Custom Accent Dots into Own Profile
+if (typeof renderProfile === "function") {
+  const _v7PrevRenderProfile = renderProfile;
+  window.renderProfile = function () {
+    _v7PrevRenderProfile.apply(this, arguments);
+    const detailsEl = document.querySelector("#profileView .profile-details");
+    if (!detailsEl) return;
+    const tools = document.createElement("div");
+    tools.className = "profile-mega-tools";
+    tools.innerHTML = `
+      <button type="button" class="mega-pill-btn" onclick="openSecretVault()">🔒 Vault</button>
+      <button type="button" class="mega-pill-btn" onclick="openCreatorAnalytics()">📊 Analytics</button>
+      <div class="accent-dots" title="Profile Theme Accent">
+        <span class="accent-dot" style="background:#0ea5e9;" onclick="setVybeAccent('blue')"></span>
+        <span class="accent-dot" style="background:#a855f7;" onclick="setVybeAccent('purple')"></span>
+        <span class="accent-dot" style="background:#10b981;" onclick="setVybeAccent('emerald')"></span>
+        <span class="accent-dot" style="background:#f97316;" onclick="setVybeAccent('sunset')"></span>
+      </div>
+    `;
+    detailsEl.appendChild(tools);
+  };
+}

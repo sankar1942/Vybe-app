@@ -51,6 +51,9 @@
   </section>
  </div>
  <div class="top-actions">
+  <button id="vibeStreakBadge" class="streak-pill" type="button" title="Daily Vibe Streak" onclick="toast('🔥 Daily Vibe Streak active! Keep visiting daily.')">🔥 1d</button>
+  <button class="icon-btn" type="button" aria-label="Ghost Mode 24h Rooms" title="Ghost Mode 24h Rooms" onclick="openGhostRoomsModal()">👻</button>
+  <button class="icon-btn" type="button" aria-label="Vibe Roulette" title="Vibe Roulette" onclick="spinVibeRoulette()">🎲</button>
   <button class="icon-btn" type="button" aria-label="Proximity Vibe Radar" title="Proximity Vibe Radar" onclick="openVibeRadar()">📡</button>
   <button id="activityButton" class="icon-btn activity-icon" type="button" aria-label="Activity" onclick="toggleActivityDrawer()">
    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></svg>
@@ -73,6 +76,14 @@
 </section>
 
 <section id="home" class="page">
+ <div class="quick-vibe-strip" aria-label="Quick Vibe Status">
+   <span style="font-size:11px;color:#7dd3fc;font-weight:700;white-space:nowrap;">⚡ My Vibe:</span>
+   <button type="button" class="qv-chip" onclick="setQuickVibeStatus('🏍️ Riding')">🏍️ Riding</button>
+   <button type="button" class="qv-chip" onclick="setQuickVibeStatus('💻 Coding')">💻 Coding</button>
+   <button type="button" class="qv-chip" onclick="setQuickVibeStatus('🎧 Chilling')">🎧 Chilling</button>
+   <button type="button" class="qv-chip" onclick="setQuickVibeStatus('☕ Coffee')">☕ Coffee</button>
+   <button type="button" class="qv-chip" onclick="openChainStoryModal()">🔗 Chain Story</button>
+ </div>
  <button class="quick-post" type="button" onclick="openCreate()"><span class="cyber-logo cyber-btn" aria-hidden="true">＋</span><span>What's on your mind?</span></button>
  <div class="stories glass" id="stories"></div>
  <div class="home-feed-header"><h2 class="heading">Your Feed</h2><div class="home-feed-switcher" role="tablist" aria-label="Home feed"><button id="forYouTab" class="active" type="button" role="tab" aria-selected="true" onclick="setHomeFeedMode('forYou')">For You</button><button id="followingTab" type="button" role="tab" aria-selected="false" onclick="setHomeFeedMode('following')">Following</button><button type="button" onclick="go('reels')">Reels</button></div></div>
@@ -125,6 +136,13 @@
   </header>
   <div class="dm-inbox" id="dmInbox"></div>
   <div class="dm-thread" id="dmThread" style="display:none" aria-live="polite"></div>
+    <div class="dm-quick-burst" aria-label="Quick emoji burst">
+   <button type="button" onclick="sendQuickDMBurst('🔥')">🔥</button>
+   <button type="button" onclick="sendQuickDMBurst('❤️')">❤️</button>
+   <button type="button" onclick="sendQuickDMBurst('😂')">😂</button>
+   <button type="button" onclick="sendQuickDMBurst('💯')">💯</button>
+   <button type="button" onclick="sendQuickDMBurst('👋')">👋</button>
+  </div>
   <form class="dm-composer" id="dmComposer" onsubmit="sendMessage(event)" style="display:none">
    <div class="dm-composer-tools">
     <button class="dm-tool-button" id="dmEmojiToggle" type="button" aria-label="Toggle emoji picker" onclick="toggleDMEmojiPicker()">☺</button>
@@ -250,6 +268,14 @@
    <label for="postCapsuleTime">⏳ Time-Capsule Lock</label>
    <input type="datetime-local" id="postCapsuleTime">
   </div>
+  <div class="create-feature-row" style="flex-direction:column;align-items:stretch;">
+   <label for="postPollQuestion">🎯 Prediction Poll (Optional)</label>
+   <input type="text" id="postPollQuestion" placeholder="Ask a question (e.g. Ooty or Kodaikanal?)" style="margin:4px 0 0;padding:8px 10px;font-size:12px;">
+   <div style="display:flex;gap:6px;margin-top:6px;">
+     <input type="text" id="postPollOpt1" placeholder="Option A (e.g. Yes)" style="margin:0;padding:7px 10px;font-size:12px;">
+     <input type="text" id="postPollOpt2" placeholder="Option B (e.g. No)" style="margin:0;padding:7px 10px;font-size:12px;">
+   </div>
+  </div>
  </div>
  <div id="createStatus" class="auth-status" role="status" aria-live="polite"></div>
  <div class="upload-progress" id="uploadProgress" hidden aria-live="polite">
@@ -347,7 +373,7 @@
   <div class="settings-handle"></div>
   <header class="settings-header"><button id="settingsBackButton" class="settings-close" type="button" aria-label="Back to settings" onclick="showSettingsHome()" style="display:none">←</button><h2 id="settingsSheetTitle">Settings</h2><button class="settings-close" type="button" aria-label="Close settings" onclick="closeSettingsSheet()">✕</button></header>
   <div id="settingsHome">
-   <div class="settings-version">VYBE v1.2</div>
+   <div class="settings-version">VYBE v7.0 (10-Feature Mega Pack)</div>
    <div class="settings-menu">
     <button type="button" onclick="openSavedCollection()">Saved <span>›</span></button>
     <button type="button" onclick="openArchiveCollection()">Archive <span>›</span></button>
@@ -434,6 +460,86 @@
       <span style="display:block;font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;">Member Since</span>
       <strong id="profileJoinedDate" style="display:block;font-size:20px;color:#fff;margin-top:4px;font-variant-numeric:tabular-nums;">01.01.2026</strong>
     </div>
+  </div>
+</div>
+
+
+<!-- V7 MEGA PACK MODALS -->
+<!-- 1. GHOST MODE 24H LIVE ROOMS -->
+<div class="modal" id="ghostRoomsModal" onclick="if(event.target===this)closeGhostRoomsModal()">
+  <div class="modalbox glass">
+    <button class="close" type="button" onclick="closeGhostRoomsModal()">×</button>
+    <h2 style="margin-bottom:4px;">👻 Ghost Mode 24h Rooms</h2>
+    <p class="meta" style="margin-bottom:12px;">Ephemeral live rooms — messages vanish automatically, 0 history saved!</p>
+    <div id="ghostRoomLobby">
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <input id="newGhostRoomInput" type="text" maxlength="32" placeholder="New room topic (e.g. Midnight Riders)" style="margin:0;padding:10px 12px;font-size:13px;">
+        <button type="button" class="primary" style="padding:0 16px;white-space:nowrap;" onclick="createGhostRoom()">+ Room</button>
+      </div>
+      <div id="ghostRoomList" style="display:grid;gap:8px;"></div>
+    </div>
+    <div id="ghostRoomChat" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid rgba(56,189,248,0.2);">
+        <button type="button" class="secondary" style="padding:5px 10px;font-size:12px;" onclick="leaveGhostRoom()">← Rooms</button>
+        <strong id="activeGhostRoomTitle" style="font-size:14px;color:#7dd3fc;">👻 Room</strong>
+        <span style="font-size:10px;color:#f87171;">● LIVE 24H</span>
+      </div>
+      <div id="ghostMessagesList" style="height:230px;overflow-y:auto;padding:10px 4px;display:flex;flex-direction:column;gap:8px;"></div>
+      <form onsubmit="sendGhostMessage(event)" style="display:flex;gap:8px;margin-top:8px;">
+        <input id="ghostMsgInput" type="text" maxlength="300" placeholder="Send vanishing message..." style="margin:0;padding:10px 12px;font-size:13px;">
+        <button type="submit" class="primary" style="padding:0 16px;">Send</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 2. CHAIN STORIES MODAL -->
+<div class="modal" id="chainStoryModal" onclick="if(event.target===this)hide('chainStoryModal')">
+  <div class="modalbox glass">
+    <button class="close" type="button" onclick="hide('chainStoryModal')">×</button>
+    <h2 style="margin-bottom:4px;">🔗 Pass-the-Vibe Chain Stories</h2>
+    <p class="meta" style="margin-bottom:12px;">Add your photo/clip to an active community story chain!</p>
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <input id="newChainPromptInput" type="text" maxlength="40" placeholder="Start a prompt (e.g. Show your bike/desk)" style="margin:0;padding:10px 12px;font-size:13px;">
+      <button type="button" class="primary" style="padding:0 14px;white-space:nowrap;" onclick="createChainPrompt()">Start</button>
+    </div>
+    <div id="chainStoryList" style="display:grid;gap:10px;max-height:50vh;overflow-y:auto;"></div>
+    <input type="file" id="chainUploadInput" accept="image/*,video/mp4,video/webm" style="display:none;">
+  </div>
+</div>
+
+<!-- 3. SECRET VAULT (PIN-LOCKED GALLERY) -->
+<div class="modal" id="secretVaultModal" onclick="if(event.target===this)hide('secretVaultModal')">
+  <div class="modalbox glass">
+    <button class="close" type="button" onclick="hide('secretVaultModal')">×</button>
+    <h2 style="margin-bottom:4px;">🔒 Secret PIN Vault</h2>
+    <p class="meta" style="margin-bottom:12px;">Private hidden posts protected by your 4-digit PIN</p>
+    <div id="vaultPinGate" style="text-align:center;padding:10px 0;">
+      <p id="vaultPinPrompt" style="font-size:13px;color:#7dd3fc;margin-bottom:10px;">Enter 4-digit PIN (Default: 1234)</p>
+      <input id="vaultPinInput" type="password" inputmode="numeric" maxlength="4" placeholder="••••" style="text-align:center;font-size:22px;letter-spacing:8px;max-width:160px;margin:0 auto 12px;">
+      <div style="display:flex;gap:8px;justify-content:center;">
+        <button type="button" class="primary" onclick="unlockSecretVault()">Unlock Vault</button>
+        <button type="button" class="secondary" onclick="changeVaultPin()">Set New PIN</button>
+      </div>
+    </div>
+    <div id="vaultContentArea" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span style="font-size:12px;color:#4ade80;">🔓 Vault Unlocked</span>
+        <button type="button" class="primary" style="padding:6px 12px;font-size:11px;" onclick="document.getElementById('vaultFileInput').click()">+ Hide Media</button>
+      </div>
+      <input type="file" id="vaultFileInput" accept="image/*,video/*" style="display:none;">
+      <div id="vaultGrid" class="grid" style="gap:6px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 4. MINI CREATOR ANALYTICS MODAL -->
+<div class="modal" id="creatorAnalyticsModal" onclick="if(event.target===this)hide('creatorAnalyticsModal')">
+  <div class="modalbox glass">
+    <button class="close" type="button" onclick="hide('creatorAnalyticsModal')">×</button>
+    <h2 style="margin-bottom:4px;">📊 Creator Studio Analytics</h2>
+    <p class="meta" style="margin-bottom:14px;">Real-time reach & engagement insights for your profile</p>
+    <div id="creatorAnalyticsBody"></div>
   </div>
 </div>
 

@@ -1286,3 +1286,195 @@ body {
 .profile-info-button:active {
   transform: scale(0.94);
 }
+
+
+
+/* ================= V7 MEGA PACK (10 FEATURES + THEME ACCENTS) ================= */
+/* Custom Profile Theme Accents */
+body[data-accent="purple"] {
+  --cyber-blue: #a855f7;
+  --electric-blue: #7e22ce;
+  --border-glass: rgba(168, 85, 247, 0.24);
+}
+body[data-accent="purple"] .primary,
+body[data-accent="purple"] .cyber-btn,
+body[data-accent="purple"] .vybe-v-logo,
+body[data-accent="purple"] .mood-chip.active {
+  background: linear-gradient(135deg, #7e22ce, #a855f7, #c084fc) !important;
+  box-shadow: 0 6px 24px rgba(168, 85, 247, 0.45) !important;
+}
+body[data-accent="emerald"] {
+  --cyber-blue: #10b981;
+  --electric-blue: #059669;
+  --border-glass: rgba(16, 185, 129, 0.24);
+}
+body[data-accent="emerald"] .primary,
+body[data-accent="emerald"] .cyber-btn,
+body[data-accent="emerald"] .vybe-v-logo,
+body[data-accent="emerald"] .mood-chip.active {
+  background: linear-gradient(135deg, #059669, #10b981, #34d399) !important;
+  box-shadow: 0 6px 24px rgba(16, 185, 129, 0.45) !important;
+}
+body[data-accent="sunset"] {
+  --cyber-blue: #f97316;
+  --electric-blue: #e11d48;
+  --border-glass: rgba(249, 115, 22, 0.24);
+}
+body[data-accent="sunset"] .primary,
+body[data-accent="sunset"] .cyber-btn,
+body[data-accent="sunset"] .vybe-v-logo,
+body[data-accent="sunset"] .mood-chip.active {
+  background: linear-gradient(135deg, #e11d48, #f97316, #fb923c) !important;
+  box-shadow: 0 6px 24px rgba(249, 115, 22, 0.45) !important;
+}
+
+/* Daily Streak Pill */
+.streak-pill {
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(251, 146, 60, 0.45);
+  background: rgba(251, 146, 60, 0.14);
+  color: #fdba74;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+/* Quick Vibe Status Strip */
+.quick-vibe-strip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  overflow-x: auto;
+  padding: 4px 0 12px;
+  scrollbar-width: none;
+}
+.quick-vibe-strip::-webkit-scrollbar { display: none; }
+.qv-chip {
+  flex: 0 0 auto;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(56, 189, 248, 0.24);
+  background: rgba(15, 23, 42, 0.72);
+  color: #e2e8f0;
+  font-size: 11px;
+  font-weight: 600;
+}
+.qv-chip.active {
+  background: rgba(14, 165, 233, 0.28);
+  border-color: #38bdf8;
+  color: #fff;
+}
+
+/* Prediction Poll Card on Feed/Reels */
+.vybe-poll-box {
+  margin: 8px 16px 12px;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.82);
+  border: 1px solid rgba(56, 189, 248, 0.28);
+}
+.vybe-poll-q {
+  font-size: 13px;
+  font-weight: 700;
+  color: #f8fafc;
+  margin-bottom: 8px;
+}
+.vybe-poll-opt {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 12px;
+  margin-top: 6px;
+  border-radius: 10px;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  background: rgba(5, 8, 17, 0.7);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  overflow: hidden;
+  text-align: left;
+}
+.vybe-poll-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: rgba(14, 165, 233, 0.28);
+  pointer-events: none;
+  transition: width 0.35s ease;
+}
+
+/* DM Quick Emoji Burst */
+.dm-quick-burst {
+  display: flex;
+  justify-content: space-around;
+  padding: 6px 12px;
+  border-top: 1px solid rgba(56, 189, 248, 0.14);
+  background: rgba(11, 17, 32, 0.9);
+}
+.dm-quick-burst button {
+  background: transparent;
+  border: 0;
+  font-size: 18px;
+  padding: 4px 8px;
+  transition: transform 0.15s;
+}
+.dm-quick-burst button:active {
+  transform: scale(1.3);
+}
+
+/* Profile Action Pills (Vault, Analytics, Theme Accent) */
+.profile-mega-tools {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+.mega-pill-btn {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  background: rgba(15, 23, 42, 0.78);
+  color: #e0f2fe;
+  font-size: 11px;
+  font-weight: 650;
+}
+.accent-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(15, 23, 42, 0.78);
+}
+.accent-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid #fff;
+  cursor: pointer;
+}
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.analytics-card {
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  text-align: center;
+}
+.analytics-card b {
+  display: block;
+  font-size: 20px;
+  color: #38bdf8;
+}
+.analytics-card span {
+  font-size: 11px;
+  color: #94a3b8;
+}
