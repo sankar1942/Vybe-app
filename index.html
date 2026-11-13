@@ -454,7 +454,7 @@
 
 <div class="modal" id="editModal"><div class="modalbox glass">
  <button class="close" onclick="hide('editModal')">×</button><h2>Custom Profile</h2>
- <input id="name" placeholder="Display name (Locked)" readonly style="opacity:0.65;cursor:not-allowed;" title="Name cannot be changed">
+ <input id="name" placeholder="Display name" maxlength="40">
  <input id="uname" placeholder="username (Locked)" maxlength="30" readonly style="opacity:0.65;cursor:not-allowed;" title="Username cannot be changed">
  <textarea id="bio" placeholder="Bio"></textarea>
  <input id="pic" type="file" accept="image/*" style="display:none">
@@ -516,13 +516,14 @@
   <div class="settings-handle"></div>
   <header class="settings-header"><button id="settingsBackButton" class="settings-close" type="button" aria-label="Back to settings" onclick="showSettingsHome()" style="display:none">←</button><h2 id="settingsSheetTitle">Settings</h2><button class="settings-close" type="button" aria-label="Close settings" onclick="closeSettingsSheet()">✕</button></header>
   <div id="settingsHome">
-   <div class="settings-version">VYBE v19.0 (Notched L-Card Feed + 11 Fixes + 10 V19 Futures)</div>
+   <div class="settings-version">VYBE v20.0 (Pure Black & White Theme + Profile Name Fix + Clean Feed)</div>
    <div class="settings-menu">
     <button type="button" style="border-color:#38bdf8;background:linear-gradient(135deg,rgba(14,165,233,0.18),rgba(168,85,247,0.18));" onclick="showSettingsSubview('futures')">✨ Futures (Feature Controls) <span>ON / OFF ›</span></button>
     <button type="button" onclick="openSavedCollection()">Saved <span>›</span></button>
     <button type="button" onclick="openArchiveCollection()">Archive <span>›</span></button>
     <button type="button" style="border-color:#a855f7;" onclick="closeSettingsSheet();openSecretVault()">🔒 Secret PIN Vault <span>Unlock ›</span></button>
     <button type="button" onclick="showSettingsSubview('activity')">Your Activity / Time Management <span id="dailyTimeSpent">Today: 0 min</span></button>
+    <button type="button" onclick="toggleBlackWhiteTheme()">Appearance Theme <span id="bwThemeLabel">Dark (Black)</span></button>
     <button type="button" onclick="toggleAccountPrivacy()">Account Privacy <span id="privacySettingLabel">Public</span><input id="privacySettingToggle" class="settings-toggle" type="checkbox" aria-label="Private account" onclick="event.stopPropagation();toggleAccountPrivacy(this.checked)"></button>
     <button type="button" onclick="showSettingsSubview('blocked')">Blocked Accounts <span>›</span></button>
     <button type="button" onclick="toggleHighQualityUploads()">Data Usage &amp; Media Quality <span><input id="highQualityToggle" class="settings-toggle" type="checkbox" aria-label="High quality uploads" onclick="event.stopPropagation();toggleHighQualityUploads(this.checked)"></span></button>
@@ -1135,7 +1136,6 @@
 
 
 <!-- V14 KINETIC GYRO STARFIELD & WARP SPEED OVERLAY -->
-<div id="vybeStarfield" class="vybe-starfield" aria-hidden="true"></div>
 <div id="warpSpeedLines" class="warp-speed-lines" aria-hidden="true"></div>
 
 <!-- V14 QUANTUM, SPATIAL & SOCIAL-MAGIC MODALS -->

@@ -179,7 +179,7 @@ async function syncCurrentProfile(){
   currentProfile=normalizeUsername(profile.username || localCached.username || metadata.username) || generatedUsername;
   hasCurrentProfile=Boolean(data);
   me.id = profileUser.id;
-  me.name=profile.full_name || localCached.name || profile.display_name || profile.name || metadata.full_name || metadata.name || (profileUser.email || '').split('@')[0] || 'User';
+  me.name=profile.full_name || metadata.full_name || localCached.name || profile.display_name || profile.name || metadata.name || (profileUser.email || '').split('@')[0] || 'User';
   me.username = currentProfile;
   me.bio=profile.bio ?? localCached.bio ?? metadata.bio ?? '';
   me.pic=profile.avatar_url || profile.profile_avatar_url || localCached.pic || metadata.profile_avatar_url || avatar();
@@ -1845,16 +1845,7 @@ function renderFeed(){
            </div>
            <button class="vybe-hero-more-btn" type="button" aria-label="Post options" onclick="${isReel?`openReel('${safe(item.id)}')`:`openPost(${item.id})`}">⋮</button>
          </div>
-         <div class="vybe-floating-avatars" aria-hidden="true">
-           <img class="vf-av-1" src="${safe(avatarSrc(users[0]?.pic))}" alt="">
-           <img class="vf-av-2" src="${safe(avatarSrc(users[1]?.pic))}" alt="">
-         </div>
          <div class="vybe-bottom-right-likes" onclick="openCommentsDrawer('${safe(item.id)}')">
-           <div class="vybe-mini-stack">
-             <img src="${safe(avatarSrc(users[0]?.pic))}" alt="">
-             <img src="${safe(avatarSrc(users[1]?.pic))}" alt="">
-             <img src="${safe(avatarSrc(users[2]?.pic))}" alt="">
-           </div>
            <span class="vybe-likes-label"><b ${isReel?`data-reel-like-count="${safe(item.id)}"`:`data-post-like-count="${safe(item.id)}"`}>${likeCountNum.toLocaleString()}</b> likes</span>
          </div>
        </div>
@@ -3071,7 +3062,12 @@ async function loadActivityNotifications(){
   }
   const profilesById=new Map((profilesResult.data||[]).map(profile=>[String(profile.id),profile]));
   const reelsById=new Map((reelsResult.data||[]).map(reel=>[String(reel.id),normalizeReel(reel,0)]));
-  activityNotifications=rows.map(item=>{
+  const localSessionNotifs = JSON.parse(localStorage.getItem(`vybe:local-notifs:${userId}`) || '[]');
+  const mergedRows = [...rows];
+  localSessionNotifs.forEach(ln => {
+   if(!mergedRows.some(r => String(r.id) === String(ln.id))) mergedRows.push(ln);
+  });
+  activityNotifications=mergedRows.map(item=>{
    const senderId=String(item.sender_id||'');
    const reelId=String(item.post_id||'');
    const profile=profilesById.get(senderId);
@@ -3128,6 +3124,7 @@ async function createActivityNotification(recipientId,type,{reelId,commentText,s
     renderActivityNotifications();
    }
   }
+ } catch(error) {
  } catch(error) {
   if(!silent){
    console.error(`${type} notification insert error:`,error);
@@ -4669,15 +4666,11 @@ async function saveProfile(){
  const nextUsername=normalizeUsername(userInput?.value||currentProfile||me.username);
  const nextBio=bioInput?.value.trim() || '';
  const lockedU = normalizeUsername(currentProfile || me.username);
- const lockedN = me.name || lockedU;
- const metadata={...(currentUser.user_metadata||{}),full_name:lockedN,name:lockedN,bio:nextBio,username:lockedU};
+ const updatedName = (nameInput?.value || '').trim() || me.name || lockedU;
+ const metadata={...(currentUser.user_metadata||{}),full_name:updatedName,name:updatedName,bio:nextBio,username:lockedU};
  const photo=picInput?.files?.[0];
  try {
-  // Correction 1: Lock Name & Username so they cannot be changed once created
-  const lockedUsername = normalizeUsername(currentProfile || me.username);
-  const lockedName = me.name || lockedUsername;
   if(photo){
-   const fileName=`${currentUser.id}/profile/avatar-${Date.now()}-${photo.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
    const avatarUrl = await uploadToCloudinary(photo);
    metadata.profile_avatar_url = avatarUrl;
   }
@@ -4687,15 +4680,20 @@ async function saveProfile(){
   const profileUpdate={
    id:currentUser.id,
    username:lockedU,
-   full_name:lockedN,
+   full_name:updatedName,
    bio:nextBio,
    ...(photo?{avatar_url:metadata.profile_avatar_url}:{})
   };
-  const {error:profileError}=await supabaseClient.from('profiles').upsert(profileUpdate,{onConflict:'id'});
+  let {error:profileError}=await supabaseClient.from('profiles').upsert(profileUpdate,{onConflict:'id'});
+  if(profileError && /full_name/i.test(profileError.message||'')){
+   const fallbackUpsert = { id:currentUser.id, username:lockedU, bio:nextBio, ...(photo?{avatar_url:metadata.profile_avatar_url}:{}) };
+   const retry = await supabaseClient.from('profiles').upsert(fallbackUpsert,{onConflict:'id'});
+   profileError = retry.error;
+  }
   if(profileError) throw profileError;
   currentProfile=lockedU;
   me.username=lockedU;
-  me.name=lockedN;
+  me.name=updatedName;
   me.bio=nextBio;
   if(photo) me.pic=metadata.profile_avatar_url;
   try {
