@@ -2634,3 +2634,373 @@ body[data-accent="sunset"] .profile-tabs button.active {
   padding: 16px;
   text-align: center;
 }
+
+
+
+/* ================= V19.0: ASYMMETRICAL NOTCHED L-CARD & CORRECTIONS ================= */
+/* 16/11. True Centered VYBE Topbar Heading */
+.topbar {
+  justify-content: center !important;
+  position: relative !important;
+}
+#mobileBrand {
+  flex: 0 1 auto !important;
+  margin: 0 auto !important;
+}
+.top-actions {
+  position: absolute !important;
+  right: 12px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+}
+
+/* 8. Remove 5-sec voice reaction bar below Home posts */
+.voice-reaction-bar {
+  display: none !important;
+}
+
+/* 6. Prevent accidental text selection during DM message long-press */
+.dm-bubble {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+/* 9. Top Slide-Down In-App Notification Pop-Up Banner */
+.vybe-top-notif-banner {
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 28px);
+  max-width: 400px;
+  z-index: 12500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.96);
+  border: 1px solid #38bdf8;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.75), 0 0 20px rgba(56, 189, 248, 0.35);
+  backdrop-filter: blur(18px);
+  cursor: pointer;
+  animation: slideDownNotif 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.vybe-top-notif-banner[hidden] {
+  display: none !important;
+}
+@keyframes slideDownNotif {
+  from { opacity: 0; transform: translate(-50%, -28px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* 7. Standalone Fullscreen Discover Reel Viewer */
+.discover-reel-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 10500;
+  background: #000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.discover-reel-fullscreen.open {
+  display: flex;
+}
+.discover-reel-stage {
+  width: 100vw;
+  height: 100dvh;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.discover-reel-stage video,
+.discover-reel-stage img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* UPDATE 1.1 - 1.5: ASYMMETRICAL NOTCHED L-SHAPED POST CARD UI */
+#feed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+article.post.vybe-notched-card {
+  width: 100%;
+  max-width: 400px;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-radius: 28px !important;
+  padding: 12px !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.32) !important;
+  margin-bottom: 4px !important;
+  font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+}
+.vybe-notched-hero {
+  position: relative;
+  width: 100%;
+}
+.vybe-l-shape-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  margin: 0 !important;
+  border-radius: 24px 24px 24px 0 !important;
+  overflow: hidden;
+  background: #0f172a;
+}
+.vybe-l-shape-stage img.postmedia,
+.vybe-l-shape-stage video.postmedia {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: none !important;
+  object-fit: cover !important;
+  border-radius: 24px !important;
+}
+
+/* Inverted Bottom-Left Notch Cutout (170px wide x 48px high) with smooth inward fillet corners */
+.vybe-notch-cutout {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 170px;
+  height: 48px;
+  background: #ffffff;
+  border-top-right-radius: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 14px;
+  padding: 4px 12px 0 8px;
+  z-index: 10;
+}
+/* Top-left inward fillet curve blending notch into left edge */
+.vybe-notch-cutout::before {
+  content: "";
+  position: absolute;
+  top: -20px;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  background: radial-gradient(circle at 100% 0%, transparent 20px, #ffffff 20.5px);
+  pointer-events: none;
+}
+/* Bottom-right inward fillet curve blending notch into bottom edge */
+.vybe-notch-cutout::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: -20px;
+  width: 20px;
+  height: 20px;
+  background: radial-gradient(circle at 100% 0%, transparent 20px, #ffffff 20.5px);
+  pointer-events: none;
+}
+.vybe-notch-btn {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #1e293b;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.14s ease;
+}
+.vybe-notch-btn svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: #1e293b;
+  stroke-width: 2;
+}
+.vybe-notch-btn.is-liked svg {
+  fill: #ef4444 !important;
+  stroke: #ef4444 !important;
+}
+.vybe-notch-btn.is-saved svg {
+  fill: #0284c7 !important;
+  stroke: #0284c7 !important;
+}
+.vybe-notch-btn:active {
+  transform: scale(1.2);
+}
+
+/* 1.4 Top Image Overlays */
+.vybe-hero-top-gradient {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 92px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.62) 0%, rgba(0, 0, 0, 0) 100%);
+  pointer-events: none;
+  z-index: 4;
+}
+.vybe-hero-top-bar {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  z-index: 6;
+}
+.vybe-hero-user {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  cursor: pointer;
+}
+.vybe-purple-ring {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  padding: 2px;
+  background: linear-gradient(135deg, #c084fc, #7e22ce, #38bdf8);
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+}
+.vybe-purple-ring img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid #0f172a;
+}
+.vybe-hero-user-meta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.vybe-hero-user-meta .username {
+  color: #ffffff !important;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
+}
+.vybe-hero-audio {
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 185px;
+  margin-top: 2px;
+}
+.vybe-hero-more-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 0;
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(8px);
+  color: #0f172a !important;
+  font-size: 18px;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+/* 1.5 Bottom Image Overlays & Floating Reactions */
+.vybe-floating-avatars {
+  position: absolute;
+  bottom: 58px;
+  left: 16px;
+  height: 36px;
+  width: 64px;
+  z-index: 6;
+  pointer-events: none;
+}
+.vybe-floating-avatars img {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  object-fit: cover;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45);
+}
+.vybe-floating-avatars .vf-av-1 {
+  left: 0;
+  bottom: 4px;
+}
+.vybe-floating-avatars .vf-av-2 {
+  left: 22px;
+  bottom: -2px;
+}
+.vybe-bottom-right-likes {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  left: 178px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  z-index: 6;
+  cursor: pointer;
+}
+.vybe-mini-stack {
+  display: flex;
+  align-items: center;
+}
+.vybe-mini-stack img {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1.5px solid #ffffff;
+  object-fit: cover;
+  margin-left: -8px;
+}
+.vybe-mini-stack img:first-child {
+  margin-left: 0;
+}
+.vybe-likes-label {
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.85);
+  white-space: nowrap;
+}
+
+/* Clean White Card Caption & Comment Row */
+.vybe-notched-caption {
+  padding: 10px 6px 4px !important;
+  color: #1e293b !important;
+  font-size: 13px !important;
+}
+.vybe-notched-caption b {
+  color: #0f172a !important;
+}
+.vybe-notched-caption .hashtag-link,
+.vybe-notched-caption .mention-tag {
+  color: #0284c7 !important;
+}
+.vybe-notched-comments {
+  padding: 0 6px !important;
+  color: #475569 !important;
+}
+.vybe-notched-comments .meta {
+  color: #475569 !important;
+}
+.vybe-notched-commentrow {
+  padding: 8px 6px 2px !important;
+}
+.vybe-notched-commentrow input {
+  color: #0f172a !important;
+  border-bottom: 1px solid #cbd5e1 !important;
+}
+.vybe-notched-commentrow input::placeholder {
+  color: #94a3b8 !important;
+}
