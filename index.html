@@ -1,119 +1,1467 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vybe - v19</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="VYBE">
+<title>VYBE — Share • Connect • Belong</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-    <!-- Background Glow Effects -->
-    <div class="bg-glow top-glow"></div>
-    <div class="bg-glow bottom-glow"></div>
+<div class="app" id="vybe-shell">
+<aside class="sidebar">
+ <div class="brand">VYBE.<small>YOUR SOCIAL WORLD</small></div>
+ <button class="nav active" data-page="reels" onclick="go('reels')">▷ Reels</button>
+ <button class="nav" data-page="home" onclick="go('home')">⌂ Home Feed</button>
+ <button class="nav" data-page="explore" onclick="go('explore')">⌕ Discover</button>
+ <button class="nav" data-page="messages" onclick="go('messages')">▢ Messages</button>
+ <button class="nav" onclick="openCreate()">＋ Create</button>
+ <button class="nav" data-page="notifications" onclick="openActivityDrawer()">♧ Notifications</button>
+ <button class="nav" data-page="profile" onclick="go('profile')">◎ Profile</button>
+ <div class="sidebar-bottom"><button class="nav" data-page="settings" onclick="go('settings')">⚙ Settings</button></div>
+</aside>
 
-    <!-- Splash / Login Screen -->
-    <div id="splash-screen" class="screen active">
-        <div class="splash-content liquid-glass-container">
-            <h1 class="logo glow-text">Vybe</h1>
-            <p class="tagline">Feel the Wave</p>
-            <button id="get-started-btn" class="glass-btn liquid-btn">Get Started</button>
-        </div>
+<main class="main">
+<header class="topbar">
+ <div class="brand" style="display:none;font-size:25px;margin:0" id="mobileBrand"><span class="vybe-center-brand-text">VYBE</span></div>
+
+
+ <div class="highlight-overlay" id="highlightModal" aria-hidden="true" onclick="if(event.target===this)closeHighlightModal()">
+  <section class="highlight-dialog" role="dialog" aria-modal="true" aria-labelledby="highlightTitle">
+   <header class="highlight-header"><h2 id="highlightTitle">New Story Highlight</h2><button class="camera-close" type="button" aria-label="Close highlights" onclick="closeHighlightModal()">✕</button></header>
+   <input id="highlightNameInput" type="text" maxlength="24" placeholder="Highlight title (e.g. Travel)">
+   <div class="highlight-story-options" id="highlightStoryOptions"></div>
+   <button class="primary highlight-save" type="button" onclick="saveStoryHighlight()">Add Highlight</button>
+  </section>
+ </div>
+ <div class="top-actions">
+  <button class="icon-btn" type="button" aria-label="Spider-Web Relationship Graph" title="Cyber Spider-Web Relationship Graph" data-vybe-feature="spider_web_graph" data-vybe-label="🕸️ Spider-Web Relationship Graph" data-vybe-desc="Interactive glowing network of your close friends & mutuals" data-vybe-guide="Idhu enna pannum: Unga close friends & DM contacts-ai glowing neon spider-web network-aa kaattum. Eppadi use panradhu: Top bar-la 🕸️ icon tap panni node-ai drag pannunga alladhu tap panni chat open pannunga." onclick="openSpiderWebModal()">🕸️</button>
+  <button class="icon-btn" type="button" aria-label="Voice-Print Aura Scanner" title="Voice-Print Aura Waveform Scanner" data-vybe-feature="voice_aura_scanner" data-vybe-label="🧬 Voice-Print Aura Scanner" data-vybe-desc="Scan 3s of your voice to reveal your Cyber Aura color" data-vybe-guide="Idhu enna pannum: 3 seconds voice frequency analyze panni unga Voice Aura & personality vibe card kaattum. Eppadi use panradhu: Top bar-la 🧬 icon tap panni Scan My Voice press pannunga." onclick="openVoiceAuraModal()">🧬</button>
+  <button class="icon-btn" type="button" aria-label="Candle-Blowing Birthday Wish" title="Candle-Blowing Mic Wish" data-vybe-feature="candle_blow_wish" data-vybe-label="🕯️ Candle-Blowing Wish Mic" data-vybe-desc="Blow air into your phone mic to blow out the digital candle!" data-vybe-guide="Idhu enna pannum: Phone mic-la real-aa oodhuna (blow air) digital cyber candle flame ananju confetti vedikkum. Eppadi use panradhu: Top bar-la 🕯️ icon tap panni Mic Blow Listen on pannunga." onclick="openCandleBlowModal()">🕯️</button>
+  <button class="icon-btn" type="button" aria-label="Karma Resonance Ripple" title="Karma & Vibe Resonance Score" data-vybe-feature="karma_ripple" data-vybe-label="🧭 Karma & Vibe Resonance" data-vybe-desc="Boost your positive karma wave & golden comment aura" data-vybe-guide="Idhu enna pannum: Mathavangalukku like/comment podumbodhu unga Positive Karma Wave & Golden Comment Aura build aagum. Eppadi use panradhu: Top bar-la 🧭 icon tap panni unga Karma level paarunga." onclick="openKarmaModal()">🧭</button>
+  <button class="icon-btn" type="button" aria-label="Focus Stare Challenge" title="15s Cyber Eye Focus Stare Game" data-vybe-feature="focus_stare_game" data-vybe-label="👁️ Focus Stare Challenge" data-vybe-desc="Stare at the Cyber Eye for 15s without blinking to win +40 Coins" data-vybe-guide="Idhu enna pannum: 15 seconds distract aagama Cyber Eye-ai focus panna Iron Focus badge & +40 VYBE Coins kidaikkum. Eppadi use panradhu: Top bar-la 👁️ icon tap panni Start Stare press pannunga." onclick="openFocusStareModal()">👁️</button>
+  <button class="icon-btn" type="button" aria-label="360 Cyber Panorama" title="360° Cyber Panorama Viewer" data-vybe-feature="panorama_360" data-vybe-label="🧭 360° Cyber Panorama Viewer" data-vybe-desc="Explore wide scenic photos in interactive 360° pan mode" data-vybe-guide="Idhu enna pannum: Wide scenic photos-ai 360° interactive panorama view-la kaattum. Eppadi use panradhu: Top bar-la 🧭 icon tap panni photo mela finger drag panna 360° panoramic view rotate aagum." onclick="openPanoramaModal()">🧭</button>
+  <button class="icon-btn" type="button" aria-label="Live Audio Space Stage" title="Live Podcast / Audio Space Stage" data-vybe-feature="audio_stage" data-vybe-label="🎙️ Live Podcast / Audio Stage" data-vybe-desc="Host or join live voice hangout rooms with emoji reactions" data-vybe-guide="Idhu enna pannum: Friends kooda live voice stage hangout nadathalaam. Eppadi use panradhu: Top bar-la 🎙️ icon tap panni Mic Toggle on pannunga, audience emojis (🔥👏❤️) anuppalaam." onclick="openAudioStageModal()">🎙️</button>
+  <button class="icon-btn" type="button" aria-label="Cyber Creator Trading Card" title="Interactive Trading Card Profile" data-vybe-feature="cyber_card" data-vybe-label="🃏 Cyber Creator Trading Card" data-vybe-desc="Generate your holographic stats trading card" data-vybe-guide="Idhu enna pannum: Unga streak, coins & creator rank base panni holographic trading card generate pannum. Eppadi use panradhu: Top bar-la 🃏 icon tap panni card-ai paathu friends-kku share pannunga." onclick="openCyberCardModal()">🃏</button>
+  <button class="icon-btn" type="button" aria-label="Daily Brain-Teaser Trivia" title="Daily Trivia (+30 VYBE Coins)" data-vybe-feature="daily_trivia" data-vybe-label="🧠 Daily Brain-Teaser Trivia" data-vybe-desc="Answer 1 daily rapid-fire question to win +30 VYBE Coins" data-vybe-guide="Idhu enna pannum: Daily 1 tech/pop-culture question kettu +30 VYBE Coins tharum. Eppadi use panradhu: Top bar-la 🧠 icon tap panni correct answer option-ai select pannunga." onclick="openDailyTriviaModal()">🧠</button>
+  <button id="edgeAuraBtn" class="icon-btn" type="button" aria-label="Neon Edge-Lighting Aura" title="Neon Edge-Lighting Notification Aura" data-vybe-feature="edge_aura" data-vybe-label="🌈 Neon Edge-Lighting Aura" data-vybe-desc="Glowing cyber neon border pulse around your screen" data-vybe-guide="Idhu enna pannum: Screen borders-la glowing cyber blue & purple neon edge lighting pulse aagum. Eppadi use panradhu: Top bar-la 🌈 icon tap panna Edge Aura ON/OFF aagum." onclick="toggleEdgeLightingAura()">🌈</button>
+  <button class="icon-btn" type="button" aria-label="Pinned Top-3 Showcase" title="Pinned Top-3 Profile Showcase" data-vybe-feature="pinned_showcase" data-vybe-label="📌 Pinned Top-3 Showcase" data-vybe-desc="Highlight your top 3 featured drops in a VIP showcase" data-vybe-guide="Idhu enna pannum: Unga best 3 featured drops-ai VIP showcase-la pin panni kaattum. Eppadi use panradhu: Top bar-la 📌 icon tap panni unga top 3 pinned showcase-ai view/update pannunga." onclick="openPinnedShowcaseModal()">📌</button>
+  <button id="privacyShieldBtn" class="icon-btn" type="button" aria-label="Anti-Screenshot Blur Shield" title="Hold-to-View Privacy Blur Shield" data-vybe-feature="privacy_shield" data-vybe-label="🛡️ Anti-Screenshot Blur Shield" data-vybe-desc="Blurs feed media until you press & hold to view" data-vybe-guide="Idhu enna pannum: Feed photos/videos-ai privacy blur shield-la lock pannum. Eppadi use panradhu: Top bar-la 🛡️ icon tap panna feed blur aagum; photo mela finger hold panna mattum clear-aa theriyum." onclick="togglePrivacyBlurShield()">🛡️</button>
+  <button data-vybe-feature="coins_quests" id="vybeCoinsBtn" class="coins-pill" type="button" title="Daily Micro-Quests & VYBE Coins" onclick="openQuestsModal()">🪙 150</button>
+  <button class="icon-btn" type="button" aria-label="Flash-Drop Auction" title="60s VYBE Coins Live Auction" data-vybe-feature="auction" onclick="openAuctionModal()">🔨</button>
+  <button class="icon-btn" type="button" aria-label="Mood-Twin Matchmaker" title="Mood-Twin Live Compatibility Radar" data-vybe-feature="mood_twin" onclick="openMoodTwinModal()">🧬</button>
+  <button data-vybe-feature="gravity_flip" id="gravityFlipBtn" class="icon-btn" type="button" aria-label="Gravity-Flip Matrix Mode" title="Upside-Down Matrix Flip Mode" onclick="toggleGravityFlipMode()">🙃</button>
+  <button class="icon-btn" type="button" aria-label="Mystery Blind Chat" title="Mystery Roulette 60s Blind Chat" data-vybe-feature="blind_chat" onclick="openBlindChatModal()">🎭</button>
+  <button class="icon-btn" type="button" aria-label="Poll Battle Royale" title="Live Poll Battle Royale Tournament" data-vybe-feature="battle_royale" onclick="openBattleRoyaleModal()">🏟️</button>
+  <button class="icon-btn" type="button" aria-label="Collaborative Pixel Wall" title="Live Collaborative Pixel-Canvas Wall" data-vybe-feature="pixel_wall" onclick="openPixelWallModal()">🧩</button>
+  <button class="icon-btn" type="button" aria-label="Friend Constellation Map" title="Satellite Night-Sky Constellation Map" data-vybe-feature="constellation" onclick="openConstellationModal()">🛰️</button>
+  <button class="icon-btn" type="button" aria-label="Mini Retro Arcade" title="Catch the Vibe Arcade Game" data-vybe-feature="arcade" onclick="openArcadeModal()">🕹️</button>
+  <button class="icon-btn" type="button" aria-label="Auto-Circadian Theme Shift" title="Cycle Circadian Sky Lighting" data-vybe-feature="circadian" onclick="cycleCircadianTheme()">🌗</button>
+  <button class="icon-btn" type="button" aria-label="Lo-Fi Beatmaker Pad" title="Live Lo-Fi Beatmaker Pad" data-vybe-feature="beatmaker" onclick="openBeatmakerModal()">🎹</button>
+  <button class="icon-btn" type="button" aria-label="Shooting Star Wish" title="Shooting Star Wish Drop" data-vybe-feature="wish_star" onclick="openWishStarModal()">🌠</button>
+  <button class="icon-btn" type="button" aria-label="Vibe Passport" title="Vibe Passport & City Stamps" data-vybe-feature="passport" onclick="openPassportModal()">🛂</button>
+  <button data-vybe-feature="zero_g" id="zeroGButton" class="icon-btn" type="button" aria-label="Zero-Gravity Float Mode" title="Zero-Gravity Float Mode" onclick="toggleZeroGravityMode()">🌌</button>
+  <button class="icon-btn" type="button" aria-label="Mystery Loot Box" title="Daily Mystery Loot Box" data-vybe-feature="loot_box" onclick="openLootBoxModal()">🎁</button>
+  <button class="icon-btn" type="button" aria-label="1v1 Vibe Duel" title="Live 1v1 Vibe Duel Arena" data-vybe-feature="vibe_duel" onclick="openVibeDuelModal()">⚔️</button>
+  <button class="icon-btn" type="button" aria-label="Truth or Dare Spin Wheel" title="Squad Truth-or-Dare Wheel" data-vybe-feature="spin_wheel" onclick="openSpinWheelModal()">🎡</button>
+  <button class="icon-btn" type="button" aria-label="AI Vibe Oracle" title="AI Vibe Oracle & Fortune Card" data-vybe-feature="vibe_oracle" onclick="openVibeOracleModal()">🎴</button>
+  <button class="icon-btn" type="button" aria-label="Live Watch Party" title="Co-Browsing Reels Watch Party" data-vybe-feature="watch_party" onclick="openWatchPartyModal()">🤝</button>
+  <button data-vybe-feature="persona" id="personaBadgeBtn" class="persona-pill" type="button" title="Switch Alter-Ego Persona" onclick="toggleVybePersona()">🎭 Main</button>
+  <button data-vybe-feature="streak_leaderboard" id="vibeStreakBadge" class="streak-pill" type="button" title="Daily Vibe Streak" onclick="openVibeLeaderboard()">🔥 1d 🏆</button>
+  <button class="icon-btn" type="button" aria-label="Future-Self Time-Lock Letter" title="Future-Self Time-Lock Letter" data-vybe-feature="future_letter" onclick="openFutureLetterModal()">🔮</button>
+  <button class="icon-btn" type="button" aria-label="3 AM Confession Booth" title="3 AM Confession Booth" data-vybe-feature="confession_booth" onclick="openConfessionBooth()">🕯️</button>
+  <button class="icon-btn" type="button" aria-label="Crowd-Drop Group Shutter" title="Crowd-Drop Group Shutter" data-vybe-feature="crowd_shutter" onclick="openCrowdShutter()">⚡</button>
+  <button class="icon-btn" type="button" aria-label="Ghost Mode 24h Rooms" title="Ghost Mode 24h Rooms" data-vybe-feature="ghost_rooms" onclick="openGhostRoomsModal()">👻</button>
+  <button class="icon-btn" type="button" aria-label="Vibe Roulette" title="Vibe Roulette" data-vybe-feature="vibe_roulette" onclick="spinVibeRoulette()">🎲</button>
+  <button class="icon-btn" type="button" aria-label="Proximity Vibe Radar" title="Proximity Vibe Radar" data-vybe-feature="vibe_radar" onclick="openVibeRadar()">📡</button>
+  <button id="activityButton" class="icon-btn activity-icon" type="button" aria-label="Activity" onclick="toggleActivityDrawer()">
+   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></svg>
+   <span id="notificationDot" class="notification-dot" hidden></span>
+  </button>
+  <button id="authButton" class="secondary" style="display:none" onclick="currentUser ? go('profile') : openAuthModal('login')">Log In</button>
+  <button id="headerLogoutButton" class="secondary logout-button" onclick="logoutUser()" style="display:none" aria-label="Logout">
+   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5M15 12H3"/><path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/></svg>
+   Logout
+  </button>
+ </div>
+</header>
+
+<div class="content">
+<section id="reels" class="page active">
+ <div class="reels-top"><div><h2>For You</h2><p class="subheading">Discover your next vibe</p></div><span style="color:#aaa;font-size:12px">VYBE ORIGINALS</span></div>
+ <button class="reels-back" type="button" onclick="go('home')">← Feed</button>
+ <div id="reelList"></div>
+ <p class="reel-note">Reels start muted. Unmuting applies as you scroll.</p>
+</section>
+
+<section id="home" class="page">
+ <div data-vybe-feature="quick_vibe_strip" class="quick-vibe-strip" aria-label="Quick Vibe Status">
+   <span style="font-size:11px;color:#7dd3fc;font-weight:700;white-space:nowrap;">⚡ My Vibe:</span>
+   <button type="button" class="qv-chip" onclick="setQuickVibeStatus('🏍️ Riding')">🏍️ Riding</button>
+   <button type="button" class="qv-chip" onclick="setQuickVibeStatus('💻 Coding')">💻 Coding</button>
+   <button type="button" class="qv-chip" onclick="setQuickVibeStatus('🎧 Chilling')">🎧 Chilling</button>
+   <button type="button" class="qv-chip" onclick="setQuickVibeStatus('☕ Coffee')">☕ Coffee</button>
+   <button type="button" class="qv-chip" onclick="openChainStoryModal()">🔗 Chain Story</button>
+   <button type="button" class="qv-chip" style="border-color:#38bdf8;color:#7dd3fc;" onclick="openVoiceBubbleModal()">🫧 Voice Story</button>
+   <button type="button" id="timeTravelBtn" class="qv-chip" onclick="toggleTimeTravelFeed()">🕰️ Time-Travel</button>
+   <button type="button" class="qv-chip" onclick="openMontageModal()">🎬 Montage</button>
+   <button type="button" id="danmakuToggleBtn" class="qv-chip" onclick="toggleDanmakuBubbles()">🫧 Live Bubbles</button>
+   <button type="button" class="qv-chip" onclick="openBeatFlashModal()">⚡ Beat-Flash</button>
+ </div>
+ <button class="quick-post" type="button" onclick="openCreate()"><span class="cyber-logo cyber-btn" aria-hidden="true">＋</span><span>What's on your mind?</span></button>
+ <div class="stories glass" id="stories"></div>
+ <div class="home-feed-header"><h2 class="heading">Your Feed</h2><div class="home-feed-switcher" role="tablist" aria-label="Home feed"><button id="forYouTab" class="active" type="button" role="tab" aria-selected="true" onclick="setHomeFeedMode('forYou')">For You</button><button id="followingTab" type="button" role="tab" aria-selected="false" onclick="setHomeFeedMode('following')">Following</button><button type="button" onclick="go('reels')">Reels</button></div></div>
+ <div id="feedRefreshIndicator" class="feed-refresh-indicator" aria-live="polite"><span class="feed-refresh-spinner"></span><span id="feedRefreshText">Pull to refresh</span></div>
+ <div data-vybe-feature="mood_filter" class="mood-bar" role="group" aria-label="Mood Sync Filter">
+  <button type="button" class="mood-chip active" onclick="setMoodVibe('all', this)">✨ All Vibes</button>
+  <button type="button" class="mood-chip" onclick="setMoodVibe('chill', this)">🌙 Chill</button>
+  <button type="button" class="mood-chip" onclick="setMoodVibe('hustle', this)">🔥 Hustle</button>
+  <button type="button" class="mood-chip" onclick="setMoodVibe('energetic', this)">⚡ Energetic</button>
+  <button type="button" class="mood-chip" onclick="setMoodVibe('latenight', this)">🎧 Late Night</button>
+ </div>
+ <div id="feed"></div>
+</section>
+<section id="explore" class="page">
+ <h2 class="heading">Discover</h2>
+ <div id="searchWrap" class="search-wrap explore-search-wrap">
+  <input id="topSearchInput" class="search" placeholder="⌕  Search VYBE..." autocomplete="off" aria-label="Search VYBE" aria-controls="searchSuggestions" aria-expanded="false">
+  <button id="searchClearButton" class="search-clear" type="button" aria-label="Clear search">✕</button>
+  <div id="searchSuggestions" class="search-suggestions" role="listbox" aria-label="Matching profiles"></div>
+ </div><p class="subheading" style="margin-bottom:16px">Discover amazing content, people and ideas.</p>
+ <div class="explore-filter-bar" id="exploreFilterBar" role="group" aria-label="Filter Explore media">
+  <button class="explore-filter-chip active" type="button" data-explore-filter="all" aria-pressed="true" onclick="setExploreFilter('all')">All</button>
+  <button class="explore-filter-chip" type="button" data-explore-filter="trending" aria-pressed="false" onclick="setExploreFilter('trending')">🔥 Trending</button>
+  <button class="explore-filter-chip" type="button" data-explore-filter="clips" aria-pressed="false" onclick="setExploreFilter('clips')">🎬 Clips</button>
+  <button class="explore-filter-chip" type="button" data-explore-filter="photos" aria-pressed="false" onclick="setExploreFilter('photos')">📸 Photos</button>
+  <button class="explore-filter-chip" type="button" data-explore-filter="recent" aria-pressed="false" onclick="setExploreFilter('recent')">✨ Recent</button>
+ </div>
+ <div class="explore-grid-wrap"><div id="exploreGrid" class="grid discover-grid"></div></div>
+</section>
+<section id="searchResults" class="page"><div class="search-results"><h2 class="heading">Search results</h2><div id="searchResultList" class="search-results-list"></div></div></section>
+<section id="profile" class="page"><div id="profileView"></div></section>
+<section id="other" class="page"><div id="otherView"></div></section>
+<section id="saved" class="page"><h2 class="heading">Saved Collections</h2><div id="savedGrid" class="grid"></div></section>
+<section id="notifications" class="page"><h2 class="heading">Activity</h2><div id="notificationList" class="chatbox glass"></div></section>
+<section id="settings" class="page">
+ <h2 class="heading">Settings</h2>
+ <div class="chatbox glass">
+  <div class="person">Account settings</div><div class="person">Privacy</div>
+  <div class="person">Notifications</div><div class="person">Appearance · Cyber blue</div>
+  <button class="primary" onclick="editProfile()">Custom Profile</button>
+  <button class="secondary" style="margin-top:12px;width:100%" id="logoutButton" onclick="logoutUser()">Logout</button>
+ </div>
+</section>
+</div>
+</main>
+</div>
+
+<div class="dm-overlay" id="dmDrawer" aria-hidden="true" onclick="if(event.target===this)closeDMDrawer()">
+ <section class="dm-drawer" role="dialog" aria-modal="true" aria-labelledby="dmTitle">
+  <header class="dm-header">
+   <button class="dm-header-button dm-back" id="dmBackButton" type="button" aria-label="Back to inbox" onclick="showDMInbox()" style="display:none">←</button>
+   <img class="dm-header-avatar" id="dmHeaderAvatar" src="" alt="" style="display:none">
+   <div class="dm-header-copy"><span class="dm-header-title" id="dmTitle">Messages</span><span class="dm-header-subtitle" id="dmSubtitle">Your conversations</span></div>
+      <button class="dm-header-button" type="button" aria-label="Icebreaker Spin Prompt" title="1-Tap Icebreaker Question" data-vybe-feature="dm_icebreaker" data-vybe-label="🎲 DM Icebreaker Spin-Prompt" data-vybe-desc="Generate fun conversation starter questions inside DM" data-vybe-guide="Idhu enna pannum: Chat-la enna pesuradhu nu theriyalana instant fun question generate panni anuppum. Eppadi use panradhu: DM chat open panni header-la irukkira 🎲 icon-ai tap pannunga." onclick="sendDMIcebreakerPrompt()" style="margin-right:4px;color:#38bdf8;">🎲</button>
+   <button class="dm-header-button" type="button" aria-label="Telepathy Sync Game" title="Live Telepathy Mind-Read Game" data-vybe-feature="telepathy_sync" data-vybe-label="🔮 DM Telepathy Sync Test" data-vybe-desc="Pick a hidden symbol & test 100% mind-read sync with your friend" data-vybe-guide="Idhu enna pannum: 4 hidden symbols-la onna choose panni unga friend-oda telepathy sync test pannum. Eppadi use panradhu: DM header-la 🔮 icon tap panni symbol choose pannunga." onclick="openTelepathyModal()" style="margin-right:4px;color:#e879f9;">🔮</button>
+   <button class="dm-header-button" type="button" aria-label="Cassette Mixtape Maker" title="Send 90s Cyber Cassette Mixtape" data-vybe-feature="cassette_mixtape" data-vybe-label="📼 DM Cassette Mixtape Maker" data-vybe-desc="Create & gift a rotating 90s cyber cassette tape in DM" data-vybe-guide="Idhu enna pannum: 3 favorite tracks & dedication note-oda rotating 90s Cassette Tape DM-la gift pannum. Eppadi use panradhu: DM header-la 📼 icon tap panni track names enter panni send pannunga." onclick="openCassetteModal()" style="margin-right:4px;color:#facc15;">📼</button>
+   <button class="dm-header-button" type="button" aria-label="Time-Zone Sunset Sync" title="Share Live Sky & Sunset Card" data-vybe-feature="timezone_sunset_sync" data-vybe-label="🌌 DM Time-Zone Sunset Sync" data-vybe-desc="Send your live sky & time-zone mood card in DM" data-vybe-guide="Idhu enna pannum: Unga current time & sky mood-ai glowing sunset/midnight card-aa DM-la send pannum. Eppadi use panradhu: DM header-la 🌌 icon-ai tap pannunga." onclick="sendTimezoneSkyDM()" style="margin-right:4px;color:#38bdf8;">🌌</button>
+   <button class="dm-header-button" type="button" aria-label="Neon Theremin Synth" title="Voice-Pitch Theremin Melody" data-vybe-feature="dm_theremin" onclick="openThereminModal()" style="margin-right:4px;color:#c084fc;">〰️</button>
+   <button class="dm-header-button" type="button" aria-label="Live Typing Duel" title="15-Sec Typing Race" data-vybe-feature="dm_typing_duel" onclick="openTypingDuelModal()" style="margin-right:4px;color:#fde047;">⌨️</button>
+   <button class="dm-header-button" type="button" aria-label="Squad Hangout Planner" title="Hangout & Split-Bill Planner" data-vybe-feature="dm_hangout" onclick="openHangoutPlannerModal()" style="margin-right:4px;color:#34d399;">🧾</button>
+   <button data-vybe-feature="dm_walkie" id="walkieTalkieBtn" class="dm-header-button" type="button" aria-label="Hold Walkie-Talkie" title="Hold to Talk (Walkie-Talkie)" onpointerdown="startWalkieTalkie()" onpointerup="stopWalkieTalkie()" onpointerleave="stopWalkieTalkie()" style="margin-right:4px;color:#38bdf8;">📻</button>
+   <button class="dm-header-button" type="button" aria-label="Heartbeat Pulse Sync" title="Heartbeat Pulse Sync" data-vybe-feature="dm_pulse_sync" onclick="openPulseSyncModal()" style="margin-right:4px;color:#f43f5e;">💓</button>
+   <button class="dm-header-button" type="button" aria-label="Close messages" onclick="closeDMDrawer()">✕</button>
+  </header>
+  <div class="dm-inbox" id="dmInbox"></div>
+  <div class="dm-thread" id="dmThread" style="display:none" aria-live="polite"></div>
+    <div class="dm-quick-burst" id="dmQuickBurstBar" style="display:none" aria-label="Quick emoji burst">
+   <button type="button" onclick="sendQuickDMBurst('🔥')">🔥</button>
+   <button type="button" onclick="sendQuickDMBurst('❤️')">❤️</button>
+   <button type="button" onclick="sendQuickDMBurst('😂')">😂</button>
+   <button type="button" onclick="sendQuickDMBurst('💯')">💯</button>
+   <button type="button" onclick="sendQuickDMBurst('👋')">👋</button>
+  </div>
+  <div id="dmReplyBanner" class="dm-reply-banner" hidden>
+   <span id="dmReplyBannerText" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Replying...</span>
+   <button type="button" onclick="cancelDMReply()" style="background:none;border:0;color:#fff;font-size:15px;">✕</button>
+  </div>
+  <form class="dm-composer" id="dmComposer" onsubmit="sendMessage(event)" style="display:none">
+   <div class="dm-composer-tools">
+    <button class="dm-tool-button" id="dmEmojiToggle" type="button" aria-label="Toggle emoji picker" onclick="toggleDMEmojiPicker()">☺</button>
+    <div class="dm-emoji-picker" id="dmEmojiPicker" hidden>
+     <button type="button" onclick="insertDMEmoji('😀')">😀</button><button type="button" onclick="insertDMEmoji('😂')">😂</button><button type="button" onclick="insertDMEmoji('🥰')">🥰</button><button type="button" onclick="insertDMEmoji('❤️')">❤️</button><button type="button" onclick="insertDMEmoji('🔥')">🔥</button>
+     <button type="button" onclick="insertDMEmoji('👍')">👍</button><button type="button" onclick="insertDMEmoji('👏')">👏</button><button type="button" onclick="insertDMEmoji('✨')">✨</button><button type="button" onclick="insertDMEmoji('😮')">😮</button><button type="button" onclick="insertDMEmoji('🙏')">🙏</button>
     </div>
+   </div>
+   <input id="messageText" type="text" maxlength="4000" autocomplete="off" placeholder="Message...">
+   <button class="dm-tool-button" data-vybe-feature="dm_view_once" id="dmViewOnceBtn" type="button" aria-label="Toggle View-Once Bomb" title="View-Once Self-Destruct Mode" onclick="toggleDMViewOnce()">💣</button>
+   <button class="dm-tool-button" data-vybe-feature="dm_voice_fx" id="dmVoiceFxBtn" type="button" aria-label="Voice Changer FX" title="Voice Changer Filter Studio" onclick="cycleVoiceChangerFX()" style="font-size:13px;font-weight:800;">🤖</button>
+   <button class="dm-tool-button" id="dmVoiceButton" type="button" aria-label="Record voice note" onclick="toggleVoiceNoteRecording()">🎙</button>
+   <button class="dm-send" id="dmSendButton" type="submit">Send</button>
+  </form>
+ </section>
+</div>
 
-    <!-- Main App Container -->
-    <div id="main-app" class="screen hidden">
-        <!-- Top Glass Header -->
-        <header class="glass-header">
-            <h2 class="header-title">Vybe</h2>
-            <div class="header-icons">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <i class="fa-regular fa-bell"></i>
-                <i class="fa-regular fa-message"></i>
-            </div>
-        </header>
 
-        <!-- Liquid Stories -->
-        <div class="stories-wrapper">
-            <div class="liquid-story add-story"><i class="fa-solid fa-plus"></i></div>
-            <div class="liquid-story active-story" style="background-image: url('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100');"></div>
-            <div class="liquid-story" style="background-image: url('https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100');"></div>
-            <div class="liquid-story" style="background-image: url('https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100');"></div>
-            <div class="liquid-story" style="background-image: url('https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100');"></div>
-        </div>
+<div class="dm-action-overlay" id="dmMessageActionSheet" aria-hidden="true" onclick="if(event.target===this)closeDMMessageActionSheet()">
+ <section class="dm-action-sheet" role="dialog" aria-modal="true" aria-label="Message actions">
+  <button type="button" onclick="replyToSelectedDMMessage()">↩ Reply to Message</button>
+  <button type="button" onclick="deleteDMMessageForMe()">🗑 Delete for Me</button>
+  <button id="dmDeleteBothBtn" class="delete-conversation-action" type="button" onclick="deleteDMMessageForBoth()">🔥 Delete for Both</button>
+  <button type="button" onclick="closeDMMessageActionSheet()">Cancel</button>
+ </section>
+</div>
 
-        <!-- Scrollable Feed -->
-        <main id="feed-tab" class="tab-content active-tab">
-            <!-- Liquid Post 1 -->
-            <article class="liquid-post-card">
-                <div class="post-header">
-                    <div class="post-avatar liquid-shape" style="background-image: url('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100');"></div>
-                    <span class="post-username">@travel_vibe</span>
-                </div>
-                <div class="post-media liquid-media" style="background-image: url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=600');"></div>
-                <div class="post-actions">
-                    <i class="fa-solid fa-heart active-icon"></i>
-                    <i class="fa-regular fa-comment"></i>
-                    <i class="fa-regular fa-paper-plane"></i>
-                </div>
-            </article>
+<div class="dm-action-overlay" id="dmActionSheet" aria-hidden="true" onclick="if(event.target===this)closeDMActionSheet()">
+ <section class="dm-action-sheet" role="dialog" aria-modal="true" aria-label="Conversation actions">
+  <button class="delete-conversation-action" type="button" onclick="confirmDeleteConversation()">Delete Conversation</button>
+  <button type="button" onclick="closeDMActionSheet()">Cancel</button>
+ </section>
+</div>
 
-            <!-- Liquid Post 2 -->
-            <article class="liquid-post-card">
-                <div class="post-header">
-                    <div class="post-avatar liquid-shape" style="background-image: url('https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100');"></div>
-                    <span class="post-username">@nature_escapes</span>
-                </div>
-                <div class="post-media liquid-media" style="background-image: url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600');"></div>
-                <div class="post-actions">
-                    <i class="fa-regular fa-heart"></i>
-                    <i class="fa-regular fa-comment"></i>
-                    <i class="fa-regular fa-paper-plane"></i>
-                </div>
-            </article>
-        </main>
+<div class="dm-action-overlay" id="noteActionSheet" aria-hidden="true" onclick="if(event.target===this)closeNoteActionSheet()">
+ <section class="dm-action-sheet" role="dialog" aria-modal="true" aria-label="Note actions">
+  <button class="delete-conversation-action" type="button" onclick="deleteStatusNote()">Delete Note</button>
+  <button type="button" onclick="closeNoteActionSheet();editStatusNote()">Share new note / Rewrite</button>
+  <button type="button" onclick="closeNoteActionSheet()">Cancel</button>
+ </section>
+</div>
 
-        <!-- Profile Tab (Hidden by default) -->
-        <main id="profile-tab" class="tab-content hidden">
-            <div class="profile-header liquid-glass-container">
-                <div class="profile-avatar liquid-shape"></div>
-                <h3 class="profile-name">@username</h3>
-                <p class="profile-bio">Digital Explorer</p>
-                <div class="profile-stats">
-                    <div class="stat"><span class="stat-num">3</span><span class="stat-label">Posts</span></div>
-                    <div class="stat"><span class="stat-num">12</span><span class="stat-label">Followers</span></div>
-                    <div class="stat"><span class="stat-num">10</span><span class="stat-label">Following</span></div>
-                </div>
-                <div class="profile-actions">
-                    <button class="glass-btn small-btn">Edit Profile</button>
-                    <button class="glass-btn small-btn">Message</button>
-                </div>
-            </div>
-            
-            <div class="profile-grid">
-                <!-- Grid items with liquid borders -->
-                <div class="grid-item liquid-shape" style="background-image: url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=300');"></div>
-                <div class="grid-item liquid-shape" style="background-image: url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=300');"></div>
-                <div class="grid-item liquid-shape" style="background-image: url('https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?w=300');"></div>
-            </div>
-        </main>
+<div class="reel-share-overlay" id="reelShareDrawer" aria-hidden="true" onclick="if(event.target===this)closeReelShareDrawer()">
+ <section class="reel-share-sheet" role="dialog" aria-modal="true" aria-labelledby="reelShareTitle">
+  <header class="reel-share-header"><h2 id="reelShareTitle">Share reel</h2><button class="comments-close" type="button" aria-label="Close share sheet" onclick="closeReelShareDrawer()">✕</button></header>
+  <button type="button" class="primary" style="width:100%;margin-bottom:12px;" onclick="shareReelToStory()">➕ Add Reel to Your Story</button>
+  <div id="reelShareContacts"></div>
+ </section>
+</div>
 
-        <!-- Floating Liquid Bottom Navigation -->
-        <nav class="liquid-bottom-nav">
-            <i class="fa-solid fa-house nav-icon active-nav" data-target="feed-tab"></i>
-            <i class="fa-regular fa-compass nav-icon"></i>
-            <div class="nav-add-btn liquid-shape">
-                <i class="fa-solid fa-plus"></i>
-            </div>
-            <i class="fa-regular fa-bell nav-icon"></i>
-            <i class="fa-regular fa-user nav-icon" data-target="profile-tab"></i>
-        </nav>
+<div class="activity-overlay" id="activityDrawer" aria-hidden="true" onclick="if(event.target===this)closeActivityDrawer()">
+ <section class="activity-drawer" role="dialog" aria-modal="true" aria-labelledby="activityTitle">
+  <header class="activity-header">
+   <h2 id="activityTitle">Notifications</h2>
+   <button class="activity-mark-read" id="activityMarkRead" type="button" onclick="markActivityNotificationsRead()" disabled>Mark as read</button>
+   <button class="activity-close" type="button" aria-label="Close activity" onclick="closeActivityDrawer()">✕</button>
+  </header>
+  <div class="activity-list" id="activityList" aria-live="polite"></div>
+ </section>
+</div>
+
+<div class="story-viewer" id="storyViewer" aria-hidden="true" onclick="if(event.target===this)closeStoryViewer()">
+ <section class="story-stage" role="dialog" aria-modal="true" aria-label="Story viewer">
+  <div class="story-progress-list" id="storyProgressList"></div>
+  <div id="storyMedia" class="story-media"></div>
+  <div class="story-viewer-header">
+   <img id="storyViewerAvatar" class="story-viewer-avatar" src="" alt="">
+   <div class="story-viewer-author"><span id="storyViewerUsername"></span><span id="storyViewerTime" class="story-viewer-time"></span></div>
+   <button id="storyDeleteButton" class="story-delete" type="button" aria-label="Delete story" onclick="deleteActiveStory()" hidden>🗑</button>
+   <button class="story-viewer-close" type="button" aria-label="Close story" onclick="closeStoryViewer()">✕</button>
+  </div>
+  <button class="story-nav previous" type="button" aria-label="Previous story" onclick="previousStory()"></button>
+  <button class="story-nav next" type="button" aria-label="Next story" onclick="nextStory()"></button>
+  <div class="story-viewer-actions" id="storyViewerActions">
+   <div class="story-social-actions" id="storySocialActions">
+    <div class="story-reactions" aria-label="Quick story reactions">
+     <button type="button" aria-label="React with fire" onclick="sendStoryReaction('🔥')">🔥</button>
+     <button type="button" aria-label="React with heart" onclick="sendStoryReaction('❤️')">❤️</button>
+     <button type="button" aria-label="React with laughter" onclick="sendStoryReaction('😂')">😂</button>
+     <button type="button" aria-label="React with applause" onclick="sendStoryReaction('👏')">👏</button>
+     <button id="storyLikeButton" class="story-like-button" type="button" aria-label="Like story" aria-pressed="false" onclick="toggleStoryLike()">
+      <span id="storyLikeIcon">♡</span><span id="storyLikeCount" class="story-like-count">0</span>
+     </button>
     </div>
+    <form class="story-reply-form" onsubmit="sendStoryReply(event)">
+     <input id="storyReplyInput" class="story-reply-input" maxlength="1000" autocomplete="off" placeholder="Send a message..." aria-label="Reply to story">
+     <button class="story-reply-send" type="submit">Send</button>
+    </form>
+   </div>
+   <button id="storySeenButton" class="story-seen-button" type="button" onclick="toggleStorySeenDrawer()" hidden>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+    <span id="storySeenCount">Seen by 0</span>
+   </button>
+  </div>
+  <div class="story-seen-drawer" id="storySeenDrawer" aria-hidden="true">
+   <div class="story-seen-header"><h3>Seen by</h3><button class="story-seen-close" type="button" aria-label="Close viewers" onclick="toggleStorySeenDrawer(false)">✕</button></div>
+   <div id="storySeenList"></div>
+  </div>
+ </section>
+</div>
 
-    <!-- Scripts -->
-    <script src="config.js"></script>
-    <script src="cloudinary.js"></script>
-    <script src="features.js"></script>
-    <script src="app.js"></script>
+<nav class="bottom" id="bottom-dock" aria-label="Main navigation">
+ <button type="button" class="active" onclick="go('reels')" aria-label="Reels"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="5"/><path d="m10 9 5 3-5 3Z M3 8h18 M8 4l3 4 M15 4l3 4"/></svg><span>Reels</span></button>
+ <button type="button" onclick="go('home')" aria-label="Home"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg><span>Home</span></button>
+ <button type="button" onclick="go('explore')" aria-label="Discover"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18zm3.5-12.5l-2 5-5 2 2-5 5-2z"/></svg><span>Discover</span></button>
+ <button type="button" onclick="openCreate()" aria-label="Create"><svg viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" d="M12 4.5v15m7.5-7.5h-15"/></svg><span>Create</span></button>
+ <button type="button" onclick="go('profile')" aria-label="Profile"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg><span>Profile</span></button>
+ <button type="button" onclick="openDMDrawer()" aria-label="Messages"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM2.25 12c0-4.97 4.365-9 9.75-9s9.75 4.03 9.75 9-4.365 9-9.75 9c-1.56 0-3.035-.339-4.345-.942L3 21l1.242-3.93A8.645 8.645 0 012.25 12z"/></svg><span>Messages</span></button>
+</nav>
+
+<input type="file" id="mediaUploadInput" accept="video/*,image/*" style="display:none;">
+<input type="file" id="storyUploadInput" accept="image/*,video/mp4,video/webm" style="display:none;">
+
+<div class="modal create-modal" id="createModal" onclick="if(event.target===this)cancelCreate()"><div class="modalbox glass create-drawer" role="dialog" aria-modal="true" aria-labelledby="createTitle">
+ <div class="create-title-row"><h2 id="createTitle">Create New Post</h2><button class="close" id="cancelPostCloseButton" type="button" aria-label="Close create post" onclick="cancelCreate()">×</button></div>
+ <div class="media-preview" id="mediaPreview" data-aspect="square">
+  <div class="media-preview-empty"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="m21 15-5-5L5 21"></path></svg><span>Select a photo or video to preview it here</span></div>
+ </div>
+ <div class="create-media-tools">
+  <button class="media-picker" type="button" onclick="document.getElementById('mediaUploadInput')?.click()">Choose from Gallery</button>
+  <button class="media-picker" type="button" onclick="openCameraView()">Open Camera</button>
+  <button class="media-picker" type="button" style="border-color:#38bdf8;color:#7dd3fc;" data-vybe-feature="split_cam" onclick="openSplitRealityCam()">🪞 Split Cam</button>
+  <button class="media-picker" type="button" style="border-color:#c084fc;color:#e9d5ff;" data-vybe-feature="neon_draw" onclick="openNeonGraffitiModal()">🎨 Neon Draw</button>
+  <button class="media-picker" type="button" style="border-color:#facc15;color:#fef08a;" data-vybe-feature="film_strip" onclick="openFilmStripModal()">🎞️ Film Strip</button>
+  <button class="media-picker" type="button" style="border-color:#f43f5e;color:#fda4af;" data-vybe-feature="dual_blend" onclick="openDualExposureModal()">📸 Dual Blend</button>
+  <button class="media-picker" type="button" style="border-color:#34d399;color:#a7f3d0;" data-vybe-feature="quote_poster" onclick="openNeonQuoteModal()">🖼️ Quote Poster</button>
+  <button class="media-picker" type="button" style="border-color:#fb923c;color:#fed7aa;" data-vybe-feature="vhs_camcorder" data-vybe-label="📸 Vintage 1998 Camcorder" data-vybe-desc="Add REC 1998 retro camcorder stamp in Create Post" data-vybe-guide="Idhu enna pannum: Create Post-la 1998 VHS camcorder date stamp & retro filter-ai post-kku add pannum. Eppadi use panradhu: Create Post open panni 📸 1998 Cam button tap pannunga." onclick="attachVHSCamcorderTag()">📸 1998 Cam</button>
+  <button class="media-picker" type="button" style="border-color:#22d3ee;color:#a5f3fc;" data-vybe-feature="time_warp_reveal" data-vybe-label="⏳ Time-Warp Scan Reveal" data-vybe-desc="Add interactive time-warp scan line reveal to posts" data-vybe-guide="Idhu enna pannum: Post media-la interactive Time-Warp scan line reveal effect set pannum. Eppadi use panradhu: Create Post-la ⏳ Time-Warp button tap panni post podunga; viewers tap panna scan line reveal aagum." onclick="attachTimeWarpTag()">⏳ Time-Warp</button>
+  <button class="media-picker" type="button" style="border-color:#a855f7;color:#e9d5ff;" data-vybe-feature="parallel_universe_post" data-vybe-label="⏳ Parallel-Universe Split Post" data-vybe-desc="Create a Universe A vs Universe B comparison post" data-vybe-guide="Idhu enna pannum: Ore post-la Universe A vs Universe B alternate reality slider post create pannum. Eppadi use panradhu: Create Post-la ⏳ Parallel Split button tap panni post podunga." onclick="attachParallelUniverseTag()">⏳ Parallel Split</button>
+  <button class="media-picker" type="button" style="border-color:#38bdf8;color:#7dd3fc;" data-vybe-feature="black_mirror_echo" data-vybe-label="🪞 Black-Mirror Shard Echo" data-vybe-desc="Tap to shatter mirror overlay & reveal hidden backstage note" data-vybe-guide="Idhu enna pannum: Post mela mirror shard overlay pottu, tap panna udainju secret backstage note kaattum. Eppadi use panradhu: Create Post-la 🪞 Mirror Echo button tap pannunga." onclick="attachBlackMirrorTag()">🪞 Mirror Echo</button>
+ </div>
+ <textarea id="caption" maxlength="2200" placeholder="Write a caption... Add hashtags with #"></textarea>
+ <div style="display:flex;gap:6px;margin:-4px 0 8px;flex-wrap:wrap;">
+  <button type="button" class="qv-chip" style="border-color:#38bdf8;color:#7dd3fc;" data-vybe-feature="magic_caption" onclick="magicPolishCaption()">🪄 Magic Caption Polish</button>
+  <button type="button" class="qv-chip" onclick="appendNeonStamp('🔥 VYBE')">+ 🔥 VYBE</button>
+  <button type="button" class="qv-chip" onclick="appendNeonStamp('⚡ CYBER')">+ ⚡ CYBER</button>
+  <button type="button" class="qv-chip" onclick="appendNeonStamp('🌙 3AM')">+ 🌙 3AM</button>
+ </div>
+ <div data-vybe-feature="create_extras" class="create-feature-box">
+  <div class="create-feature-row">
+   <label for="postMoodSelect">🎭 Vibe Mood Tag</label>
+   <select id="postMoodSelect">
+    <option value="">None</option>
+    <option value="chill">🌙 Chill</option>
+    <option value="hustle">🔥 Hustle</option>
+    <option value="energetic">⚡ Energetic</option>
+    <option value="latenight">🎧 Late Night</option>
+   </select>
+  </div>
+  <div class="create-feature-row">
+   <label for="postCapsuleTime">⏳ Time-Capsule Lock</label>
+   <input type="datetime-local" id="postCapsuleTime">
+  </div>
+  <div class="create-feature-row">
+   <label for="postCoCreatorInput">🤝 Tag Co-Creator (@user)</label>
+   <input type="text" id="postCoCreatorInput" maxlength="24" placeholder="e.g. alex.design" style="margin:0;padding:6px 10px;font-size:12px;max-width:140px;">
+  </div>
+  <div class="create-feature-row">
+   <label for="postRhythmLockToggle">🥁 3-Tap Rhythm Lock</label>
+   <input type="checkbox" id="postRhythmLockToggle" class="settings-toggle">
+  </div>
+  <div class="create-feature-row">
+   <label for="postBurnToggle">🔥 Burn After 3 Views (Self-Shred)</label>
+   <input type="checkbox" id="postBurnToggle" class="settings-toggle">
+  </div>
+  <div class="create-feature-row">
+   <label for="postCipherCodeInput">🔐 Secret Cipher Passcode</label>
+   <input type="text" id="postCipherCodeInput" maxlength="16" placeholder="e.g. VIBE2026" style="margin:0;padding:6px 10px;font-size:12px;max-width:135px;text-transform:uppercase;">
+  </div>
+  <div class="create-feature-row">
+   <label for="postInvisibleInkToggle">🕵️ Invisible Ink Secret Caption</label>
+   <input type="checkbox" id="postInvisibleInkToggle" class="settings-toggle">
+  </div>
+  <div class="create-feature-row">
+   <label for="postXrayToggle">🩻 Dual-Layer X-Ray Peek Post</label>
+   <input type="checkbox" id="postXrayToggle" class="settings-toggle">
+  </div>
+  <div class="create-feature-row">
+   <label for="postPuzzleToggle">🧩 4-Piece Collaborative Puzzle</label>
+   <input type="checkbox" id="postPuzzleToggle" class="settings-toggle">
+  </div>
+  <div class="create-feature-row">
+   <label for="postPolaroidToggle">📸 Polaroid Shake-to-Develop</label>
+   <input type="checkbox" id="postPolaroidToggle" class="settings-toggle">
+  </div>
+  <div class="create-feature-row">
+   <label for="postScratchToggle">🔮 Mystery Scratch-Off Foil</label>
+   <input type="checkbox" id="postScratchToggle" class="settings-toggle">
+  </div>
+  <div class="create-feature-row">
+   <label for="postDecayToggle">⏳ Reverse-Aging Decay Post</label>
+   <input type="checkbox" id="postDecayToggle" class="settings-toggle">
+  </div>
+  <div class="create-feature-row">
+   <label for="postMemoryPinInput">🗺️ Memory Pin Location Lock</label>
+   <input type="text" id="postMemoryPinInput" placeholder="e.g. Hosur / College / Cafe" style="margin:0;padding:6px 10px;font-size:12px;max-width:155px;">
+  </div>
+  <div class="create-feature-row" style="flex-direction:column;align-items:stretch;">
+   <label for="postPollQuestion">🎯 Prediction Poll (Optional)</label>
+   <input type="text" id="postPollQuestion" placeholder="Ask a question (e.g. Ooty or Kodaikanal?)" style="margin:4px 0 0;padding:8px 10px;font-size:12px;">
+   <div style="display:flex;gap:6px;margin-top:6px;">
+     <input type="text" id="postPollOpt1" placeholder="Option A (e.g. Yes)" style="margin:0;padding:7px 10px;font-size:12px;">
+     <input type="text" id="postPollOpt2" placeholder="Option B (e.g. No)" style="margin:0;padding:7px 10px;font-size:12px;">
+   </div>
+  </div>
+ </div>
+ <div id="createStatus" class="auth-status" role="status" aria-live="polite"></div>
+ <div class="upload-progress" id="uploadProgress" hidden aria-live="polite">
+  <div class="upload-progress-track"><div class="upload-progress-fill" id="uploadProgressFill"></div></div>
+  <div class="upload-progress-label"><span id="uploadProgressStatus">Uploading media</span><span id="uploadProgressPercent">0%</span></div>
+ </div>
+ <div class="create-actions">
+  <button class="secondary" id="cancelPostButton" type="button" onclick="cancelCreate()">Cancel</button>
+  <button class="primary" id="sharePostButton" type="button" onclick="createPost()"><span class="upload-spinner hidden" id="uploadSpinner"></span><span id="sharePostLabel">Share</span></button>
+ </div>
+</div></div>
+
+<div class="camera-overlay" id="cameraOverlay" aria-hidden="true" onclick="if(event.target===this)closeCameraView()">
+ <section class="camera-dialog" role="dialog" aria-modal="true" aria-labelledby="cameraTitle">
+  <header class="camera-header"><h2 id="cameraTitle">Camera</h2><button class="camera-close" type="button" aria-label="Close camera" onclick="closeCameraView()">✕</button></header>
+  <div class="camera-viewfinder">
+   <video id="cameraLivePreview" autoplay muted playsinline></video>
+   <img id="cameraCapturePreview" alt="Captured media" hidden>
+   <video id="cameraReviewPreview" playsinline hidden></video>
+  </div>
+  <div class="ar-visor-strip" style="display:flex;justify-content:center;gap:8px;margin-bottom:4px;">
+   <button type="button" class="qv-chip active" onclick="setCameraARMask('none', this)">😐 None</button>
+   <button type="button" class="qv-chip" onclick="setCameraARMask('visor', this)">🥽 Cyber Visor</button>
+   <button type="button" class="qv-chip" onclick="setCameraARMask('crown', this)">👑 Holo Crown</button>
+   <button type="button" class="qv-chip" onclick="setCameraARMask('laser', this)">⚡ Laser Eyes</button>
+  </div>
+  <div id="cameraAROverlay" class="camera-ar-overlay" aria-hidden="true"></div>
+  <div class="camera-controls" id="cameraCaptureControls">
+   <button id="cameraRecordButton" class="camera-record" type="button" onclick="toggleCameraRecording()">Record video</button>
+   <button class="camera-shutter" type="button" aria-label="Take photo" onclick="captureCameraPhoto()"></button>
+  </div>
+  <p class="camera-status" id="cameraStatus" role="status">Take a photo or record a short clip.</p>
+  <div class="camera-confirm-actions" id="cameraConfirmActions" hidden>
+   <button class="secondary" type="button" onclick="retakeCameraCapture()">Retake</button>
+   <button class="primary" type="button" onclick="useCameraCapture('post')">Use in Post</button>
+   <button class="primary" type="button" onclick="useCameraCapture('story')">Share to Story</button>
+  </div>
+ </section>
+</div>
+
+<div class="modal" id="editModal"><div class="modalbox glass">
+ <button class="close" onclick="hide('editModal')">×</button><h2>Custom Profile</h2>
+ <input id="name" placeholder="Display name">
+ <input id="uname" placeholder="username (lowercase)" maxlength="30" autocapitalize="none" autocomplete="username">
+ <textarea id="bio" placeholder="Bio"></textarea>
+ <input id="pic" type="file" accept="image/*" style="display:none">
+ <button class="secondary profile-photo-picker" type="button" onclick="document.getElementById('pic')?.click()">Change Profile Photo</button>
+ <button class="primary" style="width:100%" onclick="saveProfile()">Save Changes</button>
+</div></div>
+
+<div class="modal" id="listModal"><div class="modalbox glass">
+ <button class="close" onclick="hide('listModal')">×</button>
+ <h2 id="listTitle">People</h2><div id="listContent"></div>
+</div></div>
+
+<div class="modal" id="postModal"><div class="modalbox glass">
+ <button class="close" onclick="hide('postModal')">×</button>
+ <div id="postDetail"></div>
+</div></div>
+
+<div class="modal" id="authModal"><div class="modalbox glass">
+ <button class="close" onclick="hide('authModal')">×</button>
+ <div class="auth-design-intro"><span class="vybe-v-logo cyber-logo" aria-hidden="true">V</span><h1>Welcome to VYBE 👋</h1><p>Your Vibe. Your World.<br>Share • Connect • Belong</p></div>
+  <div class="auth-box">
+  <div class="auth-header">
+   <div>
+    <h2>VYBE</h2>
+    <div class="auth-subtitle" id="authSubtitle">Welcome back</div>
+   </div>
+  </div>
+  <input id="authUsername" type="text" placeholder="Username" autocomplete="username" style="display:none;">
+  <input id="authEmail" type="text" placeholder="Username or Email" autocomplete="username" aria-label="Username or Email">
+  <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password" aria-label="Password">
+  <div id="authStatus" class="auth-status"></div>
+  <button id="authSubmitBtn" class="primary auth-submit" onclick="submitAuth()">Log In</button>
+  <div class="auth-toggle">
+   <span id="authModeText">Need an account?</span>
+   <button id="authToggleBtn" onclick="toggleAuthMode()">Sign Up</button>
+  </div>
+ </div>
+</div></div>
+
+<div class="comments-overlay" id="commentsDrawer" aria-hidden="true" onclick="if(event.target===this)closeCommentsDrawer()">
+ <section class="comments-sheet" role="dialog" aria-modal="true" aria-labelledby="commentsTitle">
+  <div class="comments-handle-wrap" id="commentsHandle"><span class="comments-handle"></span></div>
+  <header class="comments-header">
+   <h2 id="commentsTitle">Comments <span id="commentsTotal">(0)</span></h2>
+   <button class="comments-close" type="button" aria-label="Close comments" onclick="closeCommentsDrawer()">✕</button>
+  </header>
+  <div class="comments-list" id="commentsList" aria-live="polite"></div>
+  <form class="comments-composer" id="commentsComposer" onsubmit="submitReelComment(event)">
+   <img class="comment-avatar" id="commentsAvatar" src="" alt="Your avatar">
+   <span id="commentReplyingTo" class="comment-replying" hidden></span>
+   <input class="comments-input" id="commentsInput" maxlength="2000" autocomplete="off">
+   <button class="comment-post-btn" id="commentsPostButton" type="submit">Post</button>
+  </form>
+ </section>
+</div>
+
+<div class="settings-overlay" id="settingsSheet" aria-hidden="true" onclick="if(event.target===this)closeSettingsSheet()">
+ <section class="settings-sheet" role="dialog" aria-modal="true" aria-labelledby="settingsSheetTitle">
+  <div class="settings-handle"></div>
+  <header class="settings-header"><button id="settingsBackButton" class="settings-close" type="button" aria-label="Back to settings" onclick="showSettingsHome()" style="display:none">←</button><h2 id="settingsSheetTitle">Settings</h2><button class="settings-close" type="button" aria-label="Close settings" onclick="closeSettingsSheet()">✕</button></header>
+  <div id="settingsHome">
+   <div class="settings-version">VYBE v18.0 (17 Core Fixes + 10 Ultra-Unique Futures Pack)</div>
+   <div class="settings-menu">
+    <button type="button" style="border-color:#38bdf8;background:linear-gradient(135deg,rgba(14,165,233,0.18),rgba(168,85,247,0.18));" onclick="showSettingsSubview('futures')">✨ Futures (Feature Controls) <span>ON / OFF ›</span></button>
+    <button type="button" onclick="openSavedCollection()">Saved <span>›</span></button>
+    <button type="button" onclick="openArchiveCollection()">Archive <span>›</span></button>
+    <button type="button" onclick="showSettingsSubview('activity')">Your Activity / Time Management <span id="dailyTimeSpent">Today: 0 min</span></button>
+    <button type="button" onclick="toggleAccountPrivacy()">Account Privacy <span id="privacySettingLabel">Public</span><input id="privacySettingToggle" class="settings-toggle" type="checkbox" aria-label="Private account" onclick="event.stopPropagation();toggleAccountPrivacy(this.checked)"></button>
+    <button type="button" onclick="showSettingsSubview('blocked')">Blocked Accounts <span>›</span></button>
+    <button type="button" onclick="toggleHighQualityUploads()">Data Usage &amp; Media Quality <span><input id="highQualityToggle" class="settings-toggle" type="checkbox" aria-label="High quality uploads" onclick="event.stopPropagation();toggleHighQualityUploads(this.checked)"></span></button>
+    <button type="button" onclick="openAccountSwitcher()">Log In / Switch Account <span>›</span></button>
+    <button type="button" onclick="clearCachedMedia()">Clear Cached Media <span>›</span></button>
+    <button type="button" onclick="logoutUser()">Log Out <span>›</span></button>
+   </div>
+  </div>
+  <div id="settingsSubview" class="settings-subview"></div>
+ </section>
+</div>
+
+<div class="modal" id="storyAudienceModal" aria-hidden="true" onclick="if(event.target===this)cancelStoryAudience()"><div class="modalbox glass">
+ <button class="close" type="button" aria-label="Close story audience selection" onclick="cancelStoryAudience()">×</button>
+ <h2>Share your story</h2>
+ <div id="storyAudiencePreview" class="story-audience-preview"></div>
+ <div class="story-audience-options">
+  <label><input type="radio" name="storyAudience" value="public" checked onchange="toggleStoryAudienceOptions()"> Your Story <span>Followers</span></label>
+  <label><input type="radio" name="storyAudience" value="close_friends" onchange="toggleStoryAudienceOptions()"> Close Friends / Selected</label>
+ </div>
+ <div id="storyAudienceFollowerList" class="story-audience-followers" hidden></div>
+ <button class="primary" type="button" style="width:100%;margin-top:12px" onclick="confirmStoryAudience()">Share Story</button>
+</div></div>
+
+<div class="people-drawer-overlay" id="peopleDrawer" aria-hidden="true" onclick="if(event.target===this)closePeopleDrawer()">
+ <section class="people-drawer" role="dialog" aria-modal="true" aria-labelledby="peopleDrawerTitle">
+  <div class="people-drawer-handle"></div>
+  <header class="people-drawer-header"><h2 id="peopleDrawerTitle">People</h2><button class="people-drawer-close" type="button" aria-label="Close list" onclick="closePeopleDrawer()">✕</button></header>
+  <div class="people-drawer-list" id="peopleDrawerList"></div>
+ </section>
+</div>
+
+
+<!-- PHASE 2: CO-WATCH LIVE MUSIC BAR -->
+<div data-vybe-feature="cowatch_bar" id="coWatchBar" class="cowatch-bar glass" aria-label="Co-Watch Live Music">
+  <div class="cowatch-eq" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+  <div class="cowatch-info" onclick="openCoWatchModal()">
+    <strong id="coWatchTrackTitle">🎧 Cyber Lo-Fi Radio • Live Room</strong>
+    <small id="coWatchTrackSub">Tap to sync vibe & listen with friends</small>
+  </div>
+  <button type="button" class="cowatch-btn" title="Floating Mini-Reels PiP" onclick="toggleFloatingMiniReel()" style="margin-right:4px;font-size:12px;">📺</button>
+  <button type="button" id="coWatchPlayBtn" class="cowatch-btn" onclick="toggleCoWatchPlay()">▶</button>
+</div>
+
+<!-- PHASE 2: CO-WATCH MUSIC MODAL -->
+<div class="modal" id="coWatchModal" onclick="if(event.target===this)hide('coWatchModal')">
+  <div class="modalbox glass">
+    <button class="close" type="button" onclick="hide('coWatchModal')">×</button>
+    <h2 style="margin-bottom:6px;">🎧 Co-Watch Music Room</h2>
+    <p class="meta" style="margin-bottom:14px;">Pick a live vibe station — everyone in VYBE hears the same beat!</p>
+    <div id="coWatchStationList" class="cowatch-stations"></div>
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(56,189,248,0.22);text-align:left;">
+      <strong style="font-size:13px;color:#7dd3fc;display:block;margin-bottom:8px;">🌊 Ambient Soundscape Mixer</strong>
+      <div style="display:grid;gap:8px;font-size:12px;color:#cbd5e1;">
+        <label style="display:flex;justify-content:space-between;align-items:center;">🌧️ Rain Ambience <input type="range" min="0" max="100" value="0" oninput="updateSoundscapeLayer('rain', this.value)" style="width:130px;margin:0;"></label>
+        <label style="display:flex;justify-content:space-between;align-items:center;">🦗 Night Crickets <input type="range" min="0" max="100" value="0" oninput="updateSoundscapeLayer('crickets', this.value)" style="width:130px;margin:0;"></label>
+                <label style="display:flex;justify-content:space-between;align-items:center;">📀 Vinyl Crackle <input type="range" min="0" max="100" value="0" oninput="updateSoundscapeLayer('vinyl', this.value)" style="width:130px;margin:0;"></label>
+        <label style="display:flex;justify-content:space-between;align-items:center;color:#38bdf8;font-weight:700;">🎧 8D Binaural Focus Sweep <input type="checkbox" id="binaural8DToggle" class="settings-toggle" onchange="toggleBinaural8DSweep(this.checked)"></label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PHASE 2: PROXIMITY VIBE RADAR MODAL -->
+<div class="modal" id="vibeRadarModal" onclick="if(event.target===this)closeVibeRadar()">
+  <div class="modalbox glass" style="text-align:center;">
+    <button class="close" type="button" onclick="closeVibeRadar()">×</button>
+    <h2 style="margin-bottom:4px;">📡 Proximity Vibe Radar</h2>
+    <p class="meta" style="margin-bottom:14px;">Live creators & vibes active around you right now</p>
+    <div class="radar-stage">
+      <div class="radar-ring r1"></div>
+      <div class="radar-ring r2"></div>
+      <div class="radar-ring r3"></div>
+      <div class="radar-sweep"></div>
+      <div class="radar-center">YOU</div>
+      <div id="radarPins"></div>
+    </div>
+    <div id="vibeCompassBox" style="margin:12px auto 0;padding:8px 14px;border-radius:999px;background:rgba(14,165,233,0.14);border:1px solid rgba(56,189,248,0.35);display:inline-flex;align-items:center;gap:8px;font-size:12px;color:#7dd3fc;">
+      <span id="vibeCompassNeedle" style="display:inline-block;transition:transform 0.3s ease;">🧭</span>
+      <span id="vibeCompassText">Nearest Creator: 120m NE</span>
+    </div>
+    <div id="radarUserList" style="margin-top:14px;text-align:left;display:grid;gap:8px;"></div>
+  </div>
+</div>
+
+
+<div class="modal" id="profileInfoModal" onclick="if(event.target===this)hide('profileInfoModal')">
+  <div class="modalbox glass" style="text-align:center;max-width:360px;">
+    <button class="close" type="button" onclick="hide('profileInfoModal')">×</button>
+    <div style="width:52px;height:52px;margin:0 auto 12px;border-radius:50%;display:grid;place-items:center;background:rgba(14,165,233,0.18);border:1px solid #38bdf8;color:#38bdf8;font-size:22px;font-weight:800;font-family:Georgia,serif;">i</div>
+    <h2 style="font-size:18px;margin-bottom:6px;">Account Info</h2>
+    <p id="profileInfoUsername" class="meta" style="margin-bottom:14px;color:#7dd3fc;">@user</p>
+    <div style="padding:14px;border-radius:14px;background:rgba(15,23,42,0.8);border:1px solid rgba(56,189,248,0.22);">
+      <span style="display:block;font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;">Member Since</span>
+      <strong id="profileJoinedDate" style="display:block;font-size:20px;color:#fff;margin-top:4px;font-variant-numeric:tabular-nums;">01.01.2026</strong>
+    </div>
+  </div>
+</div>
+
+
+<!-- V7 MEGA PACK MODALS -->
+<!-- 1. GHOST MODE 24H LIVE ROOMS -->
+<div class="modal" id="ghostRoomsModal" onclick="if(event.target===this)closeGhostRoomsModal()">
+  <div class="modalbox glass">
+    <button class="close" type="button" onclick="closeGhostRoomsModal()">×</button>
+    <h2 style="margin-bottom:4px;">👻 Ghost Mode 24h Rooms</h2>
+    <p class="meta" style="margin-bottom:12px;">Ephemeral live rooms — messages vanish automatically, 0 history saved!</p>
+    <div id="ghostRoomLobby">
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <input id="newGhostRoomInput" type="text" maxlength="32" placeholder="New room topic (e.g. Midnight Riders)" style="margin:0;padding:10px 12px;font-size:13px;">
+        <button type="button" class="primary" style="padding:0 16px;white-space:nowrap;" onclick="createGhostRoom()">+ Room</button>
+      </div>
+      <div id="ghostRoomList" style="display:grid;gap:8px;"></div>
+    </div>
+    <div id="ghostRoomChat" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid rgba(56,189,248,0.2);">
+        <button type="button" class="secondary" style="padding:5px 10px;font-size:12px;" onclick="leaveGhostRoom()">← Rooms</button>
+        <strong id="activeGhostRoomTitle" style="font-size:14px;color:#7dd3fc;">👻 Room</strong>
+        <span style="font-size:10px;color:#f87171;">● LIVE 24H</span>
+      </div>
+      <div id="ghostMessagesList" style="height:230px;overflow-y:auto;padding:10px 4px;display:flex;flex-direction:column;gap:8px;"></div>
+      <form onsubmit="sendGhostMessage(event)" style="display:flex;gap:8px;margin-top:8px;">
+        <input id="ghostMsgInput" type="text" maxlength="300" placeholder="Send vanishing message..." style="margin:0;padding:10px 12px;font-size:13px;">
+        <button type="submit" class="primary" style="padding:0 16px;">Send</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 2. CHAIN STORIES MODAL -->
+<div class="modal" id="chainStoryModal" onclick="if(event.target===this)hide('chainStoryModal')">
+  <div class="modalbox glass">
+    <button class="close" type="button" onclick="hide('chainStoryModal')">×</button>
+    <h2 style="margin-bottom:4px;">🔗 Pass-the-Vibe Chain Stories</h2>
+    <p class="meta" style="margin-bottom:12px;">Add your photo/clip to an active community story chain!</p>
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <input id="newChainPromptInput" type="text" maxlength="40" placeholder="Start a prompt (e.g. Show your bike/desk)" style="margin:0;padding:10px 12px;font-size:13px;">
+      <button type="button" class="primary" style="padding:0 14px;white-space:nowrap;" onclick="createChainPrompt()">Start</button>
+    </div>
+    <div id="chainStoryList" style="display:grid;gap:10px;max-height:50vh;overflow-y:auto;"></div>
+    <input type="file" id="chainUploadInput" accept="image/*,video/mp4,video/webm" style="display:none;">
+  </div>
+</div>
+
+<!-- 3. SECRET VAULT (PIN-LOCKED GALLERY) -->
+<div class="modal" id="secretVaultModal" onclick="if(event.target===this)hide('secretVaultModal')">
+  <div class="modalbox glass">
+    <button class="close" type="button" onclick="hide('secretVaultModal')">×</button>
+    <h2 style="margin-bottom:4px;">🔒 Secret PIN Vault</h2>
+    <p class="meta" style="margin-bottom:12px;">Private hidden posts protected by your 4-digit PIN</p>
+    <div id="vaultPinGate" style="text-align:center;padding:10px 0;">
+      <p id="vaultPinPrompt" style="font-size:13px;color:#7dd3fc;margin-bottom:10px;">Enter 6-character PIN (Numbers + Letters, Default: VYBE26)</p>
+      <input id="vaultPinInput" type="password" maxlength="6" placeholder="••••••" style="text-align:center;font-size:20px;letter-spacing:6px;max-width:190px;margin:0 auto 12px;text-transform:uppercase;">
+      <div style="display:flex;gap:8px;justify-content:center;">
+        <button type="button" class="primary" onclick="unlockSecretVault()">Unlock Vault</button>
+        <button type="button" class="secondary" onclick="changeVaultPin()">Set New PIN</button>
+      </div>
+    </div>
+    <div id="vaultContentArea" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span style="font-size:12px;color:#4ade80;">🔓 Vault Unlocked</span>
+        <button type="button" class="primary" style="padding:6px 12px;font-size:11px;" onclick="document.getElementById('vaultFileInput').click()">+ Hide Media</button>
+      </div>
+      <input type="file" id="vaultFileInput" accept="image/*,video/*" style="display:none;">
+      <div id="vaultGrid" class="grid" style="gap:6px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 4. MINI CREATOR ANALYTICS MODAL -->
+<div class="modal" id="creatorAnalyticsModal" onclick="if(event.target===this)hide('creatorAnalyticsModal')">
+  <div class="modalbox glass">
+    <button class="close" type="button" onclick="hide('creatorAnalyticsModal')">×</button>
+    <h2 style="margin-bottom:4px;">📊 Creator Studio Analytics</h2>
+    <p class="meta" style="margin-bottom:14px;">Real-time reach & engagement insights for your profile</p>
+    <div id="creatorAnalyticsBody"></div>
+  </div>
+</div>
+
+
+<!-- V8 FUTURISTIC MODALS -->
+<!-- 1. HEARTBEAT / PULSE SYNC MODAL -->
+<div class="modal" id="pulseSyncModal" onclick="if(event.target===this)closePulseSyncModal()">
+  <div class="modalbox glass" style="text-align:center;max-width:360px;">
+    <button class="close" type="button" onclick="closePulseSyncModal()">×</button>
+    <h2 style="margin-bottom:4px;">💓 Heartbeat Pulse Sync</h2>
+    <p class="meta" style="margin-bottom:16px;">Press & hold the Pulse Pad to send live haptic heartbeats to your friend!</p>
+    <div id="pulseWaveRing" class="pulse-pad-ring">
+      <button id="pulseHoldBtn" type="button" class="pulse-hold-btn"
+        onpointerdown="startPulseSync()" onpointerup="stopPulseSync()" onpointerleave="stopPulseSync()">
+        💓<br><small style="font-size:10px;font-weight:700;">HOLD</small>
+      </button>
+    </div>
+    <p id="pulseSyncStatus" style="margin-top:14px;font-size:12px;color:#fda4af;">Waiting for pulse...</p>
+  </div>
+</div>
+
+<!-- 2. MIRROR-WORLD SPLIT REALITY CAMERA MODAL -->
+<div class="modal" id="splitCamModal" onclick="if(event.target===this)closeSplitRealityCam()">
+  <div class="modalbox glass" style="text-align:center;">
+    <button class="close" type="button" onclick="closeSplitRealityCam()">×</button>
+    <h2 style="margin-bottom:4px;">🪞 Split-Reality Dual Cam</h2>
+    <p id="splitCamStepLabel" class="meta" style="margin-bottom:12px;">Step 1/2: Capture your Main World Scene</p>
+    <div style="position:relative;border-radius:16px;overflow:hidden;background:#000;aspect-ratio:3/4;max-height:52vh;margin:0 auto;">
+      <video id="splitCamVideo" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover;"></video>
+      <canvas id="splitCamCanvas" style="display:none;width:100%;height:100%;object-fit:contain;"></canvas>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:12px;">
+      <button type="button" id="splitSnapBtn" class="primary" onclick="captureSplitStep()">📸 Snap Step 1</button>
+      <button type="button" id="splitUseBtn" class="primary" style="display:none;" onclick="useSplitRealityPhoto()">✓ Use Split Post</button>
+    </div>
+  </div>
+</div>
+
+<!-- 3. CROWD-DROP GROUP SHUTTER MODAL -->
+<div class="modal" id="crowdShutterModal" onclick="if(event.target===this)hide('crowdShutterModal')">
+  <div class="modalbox glass" style="text-align:center;">
+    <button class="close" type="button" onclick="hide('crowdShutterModal')">×</button>
+    <h2 style="margin-bottom:4px;">⚡ Crowd-Drop Group Shutter</h2>
+    <p class="meta" style="margin-bottom:12px;">Synchronized 3-2-1 flash capture with your hangout squad!</p>
+    <div id="crowdCountdownDisplay" style="font-size:42px;font-weight:900;color:#38bdf8;margin:10px 0;">READY</div>
+    <button type="button" class="primary" style="width:100%;margin-bottom:12px;" onclick="triggerCrowdCountdown()">⚡ Trigger 3-2-1 Sync Flash</button>
+    <div id="crowdGridPreview" class="grid" style="grid-template-columns:repeat(2,1fr);gap:6px;"></div>
+  </div>
+</div>
+
+<!-- 4. 3 AM CONFESSION BOOTH MODAL -->
+<div class="modal" id="confessionBoothModal" onclick="if(event.target===this)hide('confessionBoothModal')">
+  <div class="modalbox glass">
+    <button class="close" type="button" onclick="hide('confessionBoothModal')">×</button>
+    <h2 style="margin-bottom:4px;">🕯️ 3 AM Confession Booth</h2>
+    <p id="confessionWindowStatus" class="meta" style="margin-bottom:12px;color:#c084fc;">Night-Only Ephemeral Wall (11 PM – 4 AM) • Vanishes at sunrise</p>
+    <form onsubmit="postAnonymousConfession(event)" style="display:flex;gap:8px;margin-bottom:12px;">
+      <input id="confessionInput" type="text" maxlength="220" placeholder="Drop an anonymous midnight thought..." style="margin:0;padding:10px 12px;font-size:13px;">
+      <button type="submit" class="primary" style="padding:0 16px;">Drop</button>
+    </form>
+    <div id="confessionWallList" style="display:grid;gap:8px;max-height:46vh;overflow-y:auto;"></div>
+  </div>
+</div>
+
+
+<!-- V9 NEXT-GEN MODALS -->
+<!-- 1. VOICE-BUBBLE WAVEFORM STORIES -->
+<div class="modal" id="voiceBubbleModal" onclick="if(event.target===this)hide('voiceBubbleModal')">
+  <div class="modalbox glass" style="text-align:center;max-width:380px;">
+    <button class="close" type="button" onclick="hide('voiceBubbleModal')">×</button>
+    <h2 style="margin-bottom:4px;">🫧 Voice-Bubble Story</h2>
+    <p class="meta" style="margin-bottom:14px;">Record a glowing waveform audio drop without camera!</p>
+    <div id="voiceBubbleWave" class="voice-bubble-wave" aria-hidden="true">
+      <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+    </div>
+    <input id="voiceBubbleCaption" type="text" maxlength="60" placeholder="Title your voice drop (e.g. Midnight thoughts)" style="margin:12px 0;padding:10px 12px;font-size:13px;">
+    <button id="voiceBubbleRecBtn" type="button" class="primary" style="width:100%;" onclick="toggleVoiceBubbleRecord()">🎙 Start Recording (Max 10s)</button>
+    <div id="voiceBubbleFeedList" style="margin-top:14px;display:grid;gap:8px;max-height:32vh;overflow-y:auto;text-align:left;"></div>
+  </div>
+</div>
+
+<!-- 2. FUTURE-SELF TIME-LOCK LETTER -->
+<div class="modal" id="futureLetterModal" onclick="if(event.target===this)hide('futureLetterModal')">
+  <div class="modalbox glass">
+    <button class="close" type="button" onclick="hide('futureLetterModal')">×</button>
+    <h2 style="margin-bottom:4px;">🔮 Future-Self Time-Lock Letter</h2>
+    <p class="meta" style="margin-bottom:12px;">Seal a secret note or goal — it unlocks only on your chosen date!</p>
+    <textarea id="futureLetterText" maxlength="500" placeholder="Dear Future Me..." style="min-height:80px;margin:6px 0;"></textarea>
+    <div style="display:flex;gap:8px;align-items:center;margin:8px 0;">
+      <label for="futureLetterDate" style="font-size:12px;color:#94a3b8;white-space:nowrap;">Unlock Date:</label>
+      <input type="datetime-local" id="futureLetterDate" style="margin:0;padding:8px 10px;font-size:12px;">
+    </div>
+    <button type="button" class="primary" style="width:100%;margin-top:6px;" onclick="sealFutureLetter()">🔒 Seal Time-Lock Letter</button>
+    <div id="futureLettersList" style="margin-top:14px;display:grid;gap:8px;max-height:30vh;overflow-y:auto;"></div>
+  </div>
+</div>
+
+<!-- 3. LIVE NEON GRAFFITI CANVAS -->
+<div class="modal" id="neonGraffitiModal" onclick="if(event.target===this)hide('neonGraffitiModal')">
+  <div class="modalbox glass" style="text-align:center;">
+    <button class="close" type="button" onclick="hide('neonGraffitiModal')">×</button>
+    <h2 style="margin-bottom:4px;">🎨 Live Neon Graffiti Canvas</h2>
+    <p class="meta" style="margin-bottom:10px;">Draw glowing cyber art with your finger & post directly!</p>
+    <div style="display:flex;justify-content:center;gap:10px;margin-bottom:10px;">
+      <button type="button" class="accent-dot" style="width:24px;height:24px;background:#38bdf8;" onclick="setGraffitiColor('#38bdf8')"></button>
+      <button type="button" class="accent-dot" style="width:24px;height:24px;background:#f43f5e;" onclick="setGraffitiColor('#f43f5e')"></button>
+      <button type="button" class="accent-dot" style="width:24px;height:24px;background:#a855f7;" onclick="setGraffitiColor('#a855f7')"></button>
+      <button type="button" class="accent-dot" style="width:24px;height:24px;background:#10b981;" onclick="setGraffitiColor('#10b981')"></button>
+      <button type="button" class="accent-dot" style="width:24px;height:24px;background:#facc15;" onclick="setGraffitiColor('#facc15')"></button>
+      <button type="button" class="secondary" style="padding:3px 10px;font-size:11px;" onclick="clearNeonCanvas()">Clear</button>
+    </div>
+    <canvas id="neonGraffitiCanvas" width="320" height="320" style="width:100%;max-width:320px;aspect-ratio:1;background:#050811;border:1px solid #38bdf8;border-radius:16px;touch-action:none;cursor:crosshair;"></canvas>
+    <button type="button" class="primary" style="width:100%;margin-top:12px;" onclick="useNeonGraffitiPost()">✨ Use Artwork in Post</button>
+  </div>
+</div>
+
+<!-- 4. VIBE CHECK FLASH QUIZ MODAL -->
+<div class="modal" id="vibeQuizModal" onclick="if(event.target===this)hide('vibeQuizModal')">
+  <div class="modalbox glass">
+    <button class="close" type="button" onclick="hide('vibeQuizModal')">×</button>
+    <h2 style="margin-bottom:4px;">⚡ Vibe Check Flash Quiz</h2>
+    <p id="vibeQuizSub" class="meta" style="margin-bottom:12px;">Test how well you match this creator's vibe!</p>
+    <div id="vibeQuizBody" style="display:grid;gap:10px;"></div>
+  </div>
+</div>
+
+<!-- 5. TOP VIBE LEGENDS LEADERBOARD -->
+<div class="modal" id="vibeLeaderboardModal" onclick="if(event.target===this)hide('vibeLeaderboardModal')">
+  <div class="modalbox glass">
+    <button class="close" type="button" onclick="hide('vibeLeaderboardModal')">×</button>
+    <h2 style="margin-bottom:4px;">🏆 VYBE Legends Leaderboard</h2>
+    <p class="meta" style="margin-bottom:12px;">Top creators ranked by Daily Streaks & Community Vibe</p>
+    <div id="vibeLeaderboardList" style="display:grid;gap:8px;"></div>
+  </div>
+</div>
+
+
+<!-- V10 MILESTONE MODALS -->
+<!-- 1. AI VIBE ORACLE & DAILY FORTUNE CARD -->
+<div class="modal" id="vibeOracleModal" onclick="if(event.target===this)hide('vibeOracleModal')">
+  <div class="modalbox glass" style="text-align:center;max-width:360px;">
+    <button class="close" type="button" onclick="hide('vibeOracleModal')">×</button>
+    <h2 style="margin-bottom:4px;">🎴 AI Vibe Oracle</h2>
+    <p class="meta" style="margin-bottom:14px;">Tap the holographic card to reveal today's cyber fortune!</p>
+    <div id="oracleCard" class="oracle-card" onclick="flipOracleCard()">
+      <div class="oracle-card-inner" id="oracleCardInner">
+        <div class="oracle-front">
+          <span style="font-size:42px;">🌌</span>
+          <strong style="margin-top:8px;letter-spacing:2px;color:#7dd3fc;">TAP TO REVEAL</strong>
+        </div>
+        <div class="oracle-back" id="oracleBackContent"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 2. LIVE CO-BROWSING REELS WATCH PARTY -->
+<div class="modal" id="watchPartyModal" onclick="if(event.target===this)hide('watchPartyModal')">
+  <div class="modalbox glass" style="text-align:center;">
+    <button class="close" type="button" onclick="hide('watchPartyModal')">×</button>
+    <h2 style="margin-bottom:4px;">🤝 Co-Browsing Watch Party</h2>
+    <p class="meta" style="margin-bottom:12px;">Sync Reels scrolling live with your friend!</p>
+    <div style="padding:12px;border-radius:14px;background:rgba(15,23,42,0.8);border:1px solid rgba(56,189,248,0.28);margin-bottom:12px;">
+      <span style="font-size:11px;color:#94a3b8;display:block;">Your Party Code</span>
+      <strong id="myPartyCodeDisplay" style="font-size:20px;color:#38bdf8;letter-spacing:3px;">VYBE-88</strong>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <input id="joinPartyCodeInput" type="text" maxlength="12" placeholder="Enter friend's code (e.g. VYBE-88)" style="margin:0;padding:10px;font-size:13px;text-transform:uppercase;">
+      <button type="button" class="primary" style="padding:0 16px;white-space:nowrap;" onclick="joinWatchParty()">Sync</button>
+    </div>
+    <p id="watchPartyStatus" class="meta" style="color:#4ade80;"></p>
+  </div>
+</div>
+
+<!-- 3. DAILY MICRO-QUESTS & VYBE COINS WALLET -->
+<div class="modal" id="questsModal" onclick="if(event.target===this)hide('questsModal')">
+  <div class="modalbox glass">
+    <button class="close" type="button" onclick="hide('questsModal')">×</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <h2>🎯 Daily Micro-Quests</h2>
+      <span id="walletModalBalance" style="font-weight:800;color:#facc15;">🪙 150 Coins</span>
+    </div>
+    <p class="meta" style="margin-bottom:12px;">Complete daily interactive quests to earn VYBE Coins!</p>
+    <div id="questsListContainer" style="display:grid;gap:8px;"></div>
+  </div>
+</div>
+
+<!-- 4. AUTO-HIGHLIGHT MONTAGE REEL GENERATOR -->
+<div class="modal" id="montageModal" onclick="if(event.target===this)closeMontageModal()">
+  <div class="modalbox glass" style="text-align:center;">
+    <button class="close" type="button" onclick="closeMontageModal()">×</button>
+    <h2 style="margin-bottom:4px;">🎬 Auto-Highlight Montage</h2>
+    <p class="meta" style="margin-bottom:12px;">Instant beat-synced slideshow reel from your top VYBE moments!</p>
+    <div id="montageStage" style="position:relative;border-radius:16px;overflow:hidden;aspect-ratio:9/14;max-height:52vh;background:#000;margin:0 auto 12px;border:1px solid #38bdf8;">
+      <img id="montageSlideImg" src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800" style="width:100%;height:100%;object-fit:cover;transition:transform 2.5s ease-out;">
+      <div id="montageOverlayCaption" style="position:absolute;bottom:14px;left:12px;right:12px;padding:8px 12px;border-radius:12px;background:rgba(5,8,17,0.78);color:#fff;font-size:13px;font-weight:700;">✨ VYBE Memories</div>
+    </div>
+    <button type="button" class="primary" style="width:100%;" onclick="startMontagePlayback()">▶ Play Beat-Sync Montage</button>
+  </div>
+</div>
+
+
+<!-- V11 SOCIAL-GAMING & INTERACTIVE MODALS -->
+<!-- 1. LIVE 1V1 VIBE DUEL ARENA -->
+<div class="modal" id="vibeDuelModal" onclick="if(event.target===this)hide('vibeDuelModal')">
+  <div class="modalbox glass" style="text-align:center;">
+    <button class="close" type="button" onclick="hide('vibeDuelModal')">×</button>
+    <h2 style="margin-bottom:4px;">⚔️ Live 1v1 Vibe Duel</h2>
+    <p class="meta" style="margin-bottom:12px;">Tap rapidly to push the Tug-of-War meter for your favorite drop!</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+      <div class="glass" style="padding:8px;border-radius:14px;border-color:#38bdf8;">
+        <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=400" style="width:100%;height:120px;object-fit:cover;border-radius:10px;">
+        <strong style="display:block;font-size:12px;margin-top:6px;">@alex.design</strong>
+        <button type="button" class="primary" style="width:100%;margin-top:6px;padding:6px;font-size:11px;" onclick="voteVibeDuel('left')">⚡ Push Left</button>
+      </div>
+      <div class="glass" style="padding:8px;border-radius:14px;border-color:#f43f5e;">
+        <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400" style="width:100%;height:120px;object-fit:cover;border-radius:10px;">
+        <strong style="display:block;font-size:12px;margin-top:6px;">@sarah.official</strong>
+        <button type="button" class="primary" style="width:100%;margin-top:6px;padding:6px;font-size:11px;background:linear-gradient(135deg,#e11d48,#f97316);" onclick="voteVibeDuel('right')">🔥 Push Right</button>
+      </div>
+    </div>
+    <div class="duel-tug-bar">
+      <div id="duelLeftFill" class="duel-left-fill" style="width:50%;">50%</div>
+      <div id="duelRightFill" class="duel-right-fill" style="width:50%;">50%</div>
+    </div>
+  </div>
+</div>
+
+<!-- 2. TRUTH-OR-DARE SPIN WHEEL -->
+<div class="modal" id="spinWheelModal" onclick="if(event.target===this)hide('spinWheelModal')">
+  <div class="modalbox glass" style="text-align:center;max-width:360px;">
+    <button class="close" type="button" onclick="hide('spinWheelModal')">×</button>
+    <h2 style="margin-bottom:4px;">🎡 Truth-or-Dare Spin Wheel</h2>
+    <p class="meta" style="margin-bottom:14px;">Spin the cyber wheel for an instant squad challenge!</p>
+    <div id="cyberSpinDisc" class="cyber-spin-disc">🎯</div>
+    <p id="spinWheelResult" style="margin:14px 0;font-size:13px;font-weight:700;color:#fde047;min-height:36px;">Tap Spin to start!</p>
+    <button type="button" class="primary" style="width:100%;" onclick="spinTruthOrDare()">🎡 Spin Cyber Wheel</button>
+  </div>
+</div>
+
+<!-- 3. SPEED-READ / BEAT-FLASH KINETIC STORY -->
+<div class="modal" id="beatFlashModal" onclick="if(event.target===this)closeBeatFlashModal()">
+  <div class="modalbox glass" style="text-align:center;max-width:360px;">
+    <button class="close" type="button" onclick="closeBeatFlashModal()">×</button>
+    <h2 style="margin-bottom:4px;">⚡ Beat-Flash Kinetic Story</h2>
+    <p class="meta" style="margin-bottom:12px;">Type a punchy message — it flashes word-by-word to the beat!</p>
+    <div id="beatFlashStage" style="height:140px;border-radius:16px;background:#050811;border:1px solid #38bdf8;display:grid;place-items:center;margin-bottom:12px;">
+      <strong id="beatFlashWord" style="font-size:28px;letter-spacing:2px;color:#38bdf8;text-transform:uppercase;">VYBE READY</strong>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <input id="beatFlashInput" type="text" maxlength="100" placeholder="Type message to flash..." style="margin:0;padding:10px;font-size:13px;">
+      <button type="button" class="primary" style="padding:0 16px;" onclick="playBeatFlash()">⚡ Play</button>
+    </div>
+  </div>
+</div>
+
+<!-- 4. MYSTERY LOOT BOX CHEST -->
+<div class="modal" id="lootBoxModal" onclick="if(event.target===this)hide('lootBoxModal')">
+  <div class="modalbox glass" style="text-align:center;max-width:360px;">
+    <button class="close" type="button" onclick="hide('lootBoxModal')">×</button>
+    <h2 style="margin-bottom:4px;">🎁 Daily Mystery Loot Box</h2>
+    <p class="meta" style="margin-bottom:14px;">Tap the glowing cyber chest to claim your daily reward!</p>
+    <div id="lootChestIcon" onclick="claimDailyLootBox()" style="font-size:64px;cursor:pointer;margin:10px 0;transition:transform 0.2s;">🎁</div>
+    <p id="lootBoxResult" style="font-size:13px;font-weight:700;color:#7dd3fc;min-height:24px;">Tap the chest to unlock!</p>
+  </div>
+</div>
+
+<!-- 5. HALL OF FAME TIME-CAPSULE TROPHY WALL -->
+<div class="modal" id="hallOfFameModal" onclick="if(event.target===this)hide('hallOfFameModal')">
+  <div class="modalbox glass">
+    <button class="close" type="button" onclick="hide('hallOfFameModal')">×</button>
+    <h2 style="margin-bottom:4px;">🏆 Hall of Fame Trophy Wall</h2>
+    <p class="meta" style="margin-bottom:12px;">Your unlocked milestones, streak trophies & top moments</p>
+    <div id="hallOfFameGrid" style="display:grid;gap:8px;"></div>
+  </div>
+</div>
+
+
+<!-- V12 AI-CREATIVE & SOCIAL UNIVERSE MODALS -->
+<!-- 1. LIVE LO-FI BEATMAKER PAD -->
+<div class="modal" id="beatmakerModal" onclick="if(event.target===this)hide('beatmakerModal')">
+  <div class="modalbox glass" style="text-align:center;">
+    <button class="close" type="button" onclick="hide('beatmakerModal')">×</button>
+    <h2 style="margin-bottom:4px;">🎹 Live Lo-Fi Beatmaker Pad</h2>
+    <p class="meta" style="margin-bottom:12px;">Tap the 8 cyber synth & drum pads to jam live!</p>
+    <div class="beatmaker-grid">
+      <button type="button" class="beat-pad" onclick="triggerBeatPad(110, 'sine', 'Bass Kick')">🥁 Kick</button>
+      <button type="button" class="beat-pad" onclick="triggerBeatPad(240, 'triangle', 'Snare Pop')">👏 Snare</button>
+      <button type="button" class="beat-pad" onclick="triggerBeatPad(880, 'square', 'Hi-Hat')">✨ Hi-Hat</button>
+      <button type="button" class="beat-pad" onclick="triggerBeatPad(330, 'sine', 'Lo-Fi Chord')">🎹 Chord A</button>
+      <button type="button" class="beat-pad" onclick="triggerBeatPad(392, 'sine', 'Chill Note')">🎶 Chord B</button>
+      <button type="button" class="beat-pad" onclick="triggerBeatPad(440, 'triangle', 'Cyber Lead')">⚡ Synth</button>
+      <button type="button" class="beat-pad" onclick="triggerBeatPad(523, 'sine', 'Dream Bell')">🔔 Bell</button>
+      <button type="button" class="beat-pad" onclick="triggerBeatPad(196, 'sawtooth', 'Sub Drop')">🌊 Sub</button>
+    </div>
+    <button type="button" class="primary" style="width:100%;margin-top:12px;" onclick="shareBeatJamPost()">🎵 Share Beat Jam to Feed</button>
+  </div>
+</div>
+
+<!-- 2. SHOOTING STAR WISH DROP -->
+<div class="modal" id="wishStarModal" onclick="if(event.target===this)hide('wishStarModal')">
+  <div class="modalbox glass" style="text-align:center;">
+    <button class="close" type="button" onclick="hide('wishStarModal')">×</button>
+    <h2 style="margin-bottom:4px;">🌠 Shooting Star Wish Drop</h2>
+    <p class="meta" style="margin-bottom:12px;">Launch a dream or wish into the VYBE night sky!</p>
+    <form onsubmit="launchShootingStarWish(event)" style="display:flex;gap:8px;margin-bottom:12px;">
+      <input id="wishStarInput" type="text" maxlength="120" placeholder="Make a wish (e.g. Launch my startup in 2026)..." style="margin:0;padding:10px 12px;font-size:13px;">
+      <button type="submit" class="primary" style="padding:0 16px;">Launch</button>
+    </form>
+    <div id="wishStarWall" style="display:grid;gap:8px;max-height:42vh;overflow-y:auto;text-align:left;"></div>
+  </div>
+</div>
+
+<!-- 3. RETRO FILM-STRIP 4-FRAME BOOTH -->
+<div class="modal" id="filmStripModal" onclick="if(event.target===this)hide('filmStripModal')">
+  <div class="modalbox glass" style="text-align:center;">
+    <button class="close" type="button" onclick="hide('filmStripModal')">×</button>
+    <h2 style="margin-bottom:4px;">🎞️ Retro Film-Strip 4-Frame Booth</h2>
+    <p class="meta" style="margin-bottom:10px;">Generate a 4-frame cyber film strip collage post!</p>
+    <canvas id="filmStripCanvas" width="260" height="440" style="width:180px;height:305px;border-radius:12px;border:2px solid #facc15;background:#090d16;margin:0 auto;"></canvas>
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button type="button" class="secondary" style="flex:1;" onclick="renderSampleFilmStrip()">🔄 Shuffle Frames</button>
+      <button type="button" class="primary" style="flex:1;" onclick="useFilmStripInPost()">✨ Use Film Strip</button>
+    </div>
+  </div>
+</div>
+
+<!-- 4. VIBE PASSPORT & CITY STAMPS -->
+<div class="modal" id="passportModal" onclick="if(event.target===this)hide('passportModal')">
+  <div class="modalbox glass" style="text-align:center;">
+    <button class="close" type="button" onclick="hide('passportModal')">×</button>
+    <h2 style="margin-bottom:4px;">🛂 VYBE Digital Passport</h2>
+    <p class="meta" style="margin-bottom:12px;">Your collected city check-ins & explorer stamps</p>
+    <div id="passportStampsGrid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px;"></div>
+    <div style="display:flex;gap:8px;">
+      <input id="newPassportCityInput" type="text" maxlength="24" placeholder="Stamp new city (e.g. Hosur / Madurai)" style="margin:0;padding:8px 10px;font-size:12px;">
+      <button type="button" class="primary" style="padding:0 14px;font-size:12px;" onclick="addPassportStamp()">+ Stamp</button>
+    </div>
+  </div>
+</div>
+
+<!-- 5. LIVE TYPING DUEL / SPEED-CHAT BATTLE IN DM -->
+<div class="modal" id="typingDuelModal" onclick="if(event.target===this)hide('typingDuelModal')">
+  <div class="modalbox glass" style="text-align:center;">
+    <button class="close" type="button" onclick="hide('typingDuelModal')">×</button>
+    <h2 style="margin-bottom:4px;">⌨️ 15-Sec Typing Speed Duel</h2>
+    <p class="meta" style="margin-bottom:10px;">Type the cyber phrase below as fast as you can!</p>
+    <div id="typingDuelTarget" style="padding:10px;border-radius:12px;background:#050811;border:1px solid #38bdf8;color:#7dd3fc;font-size:13px;font-weight:700;margin-bottom:10px;">vybe is the future of social connection</div>
+    <input id="typingDuelInput" type="text" placeholder="Start typing here..." oninput="checkTypingDuelProgress()" style="margin:0 0 10px;padding:10px;font-size:13px;">
+    <p id="typingDuelResult" style="font-size:13px;font-weight:800;color:#fde047;min-height:22px;"></p>
+  </div>
+</div>
+
+<!-- 6. SQUAD HANGOUT & SPLIT-BILL PLANNER IN DM -->
+<div class="modal" id="hangoutPlannerModal" onclick="if(event.target===this)hide('hangoutPlannerModal')">
+  <div class="modalbox glass">
+    <button class="close" type="button" onclick="hide('hangoutPlannerModal')">×</button>
+    <h2 style="margin-bottom:4px;">🧾 Squad Hangout & Split-Bill</h2>
+    <p class="meta" style="margin-bottom:12px;">Split trip/food expenses & send straight to chat!</p>
+    <input id="hangoutTitleInput" type="text" placeholder="Plan title (e.g. Midnight Biryani / Ride)" style="margin:6px 0;padding:10px;font-size:13px;">
+    <div style="display:flex;gap:8px;margin:6px 0;">
+      <input id="hangoutTotalInput" type="number" placeholder="Total ₹ (e.g. 1200)" oninput="calcHangoutSplit()" style="margin:0;padding:10px;font-size:13px;">
+      <input id="hangoutPeopleInput" type="number" value="2" min="1" placeholder="People" oninput="calcHangoutSplit()" style="margin:0;padding:10px;font-size:13px;max-width:95px;">
+    </div>
+    <p id="hangoutSplitPreview" style="margin:10px 0;font-size:14px;font-weight:800;color:#34d399;text-align:center;">₹600 per person</p>
+    <button type="button" class="primary" style="width:100%;" onclick="sendHangoutCardToDM()">📤 Send Plan to DM</button>
+  </div>
+</div>
+
+
+<!-- V13 NEURAL, AR & INTERACTIVE MODALS -->
+<!-- 1. LIVE COLLABORATIVE PIXEL-CANVAS WALL (r/Place Style) -->
+<div class="modal" id="pixelWallModal" onclick="if(event.target===this)hide('pixelWallModal')">
+  <div class="modalbox glass" style="text-align:center;max-width:380px;">
+    <button class="close" type="button" onclick="hide('pixelWallModal')">×</button>
+    <h2 style="margin-bottom:4px;">🧩 Live Collaborative Pixel Wall</h2>
+    <p class="meta" style="margin-bottom:10px;">Tap any tile to paint the shared VYBE community canvas!</p>
+    <div style="display:flex;justify-content:center;gap:8px;margin-bottom:10px;">
+      <button type="button" class="accent-dot" style="width:22px;height:22px;background:#38bdf8;" onclick="setPixelWallColor('#38bdf8')"></button>
+      <button type="button" class="accent-dot" style="width:22px;height:22px;background:#f43f5e;" onclick="setPixelWallColor('#f43f5e')"></button>
+      <button type="button" class="accent-dot" style="width:22px;height:22px;background:#a855f7;" onclick="setPixelWallColor('#a855f7')"></button>
+      <button type="button" class="accent-dot" style="width:22px;height:22px;background:#10b981;" onclick="setPixelWallColor('#10b981')"></button>
+      <button type="button" class="accent-dot" style="width:22px;height:22px;background:#facc15;" onclick="setPixelWallColor('#facc15')"></button>
+      <button type="button" class="accent-dot" style="width:22px;height:22px;background:#0f172a;" onclick="setPixelWallColor('#0f172a')"></button>
+    </div>
+    <div id="sharedPixelGrid" class="shared-pixel-grid"></div>
+  </div>
+</div>
+
+<!-- 2. SATELLITE NIGHT-SKY CONSTELLATION MAP -->
+<div class="modal" id="constellationModal" onclick="if(event.target===this)hide('constellationModal')">
+  <div class="modalbox glass" style="text-align:center;">
+    <button class="close" type="button" onclick="hide('constellationModal')">×</button>
+    <h2 style="margin-bottom:4px;">🛰️ Friend Constellation Map</h2>
+    <p class="meta" style="margin-bottom:12px;">Your closest creator orbit — tap any glowing star to DM!</p>
+    <div class="constellation-sky" id="constellationSky">
+      <svg viewBox="0 0 300 220" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;">
+        <polyline points="150,110 70,55 225,50 240,165 65,165 150,110" fill="none" stroke="rgba(56,189,248,0.38)" stroke-width="1.5" stroke-dasharray="4 4"/>
+      </svg>
+      <div class="constellation-core">⭐ YOU</div>
+      <div id="constellationStarsLayer"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 3. MINI RETRO ARCADE REACTION GAME (CATCH THE VIBE) -->
+<div class="modal" id="arcadeModal" onclick="if(event.target===this)closeArcadeModal()">
+  <div class="modalbox glass" style="text-align:center;max-width:360px;">
+    <button class="close" type="button" onclick="closeArcadeModal()">×</button>
+    <h2 style="margin-bottom:4px;">🕹️ Catch the Vibe Arcade</h2>
+    <p class="meta" style="margin-bottom:8px;">Tap the glowing cyber orbs before they vanish (15s)!</p>
+    <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:#7dd3fc;margin-bottom:8px;">
+      <span id="arcadeScoreLabel">Score: 0</span>
+      <span id="arcadeTimerLabel">Time: 15s</span>
+    </div>
+    <div id="arcadeArena" style="position:relative;height:210px;border-radius:16px;background:#050811;border:1px solid #38bdf8;overflow:hidden;margin-bottom:10px;"></div>
+    <button type="button" id="arcadeStartBtn" class="primary" style="width:100%;" onclick="startVibeArcade()">▶ Start 15s Challenge</button>
+  </div>
+</div>
+
+<!-- 4. VOICE-PITCH THEREMIN SYNTH IN DM -->
+<div class="modal" id="thereminModal" onclick="if(event.target===this)hide('thereminModal')">
+  <div class="modalbox glass" style="text-align:center;max-width:360px;">
+    <button class="close" type="button" onclick="hide('thereminModal')">×</button>
+    <h2 style="margin-bottom:4px;">〰️ Neon Theremin Melody Pad</h2>
+    <p class="meta" style="margin-bottom:10px;">Slide your finger across the pad to compose sci-fi notes!</p>
+    <div id="thereminPad" onpointermove="playThereminSlide(event)" onpointerdown="playThereminSlide(event)"
+      style="height:170px;border-radius:16px;background:linear-gradient(135deg,#0c1e3e,#2e1065);border:1px solid #c084fc;display:grid;place-items:center;touch-action:none;cursor:crosshair;">
+      <span style="font-size:13px;color:#e9d5ff;font-weight:700;pointer-events:none;">✨ Slide Finger Here ✨</span>
+    </div>
+    <button type="button" class="primary" style="width:100%;margin-top:12px;" onclick="sendThereminMelodyDM()">🎵 Send Melody Card to DM</button>
+  </div>
+</div>
+
+
+<!-- V14 KINETIC GYRO STARFIELD & WARP SPEED OVERLAY -->
+<div id="vybeStarfield" class="vybe-starfield" aria-hidden="true"></div>
+<div id="warpSpeedLines" class="warp-speed-lines" aria-hidden="true"></div>
+
+<!-- V14 QUANTUM, SPATIAL & SOCIAL-MAGIC MODALS -->
+<!-- 1. MYSTERY ROULETTE BLIND 60-SEC CHAT -->
+<div class="modal" id="blindChatModal" onclick="if(event.target===this)closeBlindChatModal()">
+  <div class="modalbox glass" style="text-align:center;">
+    <button class="close" type="button" onclick="closeBlindChatModal()">×</button>
+    <h2 style="margin-bottom:4px;">🎭 Mystery Roulette Blind Chat</h2>
+    <p id="blindChatTimerSub" class="meta" style="margin-bottom:10px;color:#38bdf8;">60s Anonymous Vibe Match • Tap Reveal when ready!</p>
+    <div id="blindChatBox" style="height:200px;overflow-y:auto;padding:10px;border-radius:14px;background:#050811;border:1px solid rgba(56,189,248,0.25);display:flex;flex-direction:column;gap:8px;text-align:left;margin-bottom:10px;">
+      <div class="meta" style="text-align:center;">🎭 Matched with <b>Shadow_Vyber_99</b>! Say hi before time runs out!</div>
+    </div>
+    <form onsubmit="sendBlindChatMsg(event)" style="display:flex;gap:6px;margin-bottom:8px;">
+      <input id="blindChatInput" type="text" maxlength="200" placeholder="Type anonymous icebreaker..." style="margin:0;padding:9px 12px;font-size:13px;">
+      <button type="submit" class="primary" style="padding:0 14px;">Send</button>
+    </form>
+    <button type="button" class="secondary" style="width:100%;border-color:#a855f7;color:#e9d5ff;" onclick="revealBlindIdentity()">✨ Mutual Identity Reveal</button>
+  </div>
+</div>
+
+<!-- 2. DUAL-EXPOSURE PHANTOM BLEND CAMERA -->
+<div class="modal" id="dualExposureModal" onclick="if(event.target===this)hide('dualExposureModal')">
+  <div class="modalbox glass" style="text-align:center;">
+    <button class="close" type="button" onclick="hide('dualExposureModal')">×</button>
+    <h2 style="margin-bottom:4px;">📸 Dual-Exposure Phantom Blend</h2>
+    <p class="meta" style="margin-bottom:10px;">Select 2 photos to blend into an artistic cyber double-exposure!</p>
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <button type="button" class="secondary" style="flex:1;font-size:12px;" onclick="document.getElementById('dualImg1Input').click()">1️⃣ Base Photo</button>
+      <button type="button" class="secondary" style="flex:1;font-size:12px;" onclick="document.getElementById('dualImg2Input').click()">2️⃣ Ghost Layer</button>
+    </div>
+    <input type="file" id="dualImg1Input" accept="image/*" style="display:none;" onchange="loadDualBlendLayer(1, this)">
+    <input type="file" id="dualImg2Input" accept="image/*" style="display:none;" onchange="loadDualBlendLayer(2, this)">
+    <canvas id="dualExposureCanvas" width="320" height="320" style="width:100%;max-width:260px;aspect-ratio:1;border-radius:16px;border:1px solid #f43f5e;background:#050811;"></canvas>
+    <button type="button" class="primary" style="width:100%;margin-top:10px;" onclick="useDualExposurePost()">✨ Use Blended Art in Post</button>
+  </div>
+</div>
+
+<!-- 3. LIVE POLL BATTLE ROYALE (KNOCKOUT TOURNAMENT) -->
+<div class="modal" id="battleRoyaleModal" onclick="if(event.target===this)hide('battleRoyaleModal')">
+  <div class="modalbox glass" style="text-align:center;">
+    <button class="close" type="button" onclick="hide('battleRoyaleModal')">×</button>
+    <h2 style="margin-bottom:4px;">🏟️ Poll Battle Royale</h2>
+    <p id="battleRoundTitle" class="meta" style="margin-bottom:12px;color:#fde047;">Semi-Final 1: Choose the Ultimate Vibe!</p>
+    <div id="battleRoyaleArena" style="display:grid;gap:10px;"></div>
+  </div>
+</div>
+
+<!-- 4. SECRET WHISPER-LINK VIP PASS -->
+<div class="modal" id="whisperPassModal" onclick="if(event.target===this)hide('whisperPassModal')">
+  <div class="modalbox glass" style="text-align:center;max-width:360px;">
+    <button class="close" type="button" onclick="hide('whisperPassModal')">×</button>
+    <h2 style="margin-bottom:4px;">💌 VIP Whisper Invite Pass</h2>
+    <p class="meta" style="margin-bottom:12px;">Share this one-time founder pass to grant +100 VYBE Coins!</p>
+    <div style="padding:14px;border-radius:16px;background:linear-gradient(135deg,rgba(14,165,233,0.2),rgba(168,85,247,0.2));border:1px dashed #38bdf8;margin-bottom:12px;">
+      <strong id="whisperPassCode" style="font-size:20px;letter-spacing:3px;color:#fff;">VYBE-VIP-777</strong>
+      <small style="display:block;font-size:11px;color:#7dd3fc;margin-top:4px;">Valid for 1 Inner Circle Invite</small>
+    </div>
+    <button type="button" class="primary" style="width:100%;" onclick="copyWhisperPass()">📋 Copy VIP Pass Code</button>
+  </div>
+</div>
+
+
+<!-- V15 FLOATING MINI-REELS PiP PLAYER -->
+<div id="floatingMiniReelBox" class="floating-pip-box" hidden>
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;background:#0b1120;border-bottom:1px solid rgba(56,189,248,0.3);font-size:10px;color:#7dd3fc;">
+    <span>📺 Mini-Reel PiP</span>
+    <button type="button" onclick="toggleFloatingMiniReel(false)" style="background:none;border:0;color:#fff;font-size:13px;">✕</button>
+  </div>
+  <video id="floatingMiniReelVid" muted loop playsinline autoplay src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" style="width:100%;height:145px;object-fit:cover;display:block;"></video>
+</div>
+
+<!-- V15 HOLO-SOCIAL, AUDIO-REACTIVE & CREATOR ECONOMY MODALS -->
+<!-- 1. VIRTUAL CYBER AVATAR STUDIO -->
+<div class="modal" id="avatarStudioModal" onclick="if(event.target===this)hide('avatarStudioModal')">
+  <div class="modalbox glass" style="text-align:center;">
+    <button class="close" type="button" onclick="hide('avatarStudioModal')">×</button>
+    <h2 style="margin-bottom:4px;">🪞 Virtual Cyber Avatar Studio</h2>
+    <p class="meta" style="margin-bottom:10px;">Customize your holographic avatar & set it as your profile pic!</p>
+    <canvas id="cyberAvatarCanvas" width="240" height="240" style="width:160px;height:160px;border-radius:50%;border:3px solid #38bdf8;background:#050811;margin:0 auto;"></canvas>
+    <div style="display:flex;gap:6px;justify-content:center;margin:10px 0;flex-wrap:wrap;">
+      <button type="button" class="qv-chip" onclick="cycleAvatarPart('bg')">🌌 Aura BG</button>
+      <button type="button" class="qv-chip" onclick="cycleAvatarPart('visor')">🥽 Visor</button>
+      <button type="button" class="qv-chip" onclick="cycleAvatarPart('crown')">👑 Crown</button>
+    </div>
+    <button type="button" class="primary" style="width:100%;" onclick="applyVirtualCyberAvatar()">✨ Set as Profile Avatar</button>
+  </div>
+</div>
+
+<!-- 2. FLASH-DROP AUCTION / BID WITH VYBE COINS -->
+<div class="modal" id="auctionModal" onclick="if(event.target===this)hide('auctionModal')">
+  <div class="modalbox glass" style="text-align:center;max-width:370px;">
+    <button class="close" type="button" onclick="hide('auctionModal')">×</button>
+    <h2 style="margin-bottom:4px;">🔨 Flash-Drop VYBE Auction</h2>
+    <p class="meta" style="margin-bottom:10px;">Bid VYBE Coins to win the exclusive Cyber Founder Pass!</p>
+    <div style="padding:14px;border-radius:16px;background:rgba(15,23,42,0.85);border:1px solid #facc15;margin-bottom:12px;">
+      <span style="font-size:32px;">💎</span>
+      <strong style="display:block;font-size:14px;color:#fde047;margin-top:4px;">Genesis Cyber Holo-Badge #001</strong>
+      <p id="auctionHighestBidText" style="font-size:13px;color:#fff;margin-top:6px;">Current Bid: <b>120 🪙</b> by @sarah.official</p>
+    </div>
+    <button type="button" class="primary" style="width:100%;" onclick="placeVybeAuctionBid()">⚡ Bid +20 VYBE Coins</button>
+  </div>
+</div>
+
+<!-- 3. MOOD-TWIN MATCHMAKER RADAR -->
+<div class="modal" id="moodTwinModal" onclick="if(event.target===this)hide('moodTwinModal')">
+  <div class="modalbox glass">
+    <button class="close" type="button" onclick="hide('moodTwinModal')">×</button>
+    <h2 style="margin-bottom:4px;">🧬 Mood-Twin Matchmaker</h2>
+    <p class="meta" style="margin-bottom:12px;">Creators currently sharing your exact vibe frequency!</p>
+    <div id="moodTwinList" style="display:grid;gap:8px;"></div>
+  </div>
+</div>
+
+<!-- 4. NEON QUOTE POSTER GENERATOR -->
+<div class="modal" id="neonQuoteModal" onclick="if(event.target===this)hide('neonQuoteModal')">
+  <div class="modalbox glass" style="text-align:center;">
+    <button class="close" type="button" onclick="hide('neonQuoteModal')">×</button>
+    <h2 style="margin-bottom:4px;">🖼️ Neon Typography Poster</h2>
+    <p class="meta" style="margin-bottom:10px;">Turn any quote or lyric into a glowing cyber poster!</p>
+    <input id="neonQuoteInput" type="text" maxlength="80" placeholder="Type quote (e.g. BUILD YOUR OWN UNIVERSE)" oninput="renderNeonQuoteCanvas()" style="margin:0 0 10px;padding:10px;font-size:13px;">
+    <canvas id="neonQuoteCanvas" width="320" height="320" style="width:100%;max-width:250px;aspect-ratio:1;border-radius:16px;border:1px solid #34d399;background:#050811;"></canvas>
+    <button type="button" class="primary" style="width:100%;margin-top:10px;" onclick="useNeonQuotePost()">✨ Use Poster in Post</button>
+  </div>
+</div>
+
+
+<!-- V17 EDGE LIGHTING OVERLAY -->
+<div id="neonEdgeAuraFrame" class="neon-edge-aura-frame" hidden aria-hidden="true"></div>
+
+<!-- FUTURE INFO GUIDE MODAL (Opened via 'i' button in Settings -> Futures) -->
+<div class="modal" id="futureInfoModal" onclick="if(event.target===this)hide('futureInfoModal')">
+  <div class="modalbox glass" style="max-width:380px;">
+    <button class="close" type="button" onclick="hide('futureInfoModal')">×</button>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+      <span style="width:34px;height:34px;border-radius:50%;background:rgba(14,165,233,0.2);border:1px solid #38bdf8;color:#38bdf8;display:grid;place-items:center;font-weight:800;font-family:Georgia,serif;">i</span>
+      <h2 id="futureInfoTitle" style="font-size:17px;margin:0;">Feature Guide</h2>
+    </div>
+    <p id="futureInfoSummary" class="meta" style="color:#7dd3fc;margin-bottom:10px;"></p>
+    <div id="futureInfoBody" style="padding:12px 14px;border-radius:14px;background:rgba(15,23,42,0.85);border:1px solid rgba(56,189,248,0.25);font-size:13px;line-height:1.6;color:#f1f5f9;"></div>
+  </div>
+</div>
+
+<!-- V17 MODALS -->
+<!-- 1. 360 CYBER PANORAMA VIEWER -->
+<div class="modal" id="panoramaModal" onclick="if(event.target===this)hide('panoramaModal')">
+  <div class="modalbox glass" style="text-align:center;">
+    <button class="close" type="button" onclick="hide('panoramaModal')">×</button>
+    <h2 style="margin-bottom:4px;">🧭 360° Cyber Panorama</h2>
+    <p class="meta" style="margin-bottom:10px;">Drag left or right across the horizon to pan 360°!</p>
+    <div id="panoramaViewport" class="panorama-viewport" onpointermove="panPanoramaView(event)" onpointerdown="startPanoramaDrag(event)">
+      <div id="panoramaStrip" class="panorama-strip"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 2. LIVE PODCAST / AUDIO SPACE STAGE -->
+<div class="modal" id="audioStageModal" onclick="if(event.target===this)hide('audioStageModal')">
+  <div class="modalbox glass" style="text-align:center;">
+    <button class="close" type="button" onclick="hide('audioStageModal')">×</button>
+    <h2 style="margin-bottom:4px;">🎙️ Live Audio Space Stage</h2>
+    <p class="meta" style="margin-bottom:12px;">Live creator voice room • Tap mic to speak or drop reactions!</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;">
+      <div class="glass" style="padding:10px;border-radius:14px;border-color:#38bdf8;">
+        <span style="font-size:24px;">🎧</span>
+        <strong style="display:block;font-size:11px;margin-top:4px;">@you (Host)</strong>
+        <small id="stageMicStatus" style="font-size:10px;color:#4ade80;">● Mic Live</small>
+      </div>
+      <div class="glass" style="padding:10px;border-radius:14px;">
+        <span style="font-size:24px;">🔥</span>
+        <strong style="display:block;font-size:11px;margin-top:4px;">@alex.design</strong>
+        <small style="font-size:10px;color:#94a3b8;">Speaker</small>
+      </div>
+      <div class="glass" style="padding:10px;border-radius:14px;">
+        <span style="font-size:24px;">✨</span>
+        <strong style="display:block;font-size:11px;margin-top:4px;">@sarah.official</strong>
+        <small style="font-size:10px;color:#94a3b8;">Listening</small>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:center;">
+      <button type="button" class="primary" style="flex:1;" onclick="toggleAudioStageMic()">🎙️ Toggle Mic</button>
+      <button type="button" class="secondary" onclick="toast('👏 Applause sent to stage!')">👏</button>
+      <button type="button" class="secondary" onclick="toast('🔥 Fire reaction sent!')">🔥</button>
+    </div>
+  </div>
+</div>
+
+<!-- 3. INTERACTIVE TRADING CARD PROFILE GENERATOR -->
+<div class="modal" id="cyberCardModal" onclick="if(event.target===this)hide('cyberCardModal')">
+  <div class="modalbox glass" style="text-align:center;max-width:350px;">
+    <button class="close" type="button" onclick="hide('cyberCardModal')">×</button>
+    <h2 style="margin-bottom:6px;">🃏 Cyber Creator Card</h2>
+    <div id="cyberTradingCardBody" class="cyber-trading-card"></div>
+    <button type="button" class="primary" style="width:100%;margin-top:12px;" onclick="toast('🃏 Cyber Trading Card copied to share!')">↗ Share Creator Card</button>
+  </div>
+</div>
+
+<!-- 4. DAILY BRAIN-TEASER TRIVIA -->
+<div class="modal" id="dailyTriviaModal" onclick="if(event.target===this)hide('dailyTriviaModal')">
+  <div class="modalbox glass" style="text-align:center;max-width:370px;">
+    <button class="close" type="button" onclick="hide('dailyTriviaModal')">×</button>
+    <h2 style="margin-bottom:4px;">🧠 Daily VYBE Trivia</h2>
+    <p class="meta" style="margin-bottom:12px;">Answer today's question to win <b>+30 🪙 VYBE Coins</b>!</p>
+    <div style="padding:12px;border-radius:14px;background:rgba(15,23,42,0.85);border:1px solid #38bdf8;margin-bottom:12px;">
+      <strong style="font-size:14px;color:#fff;">Which protocol powers real-time instant chat & live sync in modern web apps?</strong>
+    </div>
+    <div style="display:grid;gap:8px;">
+      <button type="button" class="secondary" onclick="submitDailyTrivia(true)">⚡ WebSockets / Realtime</button>
+      <button type="button" class="secondary" onclick="submitDailyTrivia(false)">📠 Fax Machine</button>
+      <button type="button" class="secondary" onclick="submitDailyTrivia(false)">📼 VHS Tape</button>
+    </div>
+  </div>
+</div>
+
+<!-- 5. PINNED TOP-3 PROFILE SHOWCASE -->
+<div class="modal" id="pinnedShowcaseModal" onclick="if(event.target===this)hide('pinnedShowcaseModal')">
+  <div class="modalbox glass" style="text-align:center;">
+    <button class="close" type="button" onclick="hide('pinnedShowcaseModal')">×</button>
+    <h2 style="margin-bottom:4px;">📌 Pinned Top-3 Showcase</h2>
+    <p class="meta" style="margin-bottom:12px;">Your top 3 highlighted moments on VYBE</p>
+    <div class="grid" style="grid-template-columns:repeat(3,1fr);gap:8px;">
+      <div class="tile" style="height:130px;"><img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=400"><span>#1 Top Vibe</span></div>
+      <div class="tile" style="height:130px;"><img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400"><span>#2 Night Ride</span></div>
+      <div class="tile" style="height:130px;"><img src="https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=400"><span>#3 Horizon</span></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- V18 ULTRA-UNIQUE MODALS -->
+<!-- 1. TELEPATHY SYNC TEST -->
+<div class="modal" id="telepathyModal" onclick="if(event.target===this)hide('telepathyModal')">
+  <div class="modalbox glass" style="text-align:center;max-width:360px;">
+    <button class="close" type="button" onclick="hide('telepathyModal')">×</button>
+    <h2 style="margin-bottom:4px;">🔮 Telepathy Mind-Read Test</h2>
+    <p class="meta" style="margin-bottom:12px;">Pick one cyber symbol — see if your friend chose the exact same one!</p>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px;">
+      <button type="button" class="secondary" style="padding:18px;font-size:26px;" onclick="playTelepathySymbol('⚡')">⚡</button>
+      <button type="button" class="secondary" style="padding:18px;font-size:26px;" onclick="playTelepathySymbol('🌙')">🌙</button>
+      <button type="button" class="secondary" style="padding:18px;font-size:26px;" onclick="playTelepathySymbol('🔥')">🔥</button>
+      <button type="button" class="secondary" style="padding:18px;font-size:26px;" onclick="playTelepathySymbol('💎')">💎</button>
+    </div>
+    <p id="telepathyResultText" style="font-size:13px;font-weight:800;color:#e879f9;min-height:24px;">Tap a symbol to transmit!</p>
+  </div>
+</div>
+
+<!-- 2. CYBER SPIDER-WEB RELATIONSHIP GRAPH -->
+<div class="modal" id="spiderWebModal" onclick="if(event.target===this)hide('spiderWebModal')">
+  <div class="modalbox glass" style="text-align:center;">
+    <button class="close" type="button" onclick="hide('spiderWebModal')">×</button>
+    <h2 style="margin-bottom:4px;">🕸️ Cyber Relationship Web</h2>
+    <p class="meta" style="margin-bottom:10px;">Tap any connected creator node to jump into DM!</p>
+    <div class="constellation-sky" style="height:230px;">
+      <svg viewBox="0 0 300 230" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;">
+        <circle cx="150" cy="115" r="48" fill="none" stroke="rgba(56,189,248,0.25)" stroke-dasharray="3 3"/>
+        <circle cx="150" cy="115" r="92" fill="none" stroke="rgba(168,85,247,0.25)" stroke-dasharray="3 3"/>
+        <line x1="150" y1="115" x2="65" y2="55" stroke="rgba(56,189,248,0.4)"/>
+        <line x1="150" y1="115" x2="235" y2="60" stroke="rgba(56,189,248,0.4)"/>
+        <line x1="150" y1="115" x2="230" y2="175" stroke="rgba(56,189,248,0.4)"/>
+        <line x1="150" y1="115" x2="70" y2="175" stroke="rgba(56,189,248,0.4)"/>
+      </svg>
+      <div class="constellation-core">🕸️ YOU</div>
+      <div id="spiderWebNodesLayer"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 3. VOICE-PRINT AURA WAVEFORM SCANNER -->
+<div class="modal" id="voiceAuraModal" onclick="if(event.target===this)hide('voiceAuraModal')">
+  <div class="modalbox glass" style="text-align:center;max-width:360px;">
+    <button class="close" type="button" onclick="hide('voiceAuraModal')">×</button>
+    <h2 style="margin-bottom:4px;">🧬 Voice-Print Aura Scanner</h2>
+    <p class="meta" style="margin-bottom:12px;">Speak for 3 seconds to scan your vocal frequency & aura color!</p>
+    <div id="voiceAuraResultCard" style="padding:16px;border-radius:16px;background:rgba(15,23,42,0.85);border:1px solid #38bdf8;margin-bottom:12px;">
+      <span style="font-size:32px;">🎙️</span>
+      <p style="font-size:13px;color:#cbd5e1;margin-top:6px;">Ready to scan vocal frequency</p>
+    </div>
+    <button type="button" class="primary" style="width:100%;" onclick="runVoiceAuraScan()">🧬 Scan My Voice (3s)</button>
+  </div>
+</div>
+
+<!-- 4. CANDLE-BLOWING BIRTHDAY / WISH MIC -->
+<div class="modal" id="candleBlowModal" onclick="if(event.target===this)closeCandleBlowModal()">
+  <div class="modalbox glass" style="text-align:center;max-width:350px;">
+    <button class="close" type="button" onclick="closeCandleBlowModal()">×</button>
+    <h2 style="margin-bottom:4px;">🕯️ Make a Wish & Blow!</h2>
+    <p class="meta" style="margin-bottom:12px;">Blow air into your phone mic (or tap flame) to make your wish!</p>
+    <div id="cyberCandleStage" onclick="extinguishCyberCandle()" style="padding:22px;border-radius:18px;background:#050811;border:1px solid #f59e0b;cursor:pointer;margin-bottom:12px;">
+      <div id="candleFlameIcon" style="font-size:54px;transition:transform 0.2s;">🔥</div>
+      <div style="font-size:38px;margin-top:-10px;">🕯️</div>
+    </div>
+    <button type="button" class="primary" style="width:100%;" onclick="startMicBlowDetector()">🌬️ Activate Mic Blow Sensor</button>
+  </div>
+</div>
+
+<!-- 5. KARMA & VIBE RESONANCE -->
+<div class="modal" id="karmaModal" onclick="if(event.target===this)hide('karmaModal')">
+  <div class="modalbox glass" style="text-align:center;max-width:360px;">
+    <button class="close" type="button" onclick="hide('karmaModal')">×</button>
+    <h2 style="margin-bottom:4px;">🧭 Positive Karma Wave</h2>
+    <p class="meta" style="margin-bottom:12px;">Your community kindness & interaction resonance score</p>
+    <div style="padding:16px;border-radius:16px;background:linear-gradient(135deg,rgba(250,204,21,0.16),rgba(14,165,233,0.16));border:1px solid #facc15;">
+      <strong id="karmaPointsDisplay" style="font-size:28px;color:#fde047;">✨ 420 Karma</strong>
+      <p style="font-size:12px;color:#e2e8f0;margin-top:6px;">Golden Comment Aura: <b>ACTIVE</b></p>
+    </div>
+  </div>
+</div>
+
+<!-- 6. CASSETTE TAPE MIXTAPE MAKER -->
+<div class="modal" id="cassetteModal" onclick="if(event.target===this)hide('cassetteModal')">
+  <div class="modalbox glass" style="text-align:center;">
+    <button class="close" type="button" onclick="hide('cassetteModal')">×</button>
+    <h2 style="margin-bottom:4px;">📼 Cyber Cassette Mixtape</h2>
+    <p class="meta" style="margin-bottom:10px;">Create a 90s mixtape gift card for your friend!</p>
+    <input id="cassetteTitleInput" type="text" maxlength="32" placeholder="Mixtape Title (e.g. Midnight Drive Vol.1)" style="margin:6px 0;padding:10px;font-size:13px;">
+    <input id="cassetteTracksInput" type="text" maxlength="80" placeholder="3 Tracks (e.g. Starboy, Blinding Lights, After Hours)" style="margin:6px 0 12px;padding:10px;font-size:13px;">
+    <button type="button" class="primary" style="width:100%;" onclick="sendCassetteMixtapeDM()">📼 Gift Cassette in DM</button>
+  </div>
+</div>
+
+<!-- 7. BLINK / FOCUS STARE CHALLENGE -->
+<div class="modal" id="focusStareModal" onclick="if(event.target===this)closeFocusStareModal()">
+  <div class="modalbox glass" style="text-align:center;max-width:350px;">
+    <button class="close" type="button" onclick="closeFocusStareModal()">×</button>
+    <h2 style="margin-bottom:4px;">👁️ 15s Cyber Eye Focus</h2>
+    <p class="meta" style="margin-bottom:12px;">Keep your eyes locked on the Cyber Eye without touching screen!</p>
+    <div id="cyberEyeOrb" style="width:120px;height:120px;margin:0 auto 12px;border-radius:50%;border:2px solid #38bdf8;display:grid;place-items:center;font-size:52px;box-shadow:0 0 28px rgba(56,189,248,0.5);">👁️</div>
+    <p id="focusStareTimer" style="font-size:16px;font-weight:800;color:#7dd3fc;margin-bottom:10px;">15.0s</p>
+    <button type="button" class="primary" style="width:100%;" onclick="startFocusStareTimer()">▶ Start 15s Focus</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script src="cloudinary.js"></script>
+<script src="app.js"></script>
+<script src="features.js"></script>
+<script src="vybe-bootstrap.js"></script>
 </body>
 </html>
