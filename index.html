@@ -35,12 +35,8 @@
 
 <main class="main">
 <header class="topbar">
- <div class="brand" style="display:none;font-size:25px;margin:0" id="mobileBrand"><span class="vybe-v-logo cyber-logo" aria-hidden="true">V</span><span>VYBE</span></div>
- <div id="searchWrap" class="search-wrap">
-  <input id="topSearchInput" class="search" placeholder="⌕  Search VYBE..." autocomplete="off" aria-label="Search VYBE" aria-controls="searchSuggestions" aria-expanded="false">
-  <button id="searchClearButton" class="search-clear" type="button" aria-label="Clear search">✕</button>
-  <div id="searchSuggestions" class="search-suggestions" role="listbox" aria-label="Matching profiles"></div>
- </div>
+ <div class="brand" style="display:none;font-size:25px;margin:0" id="mobileBrand"><span class="vybe-center-brand-text">VYBE</span></div>
+
 
  <div class="highlight-overlay" id="highlightModal" aria-hidden="true" onclick="if(event.target===this)closeHighlightModal()">
   <section class="highlight-dialog" role="dialog" aria-modal="true" aria-labelledby="highlightTitle">
@@ -51,6 +47,11 @@
   </section>
  </div>
  <div class="top-actions">
+  <button class="icon-btn" type="button" aria-label="Spider-Web Relationship Graph" title="Cyber Spider-Web Relationship Graph" data-vybe-feature="spider_web_graph" data-vybe-label="🕸️ Spider-Web Relationship Graph" data-vybe-desc="Interactive glowing network of your close friends & mutuals" data-vybe-guide="Idhu enna pannum: Unga close friends & DM contacts-ai glowing neon spider-web network-aa kaattum. Eppadi use panradhu: Top bar-la 🕸️ icon tap panni node-ai drag pannunga alladhu tap panni chat open pannunga." onclick="openSpiderWebModal()">🕸️</button>
+  <button class="icon-btn" type="button" aria-label="Voice-Print Aura Scanner" title="Voice-Print Aura Waveform Scanner" data-vybe-feature="voice_aura_scanner" data-vybe-label="🧬 Voice-Print Aura Scanner" data-vybe-desc="Scan 3s of your voice to reveal your Cyber Aura color" data-vybe-guide="Idhu enna pannum: 3 seconds voice frequency analyze panni unga Voice Aura & personality vibe card kaattum. Eppadi use panradhu: Top bar-la 🧬 icon tap panni Scan My Voice press pannunga." onclick="openVoiceAuraModal()">🧬</button>
+  <button class="icon-btn" type="button" aria-label="Candle-Blowing Birthday Wish" title="Candle-Blowing Mic Wish" data-vybe-feature="candle_blow_wish" data-vybe-label="🕯️ Candle-Blowing Wish Mic" data-vybe-desc="Blow air into your phone mic to blow out the digital candle!" data-vybe-guide="Idhu enna pannum: Phone mic-la real-aa oodhuna (blow air) digital cyber candle flame ananju confetti vedikkum. Eppadi use panradhu: Top bar-la 🕯️ icon tap panni Mic Blow Listen on pannunga." onclick="openCandleBlowModal()">🕯️</button>
+  <button class="icon-btn" type="button" aria-label="Karma Resonance Ripple" title="Karma & Vibe Resonance Score" data-vybe-feature="karma_ripple" data-vybe-label="🧭 Karma & Vibe Resonance" data-vybe-desc="Boost your positive karma wave & golden comment aura" data-vybe-guide="Idhu enna pannum: Mathavangalukku like/comment podumbodhu unga Positive Karma Wave & Golden Comment Aura build aagum. Eppadi use panradhu: Top bar-la 🧭 icon tap panni unga Karma level paarunga." onclick="openKarmaModal()">🧭</button>
+  <button class="icon-btn" type="button" aria-label="Focus Stare Challenge" title="15s Cyber Eye Focus Stare Game" data-vybe-feature="focus_stare_game" data-vybe-label="👁️ Focus Stare Challenge" data-vybe-desc="Stare at the Cyber Eye for 15s without blinking to win +40 Coins" data-vybe-guide="Idhu enna pannum: 15 seconds distract aagama Cyber Eye-ai focus panna Iron Focus badge & +40 VYBE Coins kidaikkum. Eppadi use panradhu: Top bar-la 👁️ icon tap panni Start Stare press pannunga." onclick="openFocusStareModal()">👁️</button>
   <button class="icon-btn" type="button" aria-label="360 Cyber Panorama" title="360° Cyber Panorama Viewer" data-vybe-feature="panorama_360" data-vybe-label="🧭 360° Cyber Panorama Viewer" data-vybe-desc="Explore wide scenic photos in interactive 360° pan mode" data-vybe-guide="Idhu enna pannum: Wide scenic photos-ai 360° interactive panorama view-la kaattum. Eppadi use panradhu: Top bar-la 🧭 icon tap panni photo mela finger drag panna 360° panoramic view rotate aagum." onclick="openPanoramaModal()">🧭</button>
   <button class="icon-btn" type="button" aria-label="Live Audio Space Stage" title="Live Podcast / Audio Space Stage" data-vybe-feature="audio_stage" data-vybe-label="🎙️ Live Podcast / Audio Stage" data-vybe-desc="Host or join live voice hangout rooms with emoji reactions" data-vybe-guide="Idhu enna pannum: Friends kooda live voice stage hangout nadathalaam. Eppadi use panradhu: Top bar-la 🎙️ icon tap panni Mic Toggle on pannunga, audience emojis (🔥👏❤️) anuppalaam." onclick="openAudioStageModal()">🎙️</button>
   <button class="icon-btn" type="button" aria-label="Cyber Creator Trading Card" title="Interactive Trading Card Profile" data-vybe-feature="cyber_card" data-vybe-label="🃏 Cyber Creator Trading Card" data-vybe-desc="Generate your holographic stats trading card" data-vybe-guide="Idhu enna pannum: Unga streak, coins & creator rank base panni holographic trading card generate pannum. Eppadi use panradhu: Top bar-la 🃏 icon tap panni card-ai paathu friends-kku share pannunga." onclick="openCyberCardModal()">🃏</button>
@@ -133,7 +134,12 @@
  <div id="feed"></div>
 </section>
 <section id="explore" class="page">
- <h2 class="heading">Discover</h2><p class="subheading" style="margin-bottom:16px">Discover amazing content, people and ideas.</p>
+ <h2 class="heading">Discover</h2>
+ <div id="searchWrap" class="search-wrap explore-search-wrap">
+  <input id="topSearchInput" class="search" placeholder="⌕  Search VYBE..." autocomplete="off" aria-label="Search VYBE" aria-controls="searchSuggestions" aria-expanded="false">
+  <button id="searchClearButton" class="search-clear" type="button" aria-label="Clear search">✕</button>
+  <div id="searchSuggestions" class="search-suggestions" role="listbox" aria-label="Matching profiles"></div>
+ </div><p class="subheading" style="margin-bottom:16px">Discover amazing content, people and ideas.</p>
  <div class="explore-filter-bar" id="exploreFilterBar" role="group" aria-label="Filter Explore media">
   <button class="explore-filter-chip active" type="button" data-explore-filter="all" aria-pressed="true" onclick="setExploreFilter('all')">All</button>
   <button class="explore-filter-chip" type="button" data-explore-filter="trending" aria-pressed="false" onclick="setExploreFilter('trending')">🔥 Trending</button>
@@ -168,6 +174,9 @@
    <img class="dm-header-avatar" id="dmHeaderAvatar" src="" alt="" style="display:none">
    <div class="dm-header-copy"><span class="dm-header-title" id="dmTitle">Messages</span><span class="dm-header-subtitle" id="dmSubtitle">Your conversations</span></div>
       <button class="dm-header-button" type="button" aria-label="Icebreaker Spin Prompt" title="1-Tap Icebreaker Question" data-vybe-feature="dm_icebreaker" data-vybe-label="🎲 DM Icebreaker Spin-Prompt" data-vybe-desc="Generate fun conversation starter questions inside DM" data-vybe-guide="Idhu enna pannum: Chat-la enna pesuradhu nu theriyalana instant fun question generate panni anuppum. Eppadi use panradhu: DM chat open panni header-la irukkira 🎲 icon-ai tap pannunga." onclick="sendDMIcebreakerPrompt()" style="margin-right:4px;color:#38bdf8;">🎲</button>
+   <button class="dm-header-button" type="button" aria-label="Telepathy Sync Game" title="Live Telepathy Mind-Read Game" data-vybe-feature="telepathy_sync" data-vybe-label="🔮 DM Telepathy Sync Test" data-vybe-desc="Pick a hidden symbol & test 100% mind-read sync with your friend" data-vybe-guide="Idhu enna pannum: 4 hidden symbols-la onna choose panni unga friend-oda telepathy sync test pannum. Eppadi use panradhu: DM header-la 🔮 icon tap panni symbol choose pannunga." onclick="openTelepathyModal()" style="margin-right:4px;color:#e879f9;">🔮</button>
+   <button class="dm-header-button" type="button" aria-label="Cassette Mixtape Maker" title="Send 90s Cyber Cassette Mixtape" data-vybe-feature="cassette_mixtape" data-vybe-label="📼 DM Cassette Mixtape Maker" data-vybe-desc="Create & gift a rotating 90s cyber cassette tape in DM" data-vybe-guide="Idhu enna pannum: 3 favorite tracks & dedication note-oda rotating 90s Cassette Tape DM-la gift pannum. Eppadi use panradhu: DM header-la 📼 icon tap panni track names enter panni send pannunga." onclick="openCassetteModal()" style="margin-right:4px;color:#facc15;">📼</button>
+   <button class="dm-header-button" type="button" aria-label="Time-Zone Sunset Sync" title="Share Live Sky & Sunset Card" data-vybe-feature="timezone_sunset_sync" data-vybe-label="🌌 DM Time-Zone Sunset Sync" data-vybe-desc="Send your live sky & time-zone mood card in DM" data-vybe-guide="Idhu enna pannum: Unga current time & sky mood-ai glowing sunset/midnight card-aa DM-la send pannum. Eppadi use panradhu: DM header-la 🌌 icon-ai tap pannunga." onclick="sendTimezoneSkyDM()" style="margin-right:4px;color:#38bdf8;">🌌</button>
    <button class="dm-header-button" type="button" aria-label="Neon Theremin Synth" title="Voice-Pitch Theremin Melody" data-vybe-feature="dm_theremin" onclick="openThereminModal()" style="margin-right:4px;color:#c084fc;">〰️</button>
    <button class="dm-header-button" type="button" aria-label="Live Typing Duel" title="15-Sec Typing Race" data-vybe-feature="dm_typing_duel" onclick="openTypingDuelModal()" style="margin-right:4px;color:#fde047;">⌨️</button>
    <button class="dm-header-button" type="button" aria-label="Squad Hangout Planner" title="Hangout & Split-Bill Planner" data-vybe-feature="dm_hangout" onclick="openHangoutPlannerModal()" style="margin-right:4px;color:#34d399;">🧾</button>
@@ -177,12 +186,16 @@
   </header>
   <div class="dm-inbox" id="dmInbox"></div>
   <div class="dm-thread" id="dmThread" style="display:none" aria-live="polite"></div>
-    <div class="dm-quick-burst" aria-label="Quick emoji burst">
+    <div class="dm-quick-burst" id="dmQuickBurstBar" style="display:none" aria-label="Quick emoji burst">
    <button type="button" onclick="sendQuickDMBurst('🔥')">🔥</button>
    <button type="button" onclick="sendQuickDMBurst('❤️')">❤️</button>
    <button type="button" onclick="sendQuickDMBurst('😂')">😂</button>
    <button type="button" onclick="sendQuickDMBurst('💯')">💯</button>
    <button type="button" onclick="sendQuickDMBurst('👋')">👋</button>
+  </div>
+  <div id="dmReplyBanner" class="dm-reply-banner" hidden>
+   <span id="dmReplyBannerText" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Replying...</span>
+   <button type="button" onclick="cancelDMReply()" style="background:none;border:0;color:#fff;font-size:15px;">✕</button>
   </div>
   <form class="dm-composer" id="dmComposer" onsubmit="sendMessage(event)" style="display:none">
    <div class="dm-composer-tools">
@@ -198,6 +211,16 @@
    <button class="dm-tool-button" id="dmVoiceButton" type="button" aria-label="Record voice note" onclick="toggleVoiceNoteRecording()">🎙</button>
    <button class="dm-send" id="dmSendButton" type="submit">Send</button>
   </form>
+ </section>
+</div>
+
+
+<div class="dm-action-overlay" id="dmMessageActionSheet" aria-hidden="true" onclick="if(event.target===this)closeDMMessageActionSheet()">
+ <section class="dm-action-sheet" role="dialog" aria-modal="true" aria-label="Message actions">
+  <button type="button" onclick="replyToSelectedDMMessage()">↩ Reply to Message</button>
+  <button type="button" onclick="deleteDMMessageForMe()">🗑 Delete for Me</button>
+  <button id="dmDeleteBothBtn" class="delete-conversation-action" type="button" onclick="deleteDMMessageForBoth()">🔥 Delete for Both</button>
+  <button type="button" onclick="closeDMMessageActionSheet()">Cancel</button>
  </section>
 </div>
 
@@ -219,6 +242,7 @@
 <div class="reel-share-overlay" id="reelShareDrawer" aria-hidden="true" onclick="if(event.target===this)closeReelShareDrawer()">
  <section class="reel-share-sheet" role="dialog" aria-modal="true" aria-labelledby="reelShareTitle">
   <header class="reel-share-header"><h2 id="reelShareTitle">Share reel</h2><button class="comments-close" type="button" aria-label="Close share sheet" onclick="closeReelShareDrawer()">✕</button></header>
+  <button type="button" class="primary" style="width:100%;margin-bottom:12px;" onclick="shareReelToStory()">➕ Add Reel to Your Story</button>
   <div id="reelShareContacts"></div>
  </section>
 </div>
@@ -301,6 +325,8 @@
   <button class="media-picker" type="button" style="border-color:#34d399;color:#a7f3d0;" data-vybe-feature="quote_poster" onclick="openNeonQuoteModal()">🖼️ Quote Poster</button>
   <button class="media-picker" type="button" style="border-color:#fb923c;color:#fed7aa;" data-vybe-feature="vhs_camcorder" data-vybe-label="📸 Vintage 1998 Camcorder" data-vybe-desc="Add REC 1998 retro camcorder stamp in Create Post" data-vybe-guide="Idhu enna pannum: Create Post-la 1998 VHS camcorder date stamp & retro filter-ai post-kku add pannum. Eppadi use panradhu: Create Post open panni 📸 1998 Cam button tap pannunga." onclick="attachVHSCamcorderTag()">📸 1998 Cam</button>
   <button class="media-picker" type="button" style="border-color:#22d3ee;color:#a5f3fc;" data-vybe-feature="time_warp_reveal" data-vybe-label="⏳ Time-Warp Scan Reveal" data-vybe-desc="Add interactive time-warp scan line reveal to posts" data-vybe-guide="Idhu enna pannum: Post media-la interactive Time-Warp scan line reveal effect set pannum. Eppadi use panradhu: Create Post-la ⏳ Time-Warp button tap panni post podunga; viewers tap panna scan line reveal aagum." onclick="attachTimeWarpTag()">⏳ Time-Warp</button>
+  <button class="media-picker" type="button" style="border-color:#a855f7;color:#e9d5ff;" data-vybe-feature="parallel_universe_post" data-vybe-label="⏳ Parallel-Universe Split Post" data-vybe-desc="Create a Universe A vs Universe B comparison post" data-vybe-guide="Idhu enna pannum: Ore post-la Universe A vs Universe B alternate reality slider post create pannum. Eppadi use panradhu: Create Post-la ⏳ Parallel Split button tap panni post podunga." onclick="attachParallelUniverseTag()">⏳ Parallel Split</button>
+  <button class="media-picker" type="button" style="border-color:#38bdf8;color:#7dd3fc;" data-vybe-feature="black_mirror_echo" data-vybe-label="🪞 Black-Mirror Shard Echo" data-vybe-desc="Tap to shatter mirror overlay & reveal hidden backstage note" data-vybe-guide="Idhu enna pannum: Post mela mirror shard overlay pottu, tap panna udainju secret backstage note kaattum. Eppadi use panradhu: Create Post-la 🪞 Mirror Echo button tap pannunga." onclick="attachBlackMirrorTag()">🪞 Mirror Echo</button>
  </div>
  <textarea id="caption" maxlength="2200" placeholder="Write a caption... Add hashtags with #"></textarea>
  <div style="display:flex;gap:6px;margin:-4px 0 8px;flex-wrap:wrap;">
@@ -480,7 +506,7 @@
   <div class="settings-handle"></div>
   <header class="settings-header"><button id="settingsBackButton" class="settings-close" type="button" aria-label="Back to settings" onclick="showSettingsHome()" style="display:none">←</button><h2 id="settingsSheetTitle">Settings</h2><button class="settings-close" type="button" aria-label="Close settings" onclick="closeSettingsSheet()">✕</button></header>
   <div id="settingsHome">
-   <div class="settings-version">VYBE v17.0 (Next-Gen Spatial, Audio & Creator Futures + Info Guide)</div>
+   <div class="settings-version">VYBE v18.0 (17 Core Fixes + 10 Ultra-Unique Futures Pack)</div>
    <div class="settings-menu">
     <button type="button" style="border-color:#38bdf8;background:linear-gradient(135deg,rgba(14,165,233,0.18),rgba(168,85,247,0.18));" onclick="showSettingsSubview('futures')">✨ Futures (Feature Controls) <span>ON / OFF ›</span></button>
     <button type="button" onclick="openSavedCollection()">Saved <span>›</span></button>
@@ -637,8 +663,8 @@
     <h2 style="margin-bottom:4px;">🔒 Secret PIN Vault</h2>
     <p class="meta" style="margin-bottom:12px;">Private hidden posts protected by your 4-digit PIN</p>
     <div id="vaultPinGate" style="text-align:center;padding:10px 0;">
-      <p id="vaultPinPrompt" style="font-size:13px;color:#7dd3fc;margin-bottom:10px;">Enter 4-digit PIN (Default: 1234)</p>
-      <input id="vaultPinInput" type="password" inputmode="numeric" maxlength="4" placeholder="••••" style="text-align:center;font-size:22px;letter-spacing:8px;max-width:160px;margin:0 auto 12px;">
+      <p id="vaultPinPrompt" style="font-size:13px;color:#7dd3fc;margin-bottom:10px;">Enter 6-character PIN (Numbers + Letters, Default: VYBE26)</p>
+      <input id="vaultPinInput" type="password" maxlength="6" placeholder="••••••" style="text-align:center;font-size:20px;letter-spacing:6px;max-width:190px;margin:0 auto 12px;text-transform:uppercase;">
       <div style="display:flex;gap:8px;justify-content:center;">
         <button type="button" class="primary" onclick="unlockSecretVault()">Unlock Vault</button>
         <button type="button" class="secondary" onclick="changeVaultPin()">Set New PIN</button>
@@ -1323,6 +1349,110 @@
       <div class="tile" style="height:130px;"><img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400"><span>#2 Night Ride</span></div>
       <div class="tile" style="height:130px;"><img src="https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=400"><span>#3 Horizon</span></div>
     </div>
+  </div>
+</div>
+
+
+<!-- V18 ULTRA-UNIQUE MODALS -->
+<!-- 1. TELEPATHY SYNC TEST -->
+<div class="modal" id="telepathyModal" onclick="if(event.target===this)hide('telepathyModal')">
+  <div class="modalbox glass" style="text-align:center;max-width:360px;">
+    <button class="close" type="button" onclick="hide('telepathyModal')">×</button>
+    <h2 style="margin-bottom:4px;">🔮 Telepathy Mind-Read Test</h2>
+    <p class="meta" style="margin-bottom:12px;">Pick one cyber symbol — see if your friend chose the exact same one!</p>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px;">
+      <button type="button" class="secondary" style="padding:18px;font-size:26px;" onclick="playTelepathySymbol('⚡')">⚡</button>
+      <button type="button" class="secondary" style="padding:18px;font-size:26px;" onclick="playTelepathySymbol('🌙')">🌙</button>
+      <button type="button" class="secondary" style="padding:18px;font-size:26px;" onclick="playTelepathySymbol('🔥')">🔥</button>
+      <button type="button" class="secondary" style="padding:18px;font-size:26px;" onclick="playTelepathySymbol('💎')">💎</button>
+    </div>
+    <p id="telepathyResultText" style="font-size:13px;font-weight:800;color:#e879f9;min-height:24px;">Tap a symbol to transmit!</p>
+  </div>
+</div>
+
+<!-- 2. CYBER SPIDER-WEB RELATIONSHIP GRAPH -->
+<div class="modal" id="spiderWebModal" onclick="if(event.target===this)hide('spiderWebModal')">
+  <div class="modalbox glass" style="text-align:center;">
+    <button class="close" type="button" onclick="hide('spiderWebModal')">×</button>
+    <h2 style="margin-bottom:4px;">🕸️ Cyber Relationship Web</h2>
+    <p class="meta" style="margin-bottom:10px;">Tap any connected creator node to jump into DM!</p>
+    <div class="constellation-sky" style="height:230px;">
+      <svg viewBox="0 0 300 230" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;">
+        <circle cx="150" cy="115" r="48" fill="none" stroke="rgba(56,189,248,0.25)" stroke-dasharray="3 3"/>
+        <circle cx="150" cy="115" r="92" fill="none" stroke="rgba(168,85,247,0.25)" stroke-dasharray="3 3"/>
+        <line x1="150" y1="115" x2="65" y2="55" stroke="rgba(56,189,248,0.4)"/>
+        <line x1="150" y1="115" x2="235" y2="60" stroke="rgba(56,189,248,0.4)"/>
+        <line x1="150" y1="115" x2="230" y2="175" stroke="rgba(56,189,248,0.4)"/>
+        <line x1="150" y1="115" x2="70" y2="175" stroke="rgba(56,189,248,0.4)"/>
+      </svg>
+      <div class="constellation-core">🕸️ YOU</div>
+      <div id="spiderWebNodesLayer"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 3. VOICE-PRINT AURA WAVEFORM SCANNER -->
+<div class="modal" id="voiceAuraModal" onclick="if(event.target===this)hide('voiceAuraModal')">
+  <div class="modalbox glass" style="text-align:center;max-width:360px;">
+    <button class="close" type="button" onclick="hide('voiceAuraModal')">×</button>
+    <h2 style="margin-bottom:4px;">🧬 Voice-Print Aura Scanner</h2>
+    <p class="meta" style="margin-bottom:12px;">Speak for 3 seconds to scan your vocal frequency & aura color!</p>
+    <div id="voiceAuraResultCard" style="padding:16px;border-radius:16px;background:rgba(15,23,42,0.85);border:1px solid #38bdf8;margin-bottom:12px;">
+      <span style="font-size:32px;">🎙️</span>
+      <p style="font-size:13px;color:#cbd5e1;margin-top:6px;">Ready to scan vocal frequency</p>
+    </div>
+    <button type="button" class="primary" style="width:100%;" onclick="runVoiceAuraScan()">🧬 Scan My Voice (3s)</button>
+  </div>
+</div>
+
+<!-- 4. CANDLE-BLOWING BIRTHDAY / WISH MIC -->
+<div class="modal" id="candleBlowModal" onclick="if(event.target===this)closeCandleBlowModal()">
+  <div class="modalbox glass" style="text-align:center;max-width:350px;">
+    <button class="close" type="button" onclick="closeCandleBlowModal()">×</button>
+    <h2 style="margin-bottom:4px;">🕯️ Make a Wish & Blow!</h2>
+    <p class="meta" style="margin-bottom:12px;">Blow air into your phone mic (or tap flame) to make your wish!</p>
+    <div id="cyberCandleStage" onclick="extinguishCyberCandle()" style="padding:22px;border-radius:18px;background:#050811;border:1px solid #f59e0b;cursor:pointer;margin-bottom:12px;">
+      <div id="candleFlameIcon" style="font-size:54px;transition:transform 0.2s;">🔥</div>
+      <div style="font-size:38px;margin-top:-10px;">🕯️</div>
+    </div>
+    <button type="button" class="primary" style="width:100%;" onclick="startMicBlowDetector()">🌬️ Activate Mic Blow Sensor</button>
+  </div>
+</div>
+
+<!-- 5. KARMA & VIBE RESONANCE -->
+<div class="modal" id="karmaModal" onclick="if(event.target===this)hide('karmaModal')">
+  <div class="modalbox glass" style="text-align:center;max-width:360px;">
+    <button class="close" type="button" onclick="hide('karmaModal')">×</button>
+    <h2 style="margin-bottom:4px;">🧭 Positive Karma Wave</h2>
+    <p class="meta" style="margin-bottom:12px;">Your community kindness & interaction resonance score</p>
+    <div style="padding:16px;border-radius:16px;background:linear-gradient(135deg,rgba(250,204,21,0.16),rgba(14,165,233,0.16));border:1px solid #facc15;">
+      <strong id="karmaPointsDisplay" style="font-size:28px;color:#fde047;">✨ 420 Karma</strong>
+      <p style="font-size:12px;color:#e2e8f0;margin-top:6px;">Golden Comment Aura: <b>ACTIVE</b></p>
+    </div>
+  </div>
+</div>
+
+<!-- 6. CASSETTE TAPE MIXTAPE MAKER -->
+<div class="modal" id="cassetteModal" onclick="if(event.target===this)hide('cassetteModal')">
+  <div class="modalbox glass" style="text-align:center;">
+    <button class="close" type="button" onclick="hide('cassetteModal')">×</button>
+    <h2 style="margin-bottom:4px;">📼 Cyber Cassette Mixtape</h2>
+    <p class="meta" style="margin-bottom:10px;">Create a 90s mixtape gift card for your friend!</p>
+    <input id="cassetteTitleInput" type="text" maxlength="32" placeholder="Mixtape Title (e.g. Midnight Drive Vol.1)" style="margin:6px 0;padding:10px;font-size:13px;">
+    <input id="cassetteTracksInput" type="text" maxlength="80" placeholder="3 Tracks (e.g. Starboy, Blinding Lights, After Hours)" style="margin:6px 0 12px;padding:10px;font-size:13px;">
+    <button type="button" class="primary" style="width:100%;" onclick="sendCassetteMixtapeDM()">📼 Gift Cassette in DM</button>
+  </div>
+</div>
+
+<!-- 7. BLINK / FOCUS STARE CHALLENGE -->
+<div class="modal" id="focusStareModal" onclick="if(event.target===this)closeFocusStareModal()">
+  <div class="modalbox glass" style="text-align:center;max-width:350px;">
+    <button class="close" type="button" onclick="closeFocusStareModal()">×</button>
+    <h2 style="margin-bottom:4px;">👁️ 15s Cyber Eye Focus</h2>
+    <p class="meta" style="margin-bottom:12px;">Keep your eyes locked on the Cyber Eye without touching screen!</p>
+    <div id="cyberEyeOrb" style="width:120px;height:120px;margin:0 auto 12px;border-radius:50%;border:2px solid #38bdf8;display:grid;place-items:center;font-size:52px;box-shadow:0 0 28px rgba(56,189,248,0.5);">👁️</div>
+    <p id="focusStareTimer" style="font-size:16px;font-weight:800;color:#7dd3fc;margin-bottom:10px;">15.0s</p>
+    <button type="button" class="primary" style="width:100%;" onclick="startFocusStareTimer()">▶ Start 15s Focus</button>
   </div>
 </div>
 

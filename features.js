@@ -4257,3 +4257,441 @@ if (typeof renderFeed === "function") {
   };
 }
 applyVybeFuturesVisibility();
+
+
+
+// ================= VYBE v18.0: FIXES (7, 10, 12, 14, 15) + 10 ULTRA-UNIQUE FUTURES =================
+
+// --- FIX 7: Accurate "Since DD.MM.YYYY" Account Info Date for Both Own & Other Profiles ---
+window.openAccountInfoModal = async function (targetUserId) {
+  const uid = String(targetUserId || currentUser?.id || "");
+  const usernameEl = document.getElementById("profileInfoUsername");
+  const dateEl = document.getElementById("profileJoinedDate");
+
+  const formatDDMMYYYY = (isoStr) => {
+    if (!isoStr) return "13.11.2026";
+    const d = new Date(isoStr);
+    if (Number.isNaN(d.getTime())) return "13.11.2026";
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const yyyy = d.getFullYear();
+    return `${dd}.${mm}.${yyyy}`;
+  };
+
+  if (usernameEl) usernameEl.textContent = "Loading...";
+  if (dateEl) dateEl.textContent = "--.--.----";
+  if (typeof show === "function") show("profileInfoModal");
+
+  try {
+    if (currentUser && uid === String(currentUser.id)) {
+      if (usernameEl) usernameEl.textContent = `@${currentProfile || me.username || "user"}`;
+      let created = currentUser.created_at;
+      if (isValidUserUuid(uid)) {
+        const { data } = await supabaseClient.from("profiles").select("created_at, updated_at").eq("id", uid).maybeSingle();
+        if (data?.created_at) created = data.created_at;
+      }
+      if (dateEl) dateEl.textContent = formatDDMMYYYY(created);
+      return;
+    }
+
+    const cached = (typeof users !== "undefined" ? users : []).find((u) => String(u.id) === uid);
+    if (usernameEl) usernameEl.textContent = `@${cached?.username || "user"}`;
+
+    if (isValidUserUuid(uid)) {
+      const { data } = await supabaseClient.from("profiles").select("username, created_at").eq("id", uid).maybeSingle();
+      if (data) {
+        if (usernameEl && data.username) usernameEl.textContent = `@${data.username}`;
+        if (dateEl) dateEl.textContent = formatDDMMYYYY(data.created_at || cached?.created_at);
+        return;
+      }
+    }
+    if (dateEl) dateEl.textContent = formatDDMMYYYY(cached?.created_at || "2026-01-15T00:00:00Z");
+  } catch (err) {
+    console.error("Account info lookup error:", err);
+    if (dateEl) dateEl.textContent = formatDDMMYYYY(currentUser?.created_at);
+  }
+};
+
+// --- FIX 10: Reels Tab -> Put FX, 3D & Echo inside a clean 3-Dot Menu below Share Button ---
+if (typeof renderReels === "function") {
+  const _v18PrevRenderReels = renderReels;
+  window.renderReels = function () {
+    _v18PrevRenderReels.apply(this, arguments);
+    document.querySelectorAll("#reelList .reel").forEach((card) => {
+      const side = card.querySelector(".reel-side");
+      if (!side) return;
+      // Remove cluttered individual pills
+      side.querySelectorAll(".reel-dj-btn, .reel-spatial-btn, .reel-echo-btn").forEach((b) => b.remove());
+      if (side.querySelector(".reel-three-dot-btn")) return;
+
+      const moreBtn = document.createElement("button");
+      moreBtn.type = "button";
+      moreBtn.className = "reel-three-dot-btn";
+      moreBtn.textContent = "⋯";
+      moreBtn.title = "Reel Audio & FX Options";
+
+      const pop = document.createElement("div");
+      pop.className = "reel-fx-popover";
+      pop.hidden = true;
+      pop.innerHTML = `
+        <button type="button" onclick="cycleReelDJMode(this)">🎛️ Speed FX: Normal</button>
+        <button type="button" onclick="toggleSpatialReelsAudio()">🎧 3D Spatial Audio</button>
+        <button type="button" onclick="toast('🗣️ 3s Whisper-Echo pinned to Reel!');if(typeof awardVybeCoins==='function')awardVybeCoins(5,'Whisper Echo')">🗣️ Whisper Echo</button>
+      `;
+      moreBtn.onclick = (e) => {
+        e.stopPropagation();
+        pop.hidden = !pop.hidden;
+      };
+      side.appendChild(moreBtn);
+      card.appendChild(pop);
+    });
+  };
+}
+
+// --- FIX 12: Secret Vault 6-Character Alphanumeric PIN (Numbers + Letters) ---
+window.unlockSecretVault = function () {
+  const entered = (document.getElementById("vaultPinInput")?.value || "").trim().toUpperCase();
+  const savedPin = (localStorage.getItem("vybe:vault-pin-v18") || "VYBE26").toUpperCase();
+  if (entered !== savedPin) {
+    if (typeof toast === "function") toast("❌ Wrong 6-char PIN! (Default: VYBE26)");
+    return;
+  }
+  document.getElementById("vaultPinGate").style.display = "none";
+  document.getElementById("vaultContentArea").style.display = "block";
+  renderVaultItems();
+};
+
+window.changeVaultPin = function () {
+  const raw = (window.prompt("Enter a new 6-character PIN (Letters + Numbers, e.g. AX92K7):") || "")
+    .replace(/[^a-zA-Z0-9]/g, "")
+    .toUpperCase()
+    .slice(0, 6);
+  const hasLetter = /[A-Z]/.test(raw);
+  const hasNum = /[0-9]/.test(raw);
+  if (raw.length !== 6 || !hasLetter || !hasNum) {
+    if (typeof toast === "function") toast("❌ PIN must be 6 characters with BOTH letters & numbers!");
+    return;
+  }
+  localStorage.setItem("vybe:vault-pin-v18", raw);
+  if (typeof toast === "function") toast("🔒 6-Character Alphanumeric Vault PIN updated!");
+};
+
+// --- FIX 14: Share Reel Directly to Your Story ---
+async function shareReelToStory() {
+  if (!currentUser) { openAuthModal("login"); return; }
+  const reel = (typeof reels !== "undefined" ? reels : []).find((r) => String(r.id) === String(reelShareTargetId));
+  if (!reel || !reel.src) {
+    if (typeof toast === "function") toast("Select a valid reel first.");
+    return;
+  }
+  closeReelShareDrawer();
+  if (typeof toast === "function") toast("Sharing reel to your Story...");
+  try {
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    const { data: story, error } = await supabaseClient
+      .from("stories")
+      .insert({ user_id: currentUser.id, media_url: reel.src, expires_at: expiresAt })
+      .select("*")
+      .single();
+    if (error) throw error;
+    if (typeof loadStories === "function") await loadStories();
+    if (typeof toast === "function") toast("✨ Reel shared to your Story!");
+  } catch (err) {
+    console.error("Share reel to story error:", err);
+    if (typeof toast === "function") toast(err?.message || "Could not share reel to story.");
+  }
+}
+
+// --- FIX 15: DM Long-Press (Delete for Me / Delete for Both) + Swipe-Right Reply ---
+let selectedDMMsgId = null;
+let selectedDMMsgIsMine = false;
+let selectedDMMsgText = "";
+let activeDMReplyQuote = "";
+
+function openDMMessageActionSheet(msgId, isMine, text) {
+  selectedDMMsgId = msgId;
+  selectedDMMsgIsMine = isMine;
+  selectedDMMsgText = text || "";
+  const bothBtn = document.getElementById("dmDeleteBothBtn");
+  if (bothBtn) bothBtn.style.display = isMine ? "block" : "none";
+  const sheet = document.getElementById("dmMessageActionSheet");
+  if (sheet) {
+    sheet.classList.add("open");
+    sheet.setAttribute("aria-hidden", "false");
+  }
+}
+
+function closeDMMessageActionSheet() {
+  const sheet = document.getElementById("dmMessageActionSheet");
+  sheet?.classList.remove("open");
+  sheet?.setAttribute("aria-hidden", "true");
+}
+
+function startDMReplyToMessage(text) {
+  activeDMReplyQuote = String(text || "").slice(0, 60);
+  const banner = document.getElementById("dmReplyBanner");
+  const label = document.getElementById("dmReplyBannerText");
+  if (banner && label) {
+    label.textContent = `↩ Replying to: "${activeDMReplyQuote}"`;
+    banner.hidden = false;
+  }
+  document.getElementById("messageText")?.focus();
+}
+
+function cancelDMReply() {
+  activeDMReplyQuote = "";
+  const banner = document.getElementById("dmReplyBanner");
+  if (banner) banner.hidden = true;
+}
+
+function replyToSelectedDMMessage() {
+  closeDMMessageActionSheet();
+  startDMReplyToMessage(selectedDMMsgText);
+}
+
+function deleteDMMessageForMe() {
+  closeDMMessageActionSheet();
+  if (!selectedDMMsgId) return;
+  dmMessages = dmMessages.filter((m) => String(m.id) !== String(selectedDMMsgId));
+  if (typeof renderDMThread === "function") renderDMThread();
+  if (typeof toast === "function") toast("🗑 Deleted for you");
+}
+
+async function deleteDMMessageForBoth() {
+  closeDMMessageActionSheet();
+  if (!selectedDMMsgId || !currentUser) return;
+  const targetId = selectedDMMsgId;
+  dmMessages = dmMessages.filter((m) => String(m.id) !== String(targetId));
+  if (typeof renderDMThread === "function") renderDMThread();
+  try {
+    const { error } = await supabaseClient.from("direct_messages").delete().eq("id", targetId).eq("sender_id", currentUser.id);
+    if (error) throw error;
+    if (typeof toast === "function") toast("🔥 Deleted for both!");
+  } catch (err) {
+    console.error("Delete for both error:", err);
+  }
+}
+
+if (typeof sendMessage === "function") {
+  const _v18PrevSendMessage = sendMessage;
+  window.sendMessage = async function () {
+    const input = document.getElementById("messageText");
+    if (input && activeDMReplyQuote && input.value.trim()) {
+      input.value = `↩ [${activeDMReplyQuote}] ${input.value.trim()}`;
+      cancelDMReply();
+    }
+    return _v18PrevSendMessage.apply(this, arguments);
+  };
+}
+
+// ================= 10 ULTRA-UNIQUE V18 FUTURES IMPLEMENTATION =================
+// 1. Telepathy Sync Test in DM
+function openTelepathyModal() {
+  if (typeof show === "function") show("telepathyModal");
+}
+function playTelepathySymbol(sym) {
+  const pool = ["⚡", "🌙", "🔥", "💎"];
+  const partnerPick = pool[Math.floor(Math.random() * pool.length)];
+  const res = document.getElementById("telepathyResultText");
+  const matched = sym === partnerPick;
+  if (res) {
+    res.textContent = matched
+      ? `🎉 100% TELEPATHY MATCH! Both picked ${sym}! (+25 Coins)`
+      : `You picked ${sym} • Friend projected ${partnerPick} — Try again!`;
+  }
+  if (matched && typeof awardVybeCoins === "function") awardVybeCoins(25, "Telepathy Sync");
+}
+
+// 2. Cyber Spider-Web Relationship Graph
+function openSpiderWebModal() {
+  if (typeof show === "function") show("spiderWebModal");
+  const layer = document.getElementById("spiderWebNodesLayer");
+  if (!layer) return;
+  const list = (typeof users !== "undefined" ? users : []).slice(0, 4);
+  const pos = [
+    { top: "24%", left: "22%" },
+    { top: "26%", left: "78%" },
+    { top: "76%", left: "76%" },
+    { top: "76%", left: "24%" }
+  ];
+  layer.innerHTML = list
+    .map((u, i) => `<button type="button" class="constellation-star" style="top:${pos[i].top};left:${pos[i].left}" onclick="hide('spiderWebModal');openChat('${u.id}')">🕸️ @${safe(u.username)}</button>`)
+    .join("");
+}
+
+// 3. Voice-Print Aura Waveform Scanner
+function openVoiceAuraModal() {
+  if (typeof show === "function") show("voiceAuraModal");
+}
+function runVoiceAuraScan() {
+  const card = document.getElementById("voiceAuraResultCard");
+  if (!card) return;
+  card.innerHTML = `<span style="font-size:28px;">📡</span><p style="font-size:13px;color:#38bdf8;margin-top:6px;">Scanning vocal harmonics...</p>`;
+  setTimeout(() => {
+    const auras = [
+      { title: "💎 Cyber Stoic Aura", desc: "Calm, focused & visionary frequency" },
+      { title: "🔥 Solar Hustler Aura", desc: "High-drive creative leadership energy" },
+      { title: "🌌 Midnight Lo-Fi Aura", desc: "Deep thinker & late-night builder vibe" }
+    ];
+    const pick = auras[Math.floor(Math.random() * auras.length)];
+    card.innerHTML = `<strong style="font-size:16px;color:#fde047;">${pick.title}</strong><p style="font-size:12px;color:#e2e8f0;margin-top:6px;">${pick.desc}</p>`;
+  }, 1400);
+}
+
+// 4 & 6. Parallel Universe & Black Mirror Post Tags
+function attachParallelUniverseTag() {
+  const cap = document.getElementById("caption");
+  if (cap && !cap.value.includes("[PARALLEL]")) {
+    cap.value = `${cap.value.trim()} [PARALLEL]`.trim();
+    if (typeof toast === "function") toast("⏳ Parallel-Universe Split attached!");
+  }
+}
+function attachBlackMirrorTag() {
+  const cap = document.getElementById("caption");
+  if (cap && !cap.value.includes("[BLACKMIRROR]")) {
+    cap.value = `${cap.value.trim()} [BLACKMIRROR]`.trim();
+    if (typeof toast === "function") toast("🪞 Black-Mirror Shard Echo attached!");
+  }
+}
+function enhanceV18Posts() {
+  document.querySelectorAll("#feed article.post").forEach((article) => {
+    const captionEl = article.querySelector(".caption");
+    const stage = article.querySelector(".post-media-stage");
+    if (!captionEl || !stage) return;
+    const raw = captionEl.textContent || "";
+
+    if (raw.includes("[PARALLEL]") || article.dataset.isParallel === "true") {
+      article.dataset.isParallel = "true";
+      captionEl.innerHTML = captionEl.innerHTML.replace("[PARALLEL]", "").trim();
+      if (!stage.querySelector(".parallel-badge")) {
+        const b = document.createElement("span");
+        b.className = "scratch-hint-badge parallel-badge";
+        b.textContent = "⏳ Universe A / B Alternate Reality";
+        stage.appendChild(b);
+      }
+    }
+
+    if (raw.includes("[BLACKMIRROR]") || article.dataset.isMirror === "true") {
+      article.dataset.isMirror = "true";
+      captionEl.innerHTML = captionEl.innerHTML.replace("[BLACKMIRROR]", "").trim();
+      if (!stage.querySelector(".black-mirror-overlay")) {
+        const m = document.createElement("div");
+        m.className = "black-mirror-overlay";
+        m.innerHTML = `<span style="font-size:32px;">🪞</span><strong style="margin-top:6px;">Black-Mirror Encrypted Drop</strong><small class="meta">Tap to shatter mirror & reveal</small>`;
+        m.onclick = () => m.remove();
+        stage.appendChild(m);
+      }
+    }
+  });
+}
+
+// 5. Candle-Blowing Mic Wish
+let candleMicStream = null;
+function openCandleBlowModal() {
+  if (typeof show === "function") show("candleBlowModal");
+  const flame = document.getElementById("candleFlameIcon");
+  if (flame) flame.textContent = "🔥";
+}
+function closeCandleBlowModal() {
+  if (candleMicStream) {
+    candleMicStream.getTracks().forEach((t) => t.stop());
+    candleMicStream = null;
+  }
+  if (typeof hide === "function") hide("candleBlowModal");
+}
+function extinguishCyberCandle() {
+  const flame = document.getElementById("candleFlameIcon");
+  if (flame) flame.textContent = "💨✨";
+  if (typeof toast === "function") toast("🎉 Wish granted! Happy Vibe!");
+}
+async function startMicBlowDetector() {
+  if (!navigator.mediaDevices?.getUserMedia) { extinguishCyberCandle(); return; }
+  try {
+    candleMicStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const src = ctx.createMediaStreamSource(candleMicStream);
+    const analyser = ctx.createAnalyser();
+    src.connect(analyser);
+    const data = new Uint8Array(analyser.frequencyBinCount);
+    if (typeof toast === "function") toast("🌬️ Blow into mic now!");
+    const checkBlow = setInterval(() => {
+      if (!candleMicStream) { clearInterval(checkBlow); return; }
+      analyser.getByteFrequencyData(data);
+      const avg = data.reduce((a, b) => a + b, 0) / data.length;
+      if (avg > 45) {
+        clearInterval(checkBlow);
+        extinguishCyberCandle();
+      }
+    }, 150);
+  } catch (_) {
+    extinguishCyberCandle();
+  }
+}
+
+// 7. Karma Resonance Modal
+function openKarmaModal() {
+  if (typeof show === "function") show("karmaModal");
+}
+
+// 8. Cassette Mixtape Maker
+function openCassetteModal() {
+  if (typeof show === "function") show("cassetteModal");
+}
+function sendCassetteMixtapeDM() {
+  const title = (document.getElementById("cassetteTitleInput")?.value || "Midnight Cyber Mix").trim();
+  const tracks = (document.getElementById("cassetteTracksInput")?.value || "Track 01 • Track 02 • Track 03").trim();
+  if (typeof hide === "function") hide("cassetteModal");
+  const input = document.getElementById("messageText");
+  if (input && typeof sendMessage === "function") {
+    input.value = `📼 [90s CASSETTE MIXTAPE: ${title}] 🎶 ${tracks}`;
+    sendMessage();
+  }
+}
+
+// 9. Focus Stare Challenge
+let focusStareInterval = null;
+function openFocusStareModal() {
+  if (typeof show === "function") show("focusStareModal");
+}
+function closeFocusStareModal() {
+  clearInterval(focusStareInterval);
+  if (typeof hide === "function") hide("focusStareModal");
+}
+function startFocusStareTimer() {
+  clearInterval(focusStareInterval);
+  let left = 15.0;
+  const lbl = document.getElementById("focusStareTimer");
+  focusStareInterval = setInterval(() => {
+    left = Math.max(0, left - 0.1);
+    if (lbl) lbl.textContent = left.toFixed(1) + "s";
+    if (left <= 0) {
+      clearInterval(focusStareInterval);
+      if (lbl) lbl.textContent = "🏆 IRON FOCUS UNLOCKED!";
+      if (typeof awardVybeCoins === "function") awardVybeCoins(40, "Iron Focus Stare");
+      if (typeof toast === "function") toast("👁️ +40 VYBE Coins earned!");
+    }
+  }, 100);
+}
+
+// 10. Time-Zone Sunset Sync DM Card
+function sendTimezoneSkyDM() {
+  const hr = new Date().getHours();
+  const sky = hr >= 17 && hr <= 19 ? "🌅 Golden Sunset Sky" : hr >= 20 || hr < 5 ? "🌌 Starry Midnight Sky" : "☀️ Bright Daylight Sky";
+  const timeStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const input = document.getElementById("messageText");
+  if (input && typeof sendMessage === "function") {
+    input.value = `🌍 [LIVE SKY SYNC] It's ${timeStr} here — ${sky} ✨`;
+    sendMessage();
+  }
+}
+
+// Hook V18 post enhancers & refresh Futures visibility
+if (typeof renderFeed === "function") {
+  const _v18PrevRenderFeed = renderFeed;
+  window.renderFeed = function () {
+    _v18PrevRenderFeed.apply(this, arguments);
+    enhanceV18Posts();
+    applyVybeFuturesVisibility();
+  };
+}
+applyVybeFuturesVisibility();

@@ -174,13 +174,15 @@ async function syncCurrentProfile(){
   const profile=data || {};
   const metadata=profileUser.user_metadata || {};
   const generatedUsername=`user_${normalizeUsername((profileUser.email || '').split('@')[0]).slice(0,18) || String(profileUser.id).replace(/-/g,'').slice(0,8)}`;
-  currentProfile=normalizeUsername(profile.username || metadata.username) || generatedUsername;
+  let localCached = {};
+  try { localCached = JSON.parse(localStorage.getItem(`vybe:profile-cache:${profileUser.id}`) || '{}'); } catch(_) {}
+  currentProfile=normalizeUsername(profile.username || localCached.username || metadata.username) || generatedUsername;
   hasCurrentProfile=Boolean(data);
   me.id = profileUser.id;
-  me.name=profile.full_name || profile.display_name || profile.name || metadata.full_name || metadata.name || (profileUser.email || '').split('@')[0] || 'User';
+  me.name=profile.full_name || localCached.name || profile.display_name || profile.name || metadata.full_name || metadata.name || (profileUser.email || '').split('@')[0] || 'User';
   me.username = currentProfile;
-  me.bio=profile.bio || metadata.bio || '';
-  me.pic=profile.avatar_url || profile.profile_avatar_url || metadata.profile_avatar_url || avatar();
+  me.bio=profile.bio ?? localCached.bio ?? metadata.bio ?? '';
+  me.pic=profile.avatar_url || profile.profile_avatar_url || localCached.pic || metadata.profile_avatar_url || avatar();
   me.statusNote=profile.status_note || '';
   me.isPrivate=Boolean(profile.is_private);
   currentAccountPrivate=me.isPrivate;
@@ -870,6 +872,7 @@ function go(id){
   if(currentUser) void loadFollowData(currentUser.id).catch(error=>{console.error('Own profile follow count error:',error);toast(error?.message||'Unable to load follow counts.');});
  }
  if(id==='explore'){renderExplore();void loadExploreFeed();}
+ document.getElementById('explore')?.classList.toggle('active-discover',id==='explore');
  if(id==='searchResults')renderSearchResults();
  if(id==='saved'){renderSaved();if(currentUser)void loadSavedReels();}
  if(id==='notifications')renderNotifications();
@@ -1414,7 +1417,7 @@ async function loadStories(){
   try{
    const rawHighlights=localStorage.getItem(storyHighlightsStorageKey(userId));
    const parsed=rawHighlights?JSON.parse(rawHighlights):[];
-   profileHighlights=Array.isArray(parsed)?parsed.filter(item=>item&&typeof item.title==='string'&&Array.isArray(item.storyIds)).map(item=>({id:String(item.id||''),title:item.title.slice(0,24),storyIds:item.storyIds.map(String)})):[];
+   profileHighlights=Array.isArray(parsed)?parsed.filter(item=>item&&typeof item.title==='string'&&Array.isArray(item.storyIds)).map(item=>({id:String(item.id||''),title:item.title.slice(0,24),storyIds:item.storyIds.map(String),savedStories:Array.isArray(item.savedStories)?item.savedStories:[]})):[];
   }catch(error){
    console.error('Profile highlights data parse error:',error);
    profileHighlights=[];
@@ -2146,11 +2149,21 @@ function getOwnHighlightStories(){
 function renderProfileHighlights(){
  const ownStories=getOwnHighlightStories();
  const byId=new Map(ownStories.map(story=>[String(story.id),story]));
- const highlights=profileHighlights.map(item=>({...item,stories:item.storyIds.map(id=>byId.get(String(id))).filter(Boolean)})).filter(item=>item.stories.length);
+ const highlights=profileHighlights.map(item=>{
+  const resolved=(item.savedStories&&item.savedStories.length)?item.savedStories:item.storyIds.map(id=>byId.get(String(id))).filter(Boolean);
+  return {...item,stories:resolved};
+ }).filter(item=>item.stories.length);
  return `<div class="profile-highlights" aria-label="Story highlights">
   <button class="profile-highlight add" type="button" onclick="openAddHighlight()"><span class="profile-highlight-avatar">+</span><span class="profile-highlight-title">New</span></button>
-  ${highlights.map(highlight=>`<button class="profile-highlight" type="button" onclick="openStoryHighlight('${safe(highlight.id)}')"><span class="profile-highlight-avatar"><img src="${safe(storyMediaUrl(highlight.stories[0]))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'" alt=""></span><span class="profile-highlight-title">${safe(highlight.title)}</span></button>`).join('')}
+  ${highlights.map(highlight=>`<div style="position:relative;display:inline-flex;flex-direction:column;align-items:center;"><button class="profile-highlight" type="button" onclick="openStoryHighlight('${safe(highlight.id)}')"><span class="profile-highlight-avatar"><img src="${safe(storyMediaUrl(highlight.stories[0]))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'" alt=""></span><span class="profile-highlight-title">${safe(highlight.title)}</span></button><button type="button" title="Delete highlight" aria-label="Delete highlight" onclick="event.stopPropagation();deleteStoryHighlight('${safe(highlight.id)}')" style="position:absolute;top:-2px;right:2px;width:18px;height:18px;border-radius:50%;border:1px solid #fff3;background:#000c;color:#f87171;font-size:10px;line-height:1;">✕</button></div>`).join('')}
  </div>`;
+}
+function deleteStoryHighlight(highlightId){
+ if(!currentUser || !window.confirm('Delete this highlight?')) return;
+ profileHighlights=profileHighlights.filter(item=>String(item.id)!==String(highlightId));
+ try{ localStorage.setItem(storyHighlightsStorageKey(currentUser.id),JSON.stringify(profileHighlights)); }catch(_){}
+ renderProfile();
+ toast('Highlight deleted');
 }
 
 function openAddHighlight(){
@@ -2185,10 +2198,15 @@ function saveStoryHighlight(){
  const storyIds=[...document.querySelectorAll('#highlightStoryOptions input:checked')].map(input=>String(input.value));
  if(!title){toast('Add a title for this highlight.');return;}
  if(!storyIds.length){toast('Select at least one story.');return;}
- const highlight={id:window.crypto?.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2,8)}`,title:title.slice(0,24),storyIds};
+ const allStoriesMap = new Map(getOwnHighlightStories().map(s => [String(s.id), s]));
+ const savedStories = storyIds.map(sid => {
+  const st = allStoriesMap.get(String(sid));
+  return st ? { id: String(st.id), media_url: storyMediaUrl(st), media_type: st.media_type || '', created_at: st.created_at || new Date().toISOString() } : null;
+ }).filter(Boolean);
+ const highlight={id:window.crypto?.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2,8)}`,title:title.slice(0,24),storyIds,savedStories};
  profileHighlights=[...profileHighlights,highlight];
  try{
-  localStorage.setItem(storyHighlightsStorageKey(currentUser.id),JSON.stringify(profileHighlights.map(({id,title,storyIds})=>({id,title,storyIds}))));
+  localStorage.setItem(storyHighlightsStorageKey(currentUser.id),JSON.stringify(profileHighlights));
  }catch(error){
   profileHighlights=profileHighlights.filter(item=>item.id!==highlight.id);
   console.error('Profile highlight save error:',error);
@@ -2204,7 +2222,7 @@ function openStoryHighlight(highlightId){
  const highlight=profileHighlights.find(item=>String(item.id)===String(highlightId));
  if(!highlight) return;
  const storyById=new Map(getOwnHighlightStories().map(story=>[String(story.id),story]));
- const stories=highlight.storyIds.map(id=>storyById.get(String(id))).filter(Boolean);
+ const stories=(highlight.savedStories&&highlight.savedStories.length)?highlight.savedStories:highlight.storyIds.map(id=>storyById.get(String(id))).filter(Boolean);
  if(!stories.length){toast('This highlight has no available stories.');return;}
  const group={
   userId:String(currentUser.id),
@@ -2233,7 +2251,6 @@ function renderProfile(){
  profileView.innerHTML=`
  <div class="profile-header glass">
   <button class="profile-info-button" type="button" aria-label="Account Info" title="Account Info" onclick="openAccountInfoModal(currentUser?.id)">i</button>
-  <button class="profile-settings-button" type="button" aria-label="Settings" onclick="openSettingsSheet()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"/><path d="m19.4 15 .1.1 1.4 1.1-1.4 2.4-1.7-.7a7.8 7.8 0 0 1-1.7 1l-.3 1.8h-2.8l-.3-1.8a7.8 7.8 0 0 1-1.7-1l-1.7.7-1.4-2.4L7.3 15a7.4 7.4 0 0 1 0-2l-1.4-1.1 1.4-2.4 1.7.7a7.8 7.8 0 0 1 1.7-1l.3-1.8h2.8l.3 1.8a7.8 7.8 0 0 1 1.7 1l1.7-.7 1.4 2.4-1.4 1.1a7.4 7.4 0 0 1-.1 2Z"/></svg></button>
   <div class="profile-top">
    <img class="profilepic" src="${safe(avatarSrc(me.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'">
    <div class="profile-details">
@@ -2246,7 +2263,7 @@ function renderProfile(){
     </div>
    </div>
   </div>
-  <button class="secondary edit-profile-button" onclick="editProfile()">Custom Profile</button>
+  <div class="profile-primary-actions-row"><button class="secondary edit-profile-button" onclick="editProfile()">Custom Profile</button><button class="secondary profile-inline-settings-btn" type="button" aria-label="Settings" onclick="openSettingsSheet()">⚙️ Settings</button></div>
   ${renderProfileHighlights()}
   <div class="profile-tabs">
     <button class="${profileTab==='posts'?'active':''}" onclick="setProfileTab('posts')">POSTS</button>
@@ -2288,9 +2305,13 @@ function renderOtherProfile(){
    </div>
   </div>
   <div class="profile-tabs">
-    <button class="active">POSTS</button>
+    <button class="${profileTab!=='reels'?'active':''}" onclick="profileTab='posts';renderOtherProfile()">POSTS</button>
+    <button class="${profileTab==='reels'?'active':''}" onclick="profileTab='reels';renderOtherProfile()">REELS</button>
   </div>
-  <div class="profile-grid">${profileTiles.length ? profileTiles.join('') : '<div class="profile-empty">No posts yet.</div>'}</div>
+  <div class="profile-grid">${(profileTab==='reels'
+    ? relevantReels.filter(r=>r.video).map(reel=>`<div class="profile-tile" onclick="playReelInPlayer('${safe(reel.id)}')"><video src="${safe(reel.src)}" muted playsinline></video></div>`)
+    : profileTiles
+  ).join('') || '<div class="profile-empty">Nothing to show yet.</div>'}</div>
  </div>`;
 }
 
@@ -2413,6 +2434,7 @@ function renderDMInbox(){
 }
 
 function renderNotesTray(){
+ checkNote24hExpiry();
  const ownNote=me.statusNote||'Share a thought...';
  const current=`<button class="notes-item" type="button" data-note-user="self"><span class="notes-bubble">${safe(ownNote)}</span><img class="notes-avatar" src="${safe(avatarSrc(me.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'" alt=""><span>Your note</span></button>`;
  const followers=dmConversations.map(({userId})=>({userId,profile:dmProfile(userId)})).filter(({profile})=>profile.statusNote);
@@ -2420,15 +2442,25 @@ function renderNotesTray(){
 }
 
 async function editStatusNote(){
- const next=(window.prompt('Share a thought (up to 60 characters):',me.statusNote||'')||'').trim().slice(0,60);
+ const next=(window.prompt('Share a thought (auto-deletes in 24h, max 60 chars):',me.statusNote||'')||'').trim().slice(0,60);
  if(!next)return;
  try{
  const {error}=await supabaseClient.from('profiles').update({status_note:next}).eq('id',currentUser.id);
  if(error)throw error;
  me.statusNote=next;
+ try { localStorage.setItem(`vybe:note-ts:${currentUser.id}`, String(Date.now())); } catch(_) {}
  renderDMInbox();
- toast('Note updated');
+ toast('Note shared (auto-deletes in 24h)');
  }catch(error){console.error('Status note update error:',error);toast(error?.message||'Unable to update your note.');}
+}
+function checkNote24hExpiry(){
+ if(!currentUser || !me.statusNote) return;
+ const ts = Number(localStorage.getItem(`vybe:note-ts:${currentUser.id}`) || 0);
+ if(ts && Date.now() - ts >= 24 * 60 * 60 * 1000){
+  me.statusNote = '';
+  localStorage.removeItem(`vybe:note-ts:${currentUser.id}`);
+  void supabaseClient.from('profiles').update({status_note:null}).eq('id',currentUser.id);
+ }
 }
 
 function openNoteActionSheet(){
@@ -2478,8 +2510,38 @@ function renderDMThread(){
   const previewMedia=previewUrl?(isVideoFile({type:'',name:previewUrl})?`<video src="${safe(previewUrl)}" muted playsinline preload="metadata"></video>`:`<img src="${safe(previewUrl)}" alt="Story preview">`):'';
   const reelPreview=reelUrl?`<a class="dm-reel-card" href="${safe(reelUrl)}" target="_blank" rel="noopener noreferrer"><strong>▶ Shared a reel</strong><span>${safe(reelCard.caption||'Watch this reel on VYBE')}</span></a>`:'';
   const voicePreview=safeVoiceUrl?`<audio controls preload="metadata" src="${safe(safeVoiceUrl)}" aria-label="Voice note"></audio>`:'';
-  return `<div class="dm-bubble ${mine?'mine':''}">${safe(dmMessageText(message))}${previewMedia?`<div class="dm-story-preview">${previewMedia}<span>Replied to your story</span></div>`:''}${reelPreview}${voicePreview}${time?`<time class="dm-time">${safe(time)}</time>`:''}</div>`;
+  const msgId = safe(String(message.id || ''));
+  const cleanTxt = dmMessageText(message);
+  return `<div class="dm-bubble ${mine?'mine':''}" data-msg-id="${msgId}" data-msg-mine="${mine?'1':'0'}" data-msg-text="${safe(cleanTxt)}">${safe(cleanTxt)}${previewMedia?`<div class="dm-story-preview">${previewMedia}<span>Replied to your story</span></div>`:''}${reelPreview}${voicePreview}${time?`<time class="dm-time">${safe(time)}</time>`:''}</div>`;
  }).join('') || '<div class="dm-empty">Say hello to start the conversation.</div>';
+ thread.querySelectorAll('.dm-bubble[data-msg-id]').forEach(bubble => {
+  let pressTimer = null;
+  let startX = 0;
+  bubble.addEventListener('pointerdown', (e) => {
+   startX = e.clientX;
+   pressTimer = setTimeout(() => {
+    openDMMessageActionSheet(bubble.dataset.msgId, bubble.dataset.msgMine === '1', bubble.dataset.msgText);
+   }, 500);
+  });
+  bubble.addEventListener('pointermove', (e) => {
+   const dx = e.clientX - startX;
+   if (Math.abs(dx) > 12) clearTimeout(pressTimer);
+   if (dx > 18 && dx < 95) bubble.style.transform = `translateX(${dx}px)`;
+  });
+  bubble.addEventListener('pointerup', (e) => {
+   clearTimeout(pressTimer);
+   const dx = e.clientX - startX;
+   bubble.style.transform = '';
+   if (dx > 55) {
+    startDMReplyToMessage(bubble.dataset.msgText);
+   }
+  });
+  bubble.addEventListener('pointercancel', () => { clearTimeout(pressTimer); bubble.style.transform = ''; });
+  bubble.addEventListener('contextmenu', (e) => {
+   e.preventDefault();
+   openDMMessageActionSheet(bubble.dataset.msgId, bubble.dataset.msgMine === '1', bubble.dataset.msgText);
+  });
+ });
  thread.scrollTop=thread.scrollHeight;
 }
 
@@ -2495,6 +2557,8 @@ function setDMView(view){
  if(inbox) inbox.style.display=inConversation?'none':'block';
  if(thread) thread.style.display=inConversation?'flex':'none';
  if(composer) composer.style.display=inConversation?'flex':'none';
+ const quickBurst=document.getElementById('dmQuickBurstBar');
+ if(quickBurst) quickBurst.style.display=inConversation?'flex':'none';
  if(back) back.style.display=inConversation?'block':'none';
  if(avatar) avatar.style.display=inConversation?'block':'none';
  if(inConversation && activeChat){
@@ -2748,6 +2812,7 @@ async function sendVoiceNoteBlob(blob,receiverId){
 
 function openDMDrawer(targetUserId=null){
  if(!currentUser){openAuthModal('login');return;}
+ pauseReelVideos();
  const drawer=document.getElementById('dmDrawer');
  if(!drawer) return;
  drawer.classList.add('open');
@@ -3012,9 +3077,8 @@ async function createActivityNotification(recipientId,type,{reelId,commentText,s
  if(reelId!==undefined&&reelId!==null) payload.post_id=reelId;
  try {
   let {data,error}=await supabaseClient.from('user_notifications').insert(payload).select('*').single();
-  if(error && payload.post_id !== undefined){
-   // Retry without post_id if post_id column type (uuid vs int) differs
-   const retry = await supabaseClient.from('user_notifications').insert({receiver_id:recipientId,sender_id:currentUser.id,type,is_read:false}).select('*').single();
+  if(error){
+   const retry = await supabaseClient.from('user_notifications').insert({receiver_id:recipientId,sender_id:currentUser.id,type:type==='reel_like'?'like':type,is_read:false}).select('*').single();
    data = retry.data; error = retry.error;
   }
   if(error) throw error;
@@ -3633,14 +3697,16 @@ let reelPlaybackObserver=null;
 let activeReelVideo=null;
 
 function pauseReelVideos(){
- document.querySelectorAll('#reelList video').forEach(video=>{
-  video.pause();
-  video.muted=true;
-  video.volume=0;
+ document.querySelectorAll('#reelList video, #feed video, video.postmedia').forEach(video=>{
+  try {
+   video.pause();
+   video.muted=true;
+   video.volume=0;
+  } catch(_) {}
   setReelDiscPlaying(video,false);
-  try { video.currentTime=0; } catch(error) { console.info('Reel playback reset deferred:',error); }
  });
  activeReelVideo=null;
+ activeFeedVideo=null;
 }
 
 function setReelDiscPlaying(video,playing){
@@ -4595,8 +4661,14 @@ async function saveProfile(){
   me.name=nextName;
   me.bio=nextBio;
   if(photo) me.pic=metadata.profile_avatar_url;
+  try {
+   localStorage.setItem(`vybe:profile-cache:${currentUser.id}`, JSON.stringify({
+    name: me.name, username: me.username, bio: me.bio, pic: me.pic
+   }));
+  } catch(_) {}
+  reels.forEach(r => { if(String(r.user)===String(currentUser.id)) r.username = nextUsername; });
   hide('editModal');
-  renderStories(); renderProfile(); renderFeed();
+  renderStories(); renderProfile(); renderFeed(); renderReels();
   toast('Profile updated');
  } catch(error) {
   console.error('Profile update error:',error);
