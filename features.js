@@ -79,7 +79,7 @@ async function togglePostVoiceReaction(postId, btn) {
         const list = voiceReactionsMap.get(key) || [];
         list.push({ user: typeof currentProfile !== "undefined" && currentProfile ? currentProfile : "you", audioUrl });
         voiceReactionsMap.set(key, list);
-        injectVoiceReactionsIntoFeed();
+        // 5s voice reaction bar removed in v19
         if (typeof toast === "function") toast("🎙 Voice reaction added!");
       } catch (err) {
         console.error("Voice reaction error:", err);
@@ -175,7 +175,7 @@ if (typeof renderFeed === "function") {
   window.renderFeed = function () {
     _origRenderFeed.apply(this, arguments);
     enhanceTimeCapsulesInFeed();
-    injectVoiceReactionsIntoFeed();
+    // 5s voice reaction bar removed in v19
     applyMoodFilterToFeed();
   };
 }
@@ -940,14 +940,9 @@ if (typeof renderProfile === "function") {
     const tools = document.createElement("div");
     tools.className = "profile-mega-tools";
     tools.innerHTML = `
-      <button type="button" class="mega-pill-btn" onclick="openSecretVault()">🔒 Vault</button>
+      
       <button type="button" class="mega-pill-btn" onclick="openCreatorAnalytics()">📊 Analytics</button>
-      <div class="accent-dots" title="Profile Theme Accent">
-        <span class="accent-dot" style="background:#0ea5e9;" onclick="setVybeAccent('blue')"></span>
-        <span class="accent-dot" style="background:#a855f7;" onclick="setVybeAccent('purple')"></span>
-        <span class="accent-dot" style="background:#10b981;" onclick="setVybeAccent('emerald')"></span>
-        <span class="accent-dot" style="background:#f97316;" onclick="setVybeAccent('sunset')"></span>
-      </div>
+      
     `;
     detailsEl.appendChild(tools);
   };
@@ -1458,7 +1453,7 @@ if (typeof createPost === "function") {
 // ================= VYBE v9.0: 10 NEXT-GEN SENSORY & INTERACTIVE FEATURES =================
 
 // --- 1. GRAVITY-TILT 3D PARALLAX CARDS (Gyroscope / Pointer) ---
-if (window.DeviceOrientationEvent) {
+if (false && window.DeviceOrientationEvent) {
   window.addEventListener("deviceorientation", (e) => {
     if (e.gamma === null || e.beta === null) return;
     const tiltX = Math.max(-6, Math.min(6, e.gamma / 5));
@@ -2410,7 +2405,7 @@ function playBeatFlash() {
 }
 
 // --- 7. VIBE COMPASS (Live Direction Pointer in Radar) ---
-if (window.DeviceOrientationEvent) {
+if (false && window.DeviceOrientationEvent) {
   window.addEventListener("deviceorientation", (e) => {
     const needle = document.getElementById("vibeCompassNeedle");
     if (needle && e.alpha !== null) {
@@ -3158,7 +3153,7 @@ if (typeof createPost === "function") {
 // ================= VYBE v14.0: 10 QUANTUM, SPATIAL & SOCIAL-MAGIC FEATURES =================
 
 // --- 1. LIVE KINETIC GYRO-BACKGROUND STARFIELD ---
-if (window.DeviceOrientationEvent) {
+if (false && window.DeviceOrientationEvent) {
   window.addEventListener("deviceorientation", (e) => {
     const sf = document.getElementById("vybeStarfield");
     if (!sf || e.gamma === null || e.beta === null) return;
@@ -4698,359 +4693,100 @@ applyVybeFuturesVisibility();
 
 
 
-// ================= VYBE v19.0: CORRECTIONS (2, 5, 7, 9) + 10 V19 FUTURES =================
+// ================= VYBE v19.0: GYRO TOGGLE, BLACK/WHITE THEME & DM DELETE FIX =================
 
-// --- CORRECTION 2: Accurate "Since DD.MM.YYYY" Account Info Date from Supabase ---
-window.openAccountInfoModal = async function (targetUserId) {
-  const uid = String(targetUserId || currentUser?.id || "");
-  const usernameEl = document.getElementById("profileInfoUsername");
-  const dateEl = document.getElementById("profileJoinedDate");
-
-  const formatDDMMYYYY = (isoStr) => {
-    if (!isoStr) return "01.01.2026";
-    const d = new Date(isoStr);
-    if (Number.isNaN(d.getTime())) return "01.01.2026";
-    const dd = String(d.getDate()).padStart(2, "0");
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const yyyy = d.getFullYear();
-    return `${dd}.${mm}.${yyyy}`;
-  };
-
-  if (usernameEl) usernameEl.textContent = "Loading...";
-  if (dateEl) dateEl.textContent = "Loading...";
-  if (typeof show === "function") show("profileInfoModal");
-
-  try {
-    if (currentUser && uid === String(currentUser.id)) {
-      if (usernameEl) usernameEl.textContent = `@${currentProfile || me.username || "user"}`;
-      let created = currentUser.created_at;
-      if (isValidUserUuid(uid)) {
-        const { data } = await supabaseClient.from("profiles").select("*").eq("id", uid).maybeSingle();
-        if (data?.created_at) created = data.created_at;
-      }
-      if (dateEl) dateEl.textContent = formatDDMMYYYY(created);
-      return;
+// 18. Gyro 3D Tilt & Starfield Toggle (OFF by default, controllable via Settings -> Futures)
+let vybeGyroEnabled = false;
+function handleVybeDeviceOrientation(e) {
+  if (!vybeGyroEnabled || e.gamma === null || e.beta === null) return;
+  const tiltX = Math.max(-5, Math.min(5, e.gamma / 6));
+  const tiltY = Math.max(-4, Math.min(4, (e.beta - 45) / 9));
+  document.querySelectorAll("#feed article.post").forEach((card) => {
+    const rect = card.getBoundingClientRect();
+    if (rect.top < window.innerHeight && rect.bottom > 0) {
+      card.style.transform = `perspective(900px) rotateY(${tiltX.toFixed(1)}deg) rotateX(${(-tiltY).toFixed(1)}deg)`;
     }
-
-    const cached = (typeof users !== "undefined" ? users : []).find((u) => String(u.id) === uid);
-    if (usernameEl) usernameEl.textContent = `@${cached?.username || "user"}`;
-
-    if (isValidUserUuid(uid)) {
-      const { data } = await supabaseClient.from("profiles").select("*").eq("id", uid).maybeSingle();
-      if (data) {
-        if (usernameEl && data.username) usernameEl.textContent = `@${data.username}`;
-        const rawDate = data.created_at || data.updated_at || cached?.created_at;
-        if (dateEl) dateEl.textContent = formatDDMMYYYY(rawDate);
-        return;
-      }
-    }
-    if (dateEl) dateEl.textContent = formatDDMMYYYY(cached?.created_at || "2026-01-01T00:00:00Z");
-  } catch (err) {
-    console.error("Account info lookup error:", err);
-    if (dateEl) dateEl.textContent = formatDDMMYYYY(currentUser?.created_at);
-  }
-};
-
-// --- CORRECTION 5: Ensure "+ New" Highlight Modal Always Opens Cleanly on Front ---
-window.openAddHighlight = function () {
-  if (!currentUser) { openAuthModal("login"); return; }
-  const modal = document.getElementById("highlightModal");
-  const options = document.getElementById("highlightStoryOptions");
-  if (!modal || !options) return;
-  const stories = typeof getOwnHighlightStories === "function" ? getOwnHighlightStories() : [];
-  options.innerHTML = stories.length
-    ? stories
-        .map((story) => {
-          const url = storyMediaUrl(story);
-          const media = storyIsVideo(story, url)
-            ? `<video src="${safe(url)}#t=0.1" muted playsinline preload="metadata"></video>`
-            : `<img src="${safe(url)}" alt="">`;
-          return `<label class="highlight-story-option">${media}<input type="checkbox" value="${safe(story.id)}"></label>`;
-        })
-        .join("")
-    : '<div class="highlight-story-empty">No stories available yet. Share a story first!</div>';
-  const nameInp = document.getElementById("highlightNameInput");
-  if (nameInp) nameInp.value = "";
-  modal.style.display = "flex";
-  modal.style.zIndex = "12000";
-  modal.classList.add("open");
-  modal.setAttribute("aria-hidden", "false");
-};
-
-// --- CORRECTION 7: Fullscreen Discover Reel Viewer (Stays inside Discover Tab!) ---
-function openDiscoverFullscreenReel(reelId) {
-  const reel = (typeof reels !== "undefined" ? reels : []).find((r) => String(r.id) === String(reelId));
-  if (!reel) return;
-  if (typeof pauseReelVideos === "function") pauseReelVideos();
-
-  const overlay = document.getElementById("discoverReelFullscreen");
-  const stage = document.getElementById("discoverReelStage");
-  if (!overlay || !stage) return;
-
-  const author = typeof user === "function" ? user(reel.user) : { username: "user", pic: "" };
-  const authorName = typeof reelAuthorName === "function" ? reelAuthorName(reel) : author.username;
-  const liked = typeof likedReels !== "undefined" && likedReels.has(String(reel.id));
-  const isSaved = typeof savedReels !== "undefined" && savedReels.has(String(reel.id));
-
-  const mediaHtml = reel.video
-    ? `<video id="discoverFullscreenVideo" src="${safe(reel.src)}" autoplay loop playsinline></video>`
-    : `<img src="${safe(reel.src)}" alt="Discover post">`;
-
-  stage.innerHTML = `
-    <div class="reel" style="width:100vw;height:100dvh;">
-      <div class="reel-media">${mediaHtml}</div>
-      <div class="reel-shade"></div>
-      <div class="reel-info">
-        <div class="reel-user">
-          <img src="${safe(avatarSrc(author.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'">
-          <button onclick="closeDiscoverFullscreenReel();viewProfile('${safe(reel.user)}')">@${safe(authorName)}</button>
-        </div>
-        <p>${renderTaggedText(reel.caption)}</p>
-      </div>
-      <div class="reel-side">
-        <button class="reel-like-button ${liked ? "active" : ""}" data-reel-like="${safe(reel.id)}" onclick="toggleReelLike('${safe(reel.id)}')">♥</button>
-        <small data-reel-like-count="${safe(reel.id)}">${Number(reel.likes || 0).toLocaleString()}</small>
-        <button class="action reel-bookmark-button ${isSaved ? "saved" : ""}" data-bookmark-reel="${safe(reel.id)}" onclick="toggleSaveReel('${safe(reel.id)}')"><svg viewBox="0 0 24 24"><path d="M6 3.75h12v17l-6-4-6 4v-17Z"/></svg></button>
-        <small>${isSaved ? "Saved" : "Save"}</small>
-        <button onclick="openCommentsDrawer('${safe(reel.id)}')">💬</button>
-        <small data-reel-comment-count="${safe(reel.id)}">${Number(reel.commentCount || 0).toLocaleString()}</small>
-        <button class="reel-share-button" onclick="shareReel('${safe(reel.id)}')"><svg viewBox="0 0 24 24"><path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4Z"/></svg></button>
-      </div>
-    </div>
-  `;
-  overlay.classList.add("open");
-  overlay.setAttribute("aria-hidden", "false");
-  const vid = document.getElementById("discoverFullscreenVideo");
-  if (vid) {
-    vid.muted = false;
-    vid.play().catch(() => { vid.muted = true; vid.play().catch(() => {}); });
-  }
+  });
 }
-
-function toggleDiscoverReelMute() {
-  const vid = document.getElementById("discoverFullscreenVideo");
-  const btn = document.getElementById("discoverReelMuteBtn");
-  if (!vid) return;
-  vid.muted = !vid.muted;
-  if (btn) btn.textContent = vid.muted ? "🔇" : "🔊";
-}
-
-function closeDiscoverFullscreenReel() {
-  const overlay = document.getElementById("discoverReelFullscreen");
-  const vid = document.getElementById("discoverFullscreenVideo");
-  if (vid) { vid.pause(); vid.src = ""; }
-  overlay?.classList.remove("open");
-  overlay?.setAttribute("aria-hidden", "true");
-}
-
-// --- CORRECTION 9: Top Slide-Down In-App Notification Pop-Up Banner ---
-let topNotifTimer = null;
-function showTopNotificationPopup(notif) {
-  const banner = document.getElementById("vybeTopNotifBanner");
-  const iconEl = document.getElementById("vybeTopNotifIcon");
-  const titleEl = document.getElementById("vybeTopNotifTitle");
-  const bodyEl = document.getElementById("vybeTopNotifBody");
-  if (!banner || !titleEl || !bodyEl) return;
-
-  const type = String(notif?.type || "").toLowerCase();
-  const actor = notif?.sender_username ? `@${notif.sender_username}` : "Someone";
-  if (type === "dm") {
-    if (iconEl) iconEl.textContent = "💬";
-    titleEl.textContent = `New Message from ${actor}`;
-    bodyEl.textContent = notif.comment_text || "Sent you a message";
-  } else if (type.includes("comment") || type === "reply") {
-    if (iconEl) iconEl.textContent = "💭";
-    titleEl.textContent = `${actor} commented`;
-    bodyEl.textContent = notif.comment_text || "Commented on your post";
-  } else if (type === "follow") {
-    if (iconEl) iconEl.textContent = "➕";
-    titleEl.textContent = "New Follower";
-    bodyEl.textContent = `${actor} started following you`;
+function toggleVybeGyro3D(forceState) {
+  vybeGyroEnabled = typeof forceState === "boolean" ? forceState : !vybeGyroEnabled;
+  if (vybeGyroEnabled) {
+    window.addEventListener("deviceorientation", handleVybeDeviceOrientation, { passive: true });
+    if (typeof toast === "function") toast("🧭 3D Gyro Tilt ON");
   } else {
-    if (iconEl) iconEl.textContent = "❤️";
-    titleEl.textContent = "New Like";
-    bodyEl.textContent = `${actor} liked your post`;
+    window.removeEventListener("deviceorientation", handleVybeDeviceOrientation);
+    document.querySelectorAll("#feed article.post").forEach((c) => { c.style.transform = ""; });
+    if (typeof toast === "function") toast("🧭 3D Gyro Tilt OFF");
   }
-
-  banner.hidden = false;
-  clearTimeout(topNotifTimer);
-  topNotifTimer = setTimeout(() => { banner.hidden = true; }, 4200);
 }
 
-function handleTopNotifBannerClick() {
-  const banner = document.getElementById("vybeTopNotifBanner");
-  if (banner) banner.hidden = true;
-  if (typeof openActivityDrawer === "function") openActivityDrawer();
+// 16. Black Theme & White Theme Switcher (removes all colorful themes)
+let vybeBWTheme = localStorage.getItem("vybe:bw-theme") || "black";
+function applyBlackWhiteTheme(mode) {
+  vybeBWTheme = mode === "white" ? "white" : "black";
+  document.body.removeAttribute("data-accent");
+  document.body.removeAttribute("data-mood");
+  document.body.removeAttribute("data-circadian");
+  document.body.classList.toggle("white-theme", vybeBWTheme === "white");
+  localStorage.setItem("vybe:bw-theme", vybeBWTheme);
+  const lbl = document.getElementById("bwThemeLabel");
+  if (lbl) lbl.textContent = vybeBWTheme === "white" ? "White Theme" : "Black Theme";
 }
+function toggleBlackWhiteTheme() {
+  applyBlackWhiteTheme(vybeBWTheme === "black" ? "white" : "black");
+  if (typeof toast === "function") {
+    toast(vybeBWTheme === "white" ? "☀️ White Theme Active" : "🌑 Black Theme Active");
+  }
+}
+applyBlackWhiteTheme(vybeBWTheme);
 
-// Ensure createActivityNotification also shows local feedback & works cleanly
-if (typeof createActivityNotification === "function") {
-  const _v19PrevNotif = createActivityNotification;
-  window.createActivityNotification = async function (recipientId, type, opts) {
-    await _v19PrevNotif.apply(this, arguments);
-    if (currentUser && String(recipientId) === String(currentUser.id)) {
-      showTopNotificationPopup({ type, sender_username: currentProfile || me.username, comment_text: opts?.commentText });
+// 6. Reliable Long-Press Delete for Me & Delete for Both (persists across reload)
+const deletedForMeIds = new Set(JSON.parse(localStorage.getItem("vybe:deleted-for-me") || "[]").map(String));
+window.deleteDMMessageForMe = function () {
+  closeDMMessageActionSheet();
+  if (!selectedDMMsgId) return;
+  deletedForMeIds.add(String(selectedDMMsgId));
+  localStorage.setItem("vybe:deleted-for-me", JSON.stringify([...deletedForMeIds]));
+  dmMessages = dmMessages.filter((m) => String(m.id) !== String(selectedDMMsgId));
+  if (typeof renderDMThread === "function") renderDMThread();
+  if (typeof toast === "function") toast("🗑 Deleted for you");
+};
+
+window.deleteDMMessageForBoth = async function () {
+  closeDMMessageActionSheet();
+  if (!selectedDMMsgId || !currentUser) return;
+  const targetId = selectedDMMsgId;
+  deletedForMeIds.add(String(targetId));
+  localStorage.setItem("vybe:deleted-for-me", JSON.stringify([...deletedForMeIds]));
+  dmMessages = dmMessages.filter((m) => String(m.id) !== String(targetId));
+  if (typeof renderDMThread === "function") renderDMThread();
+  try {
+    const { error } = await supabaseClient.from("direct_messages").delete().eq("id", targetId).eq("sender_id", currentUser.id);
+    if (error) {
+      // Fallback: mark text as deleted if RLS blocks row delete
+      await supabaseClient.from("direct_messages").update({ message_text: "🚫 This message was deleted" }).eq("id", targetId).eq("sender_id", currentUser.id);
     }
+    if (typeof toast === "function") toast("🔥 Deleted for both!");
+  } catch (err) {
+    console.error("Delete for both error:", err);
+  }
+};
+
+if (typeof renderDMThread === "function") {
+  const _v19PrevRenderDMThread = renderDMThread;
+  window.renderDMThread = function () {
+    dmMessages = dmMessages.filter((m) => !deletedForMeIds.has(String(m.id)));
+    return _v19PrevRenderDMThread.apply(this, arguments);
   };
 }
 
-// --- CORRECTION 11: Auto-close Reels 3-Dot FX Popover when tapping outside ---
-document.addEventListener("click", (e) => {
-  if (!e.target.closest(".reel-three-dot-btn") && !e.target.closest(".reel-fx-popover")) {
-    document.querySelectorAll(".reel-fx-popover").forEach((p) => { p.hidden = true; });
-  }
-});
-
-// ================= 10 BRAND-NEW V19 FUTURES IMPLEMENTATION =================
-// 1. Gift VYBE Coins
-function openGiftCoinsModal() { if (typeof show === "function") show("giftCoinsModal"); }
-function sendVybeCoinsGift() {
-  const uname = (document.getElementById("giftCoinsUserInput")?.value || "friend").trim();
-  const amt = Math.max(5, Number(document.getElementById("giftCoinsAmountInput")?.value || 25));
-  const cur = Number(localStorage.getItem("vybe:coins") || 150);
-  if (cur < amt) { if (typeof toast === "function") toast("❌ Not enough coins!"); return; }
-  if (typeof awardVybeCoins === "function") awardVybeCoins(-amt, "Gift Coins");
-  if (typeof hide === "function") hide("giftCoinsModal");
-  if (typeof toast === "function") toast(`🎁 Gifted ${amt} 🪙 to @${uname.replace(/^@/, "")}!`);
-}
-
-// 2. Focus Zen DND Timer
-let zenTimerInt = null;
-function openZenTimerModal() { if (typeof show === "function") show("zenTimerModal"); }
-function startZenDndTimer() {
-  clearInterval(zenTimerInt);
-  let secs = 15 * 60;
-  const disp = document.getElementById("zenTimerDisplay");
-  zenTimerInt = setInterval(() => {
-    secs--;
-    const m = String(Math.floor(secs / 60)).padStart(2, "0");
-    const s = String(secs % 60).padStart(2, "0");
-    if (disp) disp.textContent = `${m}:${s}`;
-    if (secs <= 0) { clearInterval(zenTimerInt); if (typeof toast === "function") toast("🌙 Zen Focus session complete!"); }
-  }, 1000);
-}
-
-// 3. Squad Clan Tag
-function openSquadClanModal() { if (typeof show === "function") show("squadClanModal"); }
-function saveSquadClanTag() {
-  const tag = (document.getElementById("squadClanInput")?.value || "VYBE").trim().toUpperCase();
-  localStorage.setItem("vybe:squad-clan", tag);
-  if (typeof hide === "function") hide("squadClanModal");
-  if (typeof toast === "function") toast(`🏆 Equipped Squad Clan Tag: [${tag}]`);
-}
-
-// 4. Anonymous AMA Q&A
-let amaList = JSON.parse(localStorage.getItem("vybe:ama-list") || "null") || [
-  { q: "What inspired you to build VYBE?", a: "Wanted a fast, futuristic social space with zero limits!" }
-];
-function openAmaModal() {
-  if (typeof show === "function") show("amaModal");
-  renderAmaList();
-}
-function submitAmaQuestion(e) {
-  e.preventDefault();
-  const inp = document.getElementById("amaQuestionInput");
-  const q = (inp?.value || "").trim();
-  if (!q) return;
-  inp.value = "";
-  amaList.unshift({ q, a: "Waiting for creator reply..." });
-  localStorage.setItem("vybe:ama-list", JSON.stringify(amaList));
-  renderAmaList();
-}
-function renderAmaList() {
-  const box = document.getElementById("amaQuestionsList");
-  if (!box) return;
-  box.innerHTML = amaList.map((item) => `<div class="glass" style="padding:10px;border-radius:12px;"><strong style="font-size:12px;color:#38bdf8;">🕵️ ${safe(item.q)}</strong><p style="font-size:11px;color:#cbd5e1;margin-top:4px;">${safe(item.a)}</p></div>`).join("");
-}
-
-// 5. Cyber Sound Pack
-function openSoundPackModal() { if (typeof show === "function") show("soundPackModal"); }
-function selectCyberSoundPack(pack) {
-  localStorage.setItem("vybe:sound-pack", pack);
-  if (typeof playPopSound === "function") playPopSound();
-  if (typeof hide === "function") hide("soundPackModal");
-  if (typeof toast === "function") toast(`🔔 Sound Pack set to ${pack.toUpperCase()}`);
-}
-
-// 6. Voice-to-Text AI Caption Dictation
-function startVoiceToTextCaption() {
-  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRec) { if (typeof toast === "function") toast("Speech dictation not supported on this browser."); return; }
-  const rec = new SpeechRec();
-  rec.lang = "en-US";
-  rec.onresult = (e) => {
-    const txt = e.results?.[0]?.[0]?.transcript || "";
-    const cap = document.getElementById("caption");
-    if (cap && txt) cap.value = `${cap.value.trim()} ${txt}`.trim();
+// 13. Ensure Discover Tab never gets covered by full-screen profile image overlays
+if (typeof go === "function") {
+  const _v19PrevGo = go;
+  window.go = function (id) {
+    if (id === "explore") {
+      document.querySelectorAll(".modal.show").forEach((m) => hide(m.id));
+    }
+    return _v19PrevGo.apply(this, arguments);
   };
-  rec.start();
-  if (typeof toast === "function") toast("🗣️ Listening... Speak your caption!");
 }
-
-// 7. Before/After Split Post Tag
-function attachBeforeAfterTag() {
-  const cap = document.getElementById("caption");
-  if (cap && !cap.value.includes("[BEFORE/AFTER]")) {
-    cap.value = `${cap.value.trim()} [BEFORE/AFTER]`.trim();
-    if (typeof toast === "function") toast("📸 Before/After Split badge attached!");
-  }
-}
-
-// 8. DM Mini-Games
-function openDMMiniGamesModal() { if (typeof show === "function") show("dmMiniGamesModal"); }
-function playDMRpsMove(move) {
-  if (typeof hide === "function") hide("dmMiniGamesModal");
-  const inp = document.getElementById("messageText");
-  if (inp && typeof sendMessage === "function") {
-    inp.value = `🎮 [RPS BATTLE] I threw ${move}! Your turn!`;
-    sendMessage();
-  }
-}
-
-// 9. DM Whiteboard Sketch
-let wbDrawing = false;
-function openDMWhiteboardModal() {
-  if (typeof show === "function") show("dmWhiteboardModal");
-  const c = document.getElementById("dmWhiteboardCanvas");
-  if (!c || c.dataset.bound === "1") return;
-  c.dataset.bound = "1";
-  const ctx = c.getContext("2d");
-  ctx.strokeStyle = "#38bdf8";
-  ctx.lineWidth = 3;
-  const pos = (e) => {
-    const r = c.getBoundingClientRect();
-    const cx = e.touches ? e.touches[0].clientX : e.clientX;
-    const cy = e.touches ? e.touches[0].clientY : e.clientY;
-    return { x: ((cx - r.left) / r.width) * c.width, y: ((cy - r.top) / r.height) * c.height };
-  };
-  c.addEventListener("pointerdown", (e) => { wbDrawing = true; const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); });
-  c.addEventListener("pointermove", (e) => { if (!wbDrawing) return; const p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); });
-  window.addEventListener("pointerup", () => { wbDrawing = false; });
-}
-function clearDMWhiteboard() {
-  const c = document.getElementById("dmWhiteboardCanvas");
-  c?.getContext("2d")?.clearRect(0, 0, c.width, c.height);
-}
-function sendDMWhiteboardCard() {
-  if (typeof hide === "function") hide("dmWhiteboardModal");
-  const inp = document.getElementById("messageText");
-  if (inp && typeof sendMessage === "function") {
-    inp.value = "🎨 [WHITEBOARD SKETCH] Sent a custom doodle drawing!";
-    sendMessage();
-  }
-}
-
-// 10. Event Countdown RSVP
-function openEventRsvpModal() { if (typeof show === "function") show("eventRsvpModal"); }
-function sendEventRsvpDM() {
-  const t = (document.getElementById("rsvpTitleInput")?.value || "Squad Meetup").trim();
-  const w = (document.getElementById("rsvpTimeInput")?.value || "Tonight 8:00 PM").trim();
-  if (typeof hide === "function") hide("eventRsvpModal");
-  const inp = document.getElementById("messageText");
-  if (inp && typeof sendMessage === "function") {
-    inp.value = `📅 [EVENT RSVP INVITE] ${t} • 🕒 ${w} — Reply YES to join!`;
-    sendMessage();
-  }
-}
-
-applyVybeFuturesVisibility();
