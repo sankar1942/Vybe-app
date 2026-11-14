@@ -3536,3 +3536,105 @@ html, body, #vybe-shell, .app {
   color: #475569;
   font-variant-numeric: tabular-nums;
 }
+
+
+
+/* ================= V21.0: HIGH-CONTRAST BLACK ICONS & TEXT ON PURE WHITE BACKGROUND ================= */
+body, #vybe-shell, .app, .main, .page {
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* Force all general text, headings, buttons & icons to crisp Black */
+h1, h2, h3, h4, p, span, strong, b, label, small, time, a, button, input, textarea, select {
+  color: #000000;
+}
+.meta, .subheading, .search-result-username, .profile-stats span, .dm-person-preview, .dm-person-time {
+  color: #475569 !important;
+}
+
+/* Preserve white text ONLY inside dark-filled buttons/overlays (e.g. primary buttons, Reels dark stage, video overlays) */
+.primary, .primary *,
+.home-feed-switcher button.active, .home-feed-switcher button.active *,
+.explore-filter-chip.active, .explore-filter-chip.active *,
+.dm-bubble.mine, .dm-bubble.mine *,
+.vybe-voice-play-btn, .vybe-voice-play-btn *,
+.toast, .toast *,
+.notched-top-overlay .notched-username,
+.notched-top-overlay .notched-audio,
+.notched-top-overlay .notched-audio *,
+#reels, #reels *,
+#discoverReelModal, #discoverReelModal *,
+#storyViewer, #storyViewer * {
+  color: #ffffff !important;
+}
+
+/* Force all SVGs on white surfaces to crisp Black */
+.topbar svg,
+#bottom-dock svg,
+.icon-btn svg,
+.notched-act-btn svg,
+.notched-save-btn svg,
+.profile-settings-button svg,
+.dm-header svg,
+.dm-composer svg,
+.comments-sheet svg {
+  stroke: #000000 !important;
+}
+.notched-act-btn.is-liked svg path {
+  fill: #ef4444 !important;
+  stroke: #ef4444 !important;
+}
+.notched-save-btn.saved svg path {
+  fill: #000000 !important;
+  stroke: #000000 !important;
+}
+
+/* Topbar & Bottom Dock icons & labels in pure Black */
+.vybe-center-brand-text {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+.bottom button,
+.bottom button span {
+  color: #334155 !important;
+}
+.bottom button.active,
+.bottom button.active span {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+.bottom button svg {
+  stroke: #000000 !important;
+}
+
+/* Light surfaces & cards */
+.glass, .glass-panel, .modalbox, .settings-sheet, .comments-sheet,
+.people-drawer, .dm-action-sheet, .reel-share-sheet, .highlight-dialog,
+.activity-drawer, .vybe-notched-card, .dm-person, .dm-bubble:not(.mine),
+.vybe-voice-bubble, .futures-toggle-row {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+.icon-btn, .secondary, .quick-post, .home-feed-switcher button:not(.active),
+.explore-filter-chip:not(.active), .search-wrap .search, .dm-search-bar,
+.dm-header-button, .dm-tool-button, .dm-composer input, .comments-input,
+.modalbox input, .modalbox textarea, .settings-menu button {
+  background: #f1f5f9 !important;
+  color: #000000 !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+input::placeholder, textarea::placeholder {
+  color: #64748b !important;
+}
+
+/* Fix 2: Ensure no tick / unread badge ever shows in Messages inbox */
+.dm-double-check, .dm-unread-pill {
+  display: none !important;
+}
+
+/* Fix 5: Make feed post media clearly clickable for fullscreen */
+.notched-media-stage {
+  cursor: pointer;
+}
