@@ -4721,7 +4721,7 @@ function toggleVybeGyro3D(forceState) {
 }
 
 // 16. Black Theme & White Theme Switcher (removes all colorful themes)
-let vybeBWTheme = localStorage.getItem("vybe:bw-theme") || "black";
+let vybeBWTheme = localStorage.getItem("vybe:bw-theme") || "white";
 function applyBlackWhiteTheme(mode) {
   vybeBWTheme = mode === "white" ? "white" : "black";
   document.body.removeAttribute("data-accent");
@@ -4738,7 +4738,7 @@ function toggleBlackWhiteTheme() {
     toast(vybeBWTheme === "white" ? "☀️ White Theme Active" : "🌑 Black Theme Active");
   }
 }
-applyBlackWhiteTheme(vybeBWTheme);
+applyBlackWhiteTheme("white");
 
 // 6. Reliable Long-Press Delete for Me & Delete for Both (persists across reload)
 const deletedForMeIds = new Set(JSON.parse(localStorage.getItem("vybe:deleted-for-me") || "[]").map(String));

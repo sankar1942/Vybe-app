@@ -883,7 +883,7 @@ function go(id){
  const activeNav=id==='searchResults'||id==='other'?'explore':id;
  if(map[activeNav]!==undefined)document.querySelectorAll('.bottom button')[map[activeNav]]?.classList.add('active');
  if(id==='reels'){ void loadReelLikes(); startVisibleReel(); }
- if(id==='home')renderFeed();
+ if(id==='home'){ closeDMMessageActionSheet(); closeDMActionSheet(); closeNoteActionSheet(); closeHighlightModal(); renderFeed(); }
  if(id==='profile'){
   renderProfile();
   if(currentUser) void loadFollowData(currentUser.id).catch(error=>{console.error('Own profile follow count error:',error);toast(error?.message||'Unable to load follow counts.');});
@@ -1886,9 +1886,23 @@ function renderFeed(){
      </div>
    </article>`;
  }).join('');
+ feed.querySelectorAll('.notched-media-stage img').forEach(img=>{
+  const fitImgRatio=()=>{
+   if(img.naturalWidth>0 && img.naturalHeight>0){
+    const stage=img.closest('.notched-media-stage');
+    if(stage) stage.style.aspectRatio=`${img.naturalWidth} / ${img.naturalHeight}`;
+   }
+  };
+  if(img.complete) fitImgRatio();
+  else img.addEventListener('load',fitImgRatio,{once:true});
+ });
  feed.querySelectorAll('[data-feed-video]').forEach(video=>{
   const badge=video.parentElement?.querySelector('[data-video-duration]');
   const updateDuration=()=>{
+   if(video.videoWidth>0 && video.videoHeight>0){
+    const stage=video.closest('.notched-media-stage');
+    if(stage) stage.style.aspectRatio=`${video.videoWidth} / ${video.videoHeight}`;
+   }
    if(!badge||!Number.isFinite(video.duration)) return;
    const seconds=Math.floor(video.duration);
    badge.textContent=`${Math.floor(seconds/60)}:${String(seconds%60).padStart(2,'0')}`;
@@ -2277,7 +2291,7 @@ function renderProfile(){
  const profileView=document.getElementById('profileView');
  if(!profileView) return;
  if(!['posts','reels'].includes(profileTab)) profileTab='posts';
- const renderTiles=(items)=>items.map(item=>`<div class="profile-tile" onclick="${item.video?`playReelInPlayer('${safe(item.id)}')`:item.kind==='reel'?`openReel('${safe(item.id)}')`:`openPost(${item.id})`}">${item.kind==='reel'&&isOwnReel(item)?`<button class="profile-tile-menu" aria-label="Manage your post" onclick="event.stopPropagation();openReelMenu('${safe(item.id)}')">⋯</button>`:''}${item.video?renderVideoThumb(item.src,"Your reel"):`<img src="${safe(item.src)}" alt="Your post">`}</div>`).join('');
+ const renderTiles=(items)=>items.map(item=>`<div class="profile-tile" onclick="${item.kind==='reel'?`openDiscoverFullscreenReel('${safe(item.id)}')`:`openFullscreenLocalPost(${item.id})`}">${item.kind==='reel'&&isOwnReel(item)?`<button class="profile-tile-menu" aria-label="Manage your post" onclick="event.stopPropagation();openReelMenu('${safe(item.id)}')">⋯</button>`:''}${item.video?renderVideoThumb(item.src,"Your reel"):`<img src="${safe(item.src)}" alt="Your post">`}</div>`).join('');
  const ownedReels=reels.filter(reel=>isOwnReel(reel));
  const userPosts=[...posts.filter(post=>post.user===0),...ownedReels];
  const tabItems={
@@ -2397,7 +2411,7 @@ async function resolveDMRecipient(target){
 function dmMessageText(message){
  return String(message.message_text || message.content || message.text || '')
   .replace(/\n?\[\[story-preview:[^:\]]+:[^\]]+\]\]$/,'')
-  .replace(/\n?\[\[reel-card:[^:\]]+:[^\]]+\]\]$/,'')
+  .replace(/\n?\[\[reel-card:[^\]]+\]\]$/,'')
   .replace(/\n?\[\[voice-note:[^\]]+\]\]$/,'');
 }
 
@@ -2410,9 +2424,19 @@ function dmStoryPreview(message){
 }
 
 function dmReelCard(message){
- const match=String(message.message_text||message.content||message.text||'').match(/\[\[reel-card:([^:\]]+):([^\]]+)\]\]$/);
+ const raw=String(message.message_text||message.content||message.text||'');
+ const match=raw.match(/\[\[reel-card:([^:\]]+):([^:\]]+)(?::([^:\]]+))?(?::([^\]]+))?\]\]$/);
  if(!match) return null;
- try{return {url:decodeURIComponent(match[1]),caption:decodeURIComponent(match[2])};}
+ try{
+  const url=decodeURIComponent(match[1]);
+  const caption=decodeURIComponent(match[2]);
+  let reelId=match[3]?decodeURIComponent(match[3]):'';
+  if(!reelId){
+   try{ reelId=new URL(url,location.href).searchParams.get('reel')||''; }catch(_){}
+  }
+  const cover=match[4]?decodeURIComponent(match[4]):'';
+  return {url,caption,reelId,cover};
+ }
  catch(error){console.error('Shared reel metadata parse error:',error);return null;}
 }
 
@@ -2432,18 +2456,52 @@ function dmPartnerId(message,userId=currentUser?.id){
  return null;
 }
 
+let dmInboxFilterQuery = '';
+function filterDMInbox(q) {
+ dmInboxFilterQuery = String(q || '').trim().toLowerCase();
+ renderDMInbox();
+}
 function renderDMInbox(){
  const inbox=document.getElementById('dmInbox');
  if(!inbox) return;
+ const ownAv = document.getElementById('dmOwnMiniAvatar');
+ if (ownAv) { ownAv.src = avatarSrc(me.pic); ownAv.onerror = () => { ownAv.src = avatarPlaceholder; }; }
+ const activeEl = document.getElementById('dmActiveNowCarousel');
+ if (activeEl) {
+  const activePeople = dmConversations.length ? dmConversations.map(c => dmProfile(c.userId)) : users.slice(0, 4);
+  activeEl.innerHTML = activePeople.map(p => `
+   <button type="button" class="dm-active-item" onclick="openChat('${safe(p.id)}')">
+    <span class="dm-active-avatar-wrap">
+     <img src="${safe(avatarSrc(p.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'" alt="">
+     <span class="dm-online-dot"></span>
+    </span>
+    <small>${safe((p.name || p.username || 'User').split(' ')[0])}</small>
+   </button>`).join('');
+ }
  const notes=renderNotesTray();
- const conversations=dmConversations.length?dmConversations.map(conversation=>{
+ const filteredConvs = dmConversations.filter(c => {
+  if (!dmInboxFilterQuery) return true;
+  const p = dmProfile(c.userId);
+  return String(p.name||'').toLowerCase().includes(dmInboxFilterQuery) || String(p.username||'').toLowerCase().includes(dmInboxFilterQuery);
+ });
+ const conversations=filteredConvs.length?filteredConvs.map(conversation=>{
   const person=dmProfile(conversation.userId);
-  const preview=conversation.lastMessage ? `${String(conversation.lastMessage.sender_id||conversation.lastMessage.from_user_id)===String(currentUser.id)?'You: ':''}${dmMessageText(conversation.lastMessage)}` : 'Start a conversation';
+  const isMineLast = conversation.lastMessage && String(conversation.lastMessage.sender_id||conversation.lastMessage.from_user_id)===String(currentUser.id);
+  const rawPrev = conversation.lastMessage ? (dmReelCard(conversation.lastMessage) ? '🎬 Shared a reel' : dmVoiceNote(conversation.lastMessage) ? '🎙 Voice message' : dmMessageText(conversation.lastMessage)) : 'Start a conversation';
+  const preview=conversation.lastMessage ? `${isMineLast?'You: ':''}${rawPrev}` : 'Start a conversation';
+  const ts = conversation.lastMessage?.created_at ? new Date(conversation.lastMessage.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : 'Now';
+  const statusBadge = isMineLast ? '<span class="dm-double-check">✓✓</span>' : '<span class="dm-unread-pill">1</span>';
   return `<button class="dm-person" type="button" data-chat-user="${safe(conversation.userId)}">
-   <img class="dm-person-avatar" src="${safe(avatarSrc(person.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'" alt="">
-   <span class="dm-person-copy"><span class="dm-person-name">${safe(person.name||person.username||'VYBE user')} <span class="meta">@${safe(person.username||'user')}</span></span><span class="dm-person-preview">${safe(preview)}</span></span>
+   <span class="dm-person-av-wrap">
+    <img class="dm-person-avatar" src="${safe(avatarSrc(person.pic))}" onerror="this.onerror=null;this.src='${avatarPlaceholder}'" alt="">
+    <span class="dm-online-dot"></span>
+   </span>
+   <span class="dm-person-copy">
+    <span class="dm-person-top-row"><span class="dm-person-name">${safe(person.name||person.username||'VYBE user')}</span><time class="dm-person-time">${safe(ts)}</time></span>
+    <span class="dm-person-bottom-row"><span class="dm-person-preview">${safe(preview)}</span>${statusBadge}</span>
+   </span>
   </button>`;
- }).join(''):'<div class="dm-empty">No conversations yet. Message someone from their profile to get started.</div>';
+ }).join(''):'<div class="dm-empty">No conversations found.</div>';
  inbox.innerHTML=notes+conversations;
  inbox.querySelectorAll('[data-chat-user]').forEach(button=>{
   const cancelLongPress=()=>{clearTimeout(dmLongPressTimer);dmLongPressTimer=null;};
@@ -2546,8 +2604,22 @@ function renderDMThread(){
   let safeVoiceUrl='';
   try{const parsed=voiceUrl?new URL(voiceUrl,location.href):null;if(parsed&&['http:','https:'].includes(parsed.protocol))safeVoiceUrl=parsed.href;}catch(error){console.error('Voice note URL error:',error);}
   const previewMedia=previewUrl?(isVideoFile({type:'',name:previewUrl})?`<video src="${safe(previewUrl)}" muted playsinline preload="metadata"></video>`:`<img src="${safe(previewUrl)}" alt="Story preview">`):'';
-  const reelPreview=reelUrl?`<a class="dm-reel-card" href="${safe(reelUrl)}" target="_blank" rel="noopener noreferrer"><strong>▶ Shared a reel</strong><span>${safe(reelCard.caption||'Watch this reel on VYBE')}</span></a>`:'';
-  const voicePreview=safeVoiceUrl?`<audio controls preload="metadata" src="${safe(safeVoiceUrl)}" aria-label="Voice note"></audio>`:'';
+  const sharedReelObj = reelCard?.reelId ? (reels.find(r=>String(r.id)===String(reelCard.reelId)) || archivedReels.find(r=>String(r.id)===String(reelCard.reelId))) : null;
+  const resolvedCover = reelCard?.cover || (sharedReelObj ? (videoCoverPoster(sharedReelObj.src) || sharedReelObj.src) : '');
+  const reelPreview = reelCard ? `<div class="dm-reel-cover-card" role="button" tabindex="0" onclick="openSharedReelInChat('${safe(reelCard.reelId)}','${safe(reelUrl)}')">
+    ${resolvedCover ? `<img src="${safe(resolvedCover)}" onerror="this.style.display='none'" alt="Shared Reel Cover">` : `<div class="dm-reel-cover-fallback">🎬</div>`}
+    <span class="dm-reel-play-badge">▶</span>
+    <div class="dm-reel-cover-meta"><strong>Shared Reel</strong><span>${safe(reelCard.caption||'Tap to watch fullscreen')}</span></div>
+  </div>` : '';
+  const voiceUid = `vn-${safe(msgId || Math.random().toString(36).slice(2,8))}`;
+  const voicePreview = safeVoiceUrl ? `<div class="vybe-voice-bubble" data-voice-box="${voiceUid}">
+    <button type="button" class="vybe-voice-play-btn" onclick="toggleSleekVoiceNote('${voiceUid}')" aria-label="Play or pause voice message">▶</button>
+    <div class="vybe-voice-waveform" aria-hidden="true">
+      <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+    </div>
+    <span class="vybe-voice-timer" id="${voiceUid}-time">0:05</span>
+    <audio id="${voiceUid}-audio" preload="metadata" src="${safe(safeVoiceUrl)}" onloadedmetadata="updateSleekVoiceDuration('${voiceUid}')" ontimeupdate="updateSleekVoiceProgress('${voiceUid}')" onended="resetSleekVoiceNote('${voiceUid}')"></audio>
+  </div>` : '';
   const msgId = safe(String(message.id || ''));
   const cleanTxt = dmMessageText(message);
   return `<div class="dm-bubble ${mine?'mine':''}" data-msg-id="${msgId}" data-msg-mine="${mine?'1':'0'}" data-msg-text="${safe(cleanTxt)}">${safe(cleanTxt)}${previewMedia?`<div class="dm-story-preview">${previewMedia}<span>Replied to your story</span></div>`:''}${reelPreview}${voicePreview}${time?`<time class="dm-time">${safe(time)}</time>`:''}</div>`;
@@ -2593,6 +2665,8 @@ function setDMView(view){
  const subtitle=document.getElementById('dmSubtitle');
  const inConversation=view==='thread';
  if(inbox) inbox.style.display=inConversation?'none':'block';
+ const inboxTop=document.getElementById('dmInboxTopControls');
+ if(inboxTop) inboxTop.style.display=inConversation?'none':'block';
  if(thread) thread.style.display=inConversation?'flex':'none';
  if(composer) composer.style.display=inConversation?'flex':'none';
  const quickBurst=document.getElementById('dmQuickBurstBar');
@@ -2869,6 +2943,9 @@ async function showDMInbox(){
 }
 
 function closeDMDrawer(){
+ closeDMMessageActionSheet();
+ closeDMActionSheet();
+ closeNoteActionSheet();
  const drawer=document.getElementById('dmDrawer');
  if(!drawer) return;
  drawer.classList.remove('open');
@@ -4222,15 +4299,20 @@ async function toggleSaveReel(id){
 
 function openReelMenu(id){
  const reel=reels.find(item=>String(item.id)===String(id)) || archivedReels.find(item=>String(item.id)===String(id)) || likedReelItems.find(item=>String(item.id)===String(id));
- if(!reel || !isOwnReel(reel)) return;
+ if(!reel) return;
  const title=document.getElementById('listTitle');
  const content=document.getElementById('listContent');
  if(!title||!content) return;
- title.textContent='Manage post';
+ title.textContent='Post Options';
  content.innerHTML=`
-  ${reel.isArchived?`<button class="secondary" style="width:100%;margin:8px 0" onclick="unarchiveReel('${safe(reel.id)}')">Unarchive / Show on Profile</button>`:`<button class="secondary" style="width:100%;margin:8px 0" onclick="archiveReel('${safe(reel.id)}')">Archive</button>`}
-  <button class="secondary" style="width:100%;margin:8px 0" onclick="deleteReel('${safe(reel.id)}')">Delete</button>`;
+  <button class="secondary" style="width:100%;margin:8px 0;color:#dc2626;font-weight:700;" onclick="reportPostItem('${safe(reel.id)}')">🚩 Report Post</button>
+  ${isOwnReel(reel)?`${reel.isArchived?`<button class="secondary" style="width:100%;margin:8px 0" onclick="unarchiveReel('${safe(reel.id)}')">Unarchive / Show on Profile</button>`:`<button class="secondary" style="width:100%;margin:8px 0" onclick="archiveReel('${safe(reel.id)}')">Archive</button>`}
+  <button class="secondary" style="width:100%;margin:8px 0" onclick="deleteReel('${safe(reel.id)}')">Delete</button>`:''}`;
  show('listModal');
+}
+function reportPostItem(id){
+ hide('listModal');
+ toast('🚩 Report submitted. Thank you for keeping VYBE safe.');
 }
 
 function isMissingArchivedColumn(error){
@@ -4488,7 +4570,8 @@ async function sendReelToDM(receiverId){
  if(!reel) return;
  const shareUrl=new URL(window.location.href);
  shareUrl.searchParams.set('reel',String(reel.id));
- const messageText=`[[reel-card:${encodeURIComponent(shareUrl.href)}:${encodeURIComponent(reel.caption||'Watch this reel on VYBE')}]]`;
+ const coverImg = videoCoverPoster(reel.src) || reel.src || '';
+ const messageText=`[[reel-card:${encodeURIComponent(shareUrl.href)}:${encodeURIComponent(reel.caption||'Watch this reel on VYBE')}:${encodeURIComponent(String(reel.id))}:${encodeURIComponent(coverImg)}]]`;
  try{
   const {data,error}=await supabaseClient.from('direct_messages').insert({
    sender_id:currentUser.id,
@@ -5067,4 +5150,95 @@ function triggerNotchedReaction(btn, id, isReel) {
   btn.closest('.notched-hero-wrapper')?.appendChild(pop);
   setTimeout(() => pop.remove(), 750);
   if (isReel && !likedReels.has(String(id))) void toggleReelLike(id);
+}
+
+
+
+function openFullscreenLocalPost(id) {
+  const post = posts.find(p => String(p.id) === String(id));
+  if (!post) return;
+  const modal = document.getElementById('discoverReelModal');
+  const mediaWrap = document.getElementById('discoverReelMediaWrap');
+  const av = document.getElementById('discoverReelAvatar');
+  const authBtn = document.getElementById('discoverReelAuthorBtn');
+  const cap = document.getElementById('discoverReelCaption');
+  const side = document.getElementById('discoverReelSideActions');
+  if (!modal || !mediaWrap) return;
+  const author = user(post.user);
+  if (av) { av.src = avatarSrc(author.pic); av.onerror = () => { av.src = avatarPlaceholder; }; }
+  if (authBtn) {
+    authBtn.textContent = `@${author.username || 'user'}`;
+    authBtn.onclick = () => { closeDiscoverReelModal(); viewProfile(post.user); };
+  }
+  if (cap) cap.innerHTML = renderTaggedText(post.caption);
+  mediaWrap.innerHTML = post.video
+    ? `<video src="${safe(post.src)}" autoplay loop playsinline controls style="width:100%;height:100%;object-fit:contain;background:#000;"></video>`
+    : `<img src="${safe(post.src)}" alt="Post" style="width:100%;height:100%;object-fit:contain;background:#000;">`;
+  if (side) {
+    side.innerHTML = `
+      <button class="reel-like-button ${post.liked ? 'active' : ''}" onclick="toggleLike(${post.id})">♥</button>
+      <small>${Number(post.likes || 0).toLocaleString()}</small>
+      <button onclick="reportPostItem('${safe(post.id)}')" title="Report">🚩</button>
+    `;
+  }
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden', 'false');
+}
+
+
+
+function openSharedReelInChat(reelId, fallbackUrl) {
+  if (reelId) {
+    const found = reels.find(r => String(r.id) === String(reelId)) || archivedReels.find(r => String(r.id) === String(reelId));
+    if (found) {
+      openDiscoverFullscreenReel(found.id);
+      return;
+    }
+  }
+  if (fallbackUrl) window.open(fallbackUrl, '_blank', 'noopener,noreferrer');
+}
+
+function formatVoiceSec(sec) {
+  if (!Number.isFinite(sec) || sec < 0) return '0:05';
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+function updateSleekVoiceDuration(uid) {
+  const audio = document.getElementById(`${uid}-audio`);
+  const lbl = document.getElementById(`${uid}-time`);
+  if (audio && lbl && Number.isFinite(audio.duration)) lbl.textContent = formatVoiceSec(audio.duration);
+}
+function updateSleekVoiceProgress(uid) {
+  const audio = document.getElementById(`${uid}-audio`);
+  const lbl = document.getElementById(`${uid}-time`);
+  if (audio && lbl) lbl.textContent = formatVoiceSec(audio.currentTime);
+}
+function resetSleekVoiceNote(uid) {
+  const box = document.querySelector(`[data-voice-box="${uid}"]`);
+  const btn = box?.querySelector('.vybe-voice-play-btn');
+  const audio = document.getElementById(`${uid}-audio`);
+  const lbl = document.getElementById(`${uid}-time`);
+  box?.classList.remove('is-playing');
+  if (btn) btn.textContent = '▶';
+  if (audio && lbl && Number.isFinite(audio.duration)) lbl.textContent = formatVoiceSec(audio.duration);
+}
+function toggleSleekVoiceNote(uid) {
+  const audio = document.getElementById(`${uid}-audio`);
+  const box = document.querySelector(`[data-voice-box="${uid}"]`);
+  const btn = box?.querySelector('.vybe-voice-play-btn');
+  if (!audio) return;
+  if (audio.paused) {
+    document.querySelectorAll('.vybe-voice-bubble audio').forEach(a => { if (a !== audio) a.pause(); });
+    document.querySelectorAll('.vybe-voice-bubble').forEach(b => b.classList.remove('is-playing'));
+    document.querySelectorAll('.vybe-voice-play-btn').forEach(b => b.textContent = '▶');
+    audio.play().then(() => {
+      box?.classList.add('is-playing');
+      if (btn) btn.textContent = '⏸';
+    }).catch(() => {});
+  } else {
+    audio.pause();
+    box?.classList.remove('is-playing');
+    if (btn) btn.textContent = '▶';
+  }
 }

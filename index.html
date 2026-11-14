@@ -43,14 +43,7 @@
  <div class="brand" style="display:none;font-size:25px;margin:0" id="mobileBrand"><span class="vybe-center-brand-text">VYBE</span></div>
 
 
- <div class="highlight-overlay" id="highlightModal" style="z-index:12500;" aria-hidden="true" onclick="if(event.target===this)closeHighlightModal()">
-  <section class="highlight-dialog" role="dialog" aria-modal="true" aria-labelledby="highlightTitle">
-   <header class="highlight-header"><h2 id="highlightTitle">New Story Highlight</h2><button class="camera-close" type="button" aria-label="Close highlights" onclick="closeHighlightModal()">✕</button></header>
-   <input id="highlightNameInput" type="text" maxlength="24" placeholder="Highlight title (e.g. Travel)">
-   <div class="highlight-story-options" id="highlightStoryOptions"></div>
-   <button class="primary highlight-save" type="button" onclick="saveStoryHighlight()">Add Highlight</button>
-  </section>
- </div>
+ 
  <div class="top-actions">
   <button id="gyroToggleTopBtn" class="icon-btn" type="button" aria-label="3D Gyro Tilt" title="Toggle 3D Gyro Tilt & Starfield" data-vybe-feature="gyro_3d" data-vybe-label="🧭 3D Gyro Parallax Tilt" data-vybe-desc="Enable/disable 3D tilt parallax on feed cards & starfield" data-vybe-guide="Idhu enna pannum: Phone tilt pannumbodhu feed cards & starfield 3D-aa move aagum. Eppadi use panradhu: Settings -> Futures-la ON panni top bar-la 🧭 icon tap panna ON/OFF aagum." onclick="toggleVybeGyro3D()">🧭</button>
   <button class="icon-btn" type="button" aria-label="Spider-Web Relationship Graph" title="Cyber Spider-Web Relationship Graph" data-vybe-feature="spider_web_graph" data-vybe-label="🕸️ Spider-Web Relationship Graph" data-vybe-desc="Interactive glowing network of your close friends & mutuals" data-vybe-guide="Idhu enna pannum: Unga close friends & DM contacts-ai glowing neon spider-web network-aa kaattum. Eppadi use panradhu: Top bar-la 🕸️ icon tap panni node-ai drag pannunga alladhu tap panni chat open pannunga." onclick="openSpiderWebModal()">🕸️</button>
@@ -175,10 +168,11 @@
 
 <div class="dm-overlay" id="dmDrawer" aria-hidden="true" onclick="if(event.target===this)closeDMDrawer()">
  <section class="dm-drawer" role="dialog" aria-modal="true" aria-labelledby="dmTitle">
+  <div class="dm-pastel-blobs" aria-hidden="true"><span class="blob-blue"></span><span class="blob-peach"></span></div>
   <header class="dm-header">
    <button class="dm-header-button dm-back" id="dmBackButton" type="button" aria-label="Back to inbox" onclick="showDMInbox()" style="display:none">←</button>
    <img class="dm-header-avatar" id="dmHeaderAvatar" src="" alt="" style="display:none">
-   <div class="dm-header-copy"><span class="dm-header-title" id="dmTitle">Messages</span><span class="dm-header-subtitle" id="dmSubtitle">Your conversations</span></div>
+   <div class="dm-header-copy"><span class="dm-header-title" id="dmTitle">Messages</span><span class="dm-header-subtitle" id="dmSubtitle">Active chats & notes</span></div>
       <button class="dm-header-button" type="button" aria-label="Icebreaker Spin Prompt" title="1-Tap Icebreaker Question" data-vybe-feature="dm_icebreaker" data-vybe-label="🎲 DM Icebreaker Spin-Prompt" data-vybe-desc="Generate fun conversation starter questions inside DM" data-vybe-guide="Idhu enna pannum: Chat-la enna pesuradhu nu theriyalana instant fun question generate panni anuppum. Eppadi use panradhu: DM chat open panni header-la irukkira 🎲 icon-ai tap pannunga." onclick="sendDMIcebreakerPrompt()" style="margin-right:4px;color:#38bdf8;">🎲</button>
    <button class="dm-header-button" type="button" aria-label="Telepathy Sync Game" title="Live Telepathy Mind-Read Game" data-vybe-feature="telepathy_sync" data-vybe-label="🔮 DM Telepathy Sync Test" data-vybe-desc="Pick a hidden symbol & test 100% mind-read sync with your friend" data-vybe-guide="Idhu enna pannum: 4 hidden symbols-la onna choose panni unga friend-oda telepathy sync test pannum. Eppadi use panradhu: DM header-la 🔮 icon tap panni symbol choose pannunga." onclick="openTelepathyModal()" style="margin-right:4px;color:#e879f9;">🔮</button>
    <button class="dm-header-button" type="button" aria-label="Cassette Mixtape Maker" title="Send 90s Cyber Cassette Mixtape" data-vybe-feature="cassette_mixtape" data-vybe-label="📼 DM Cassette Mixtape Maker" data-vybe-desc="Create & gift a rotating 90s cyber cassette tape in DM" data-vybe-guide="Idhu enna pannum: 3 favorite tracks & dedication note-oda rotating 90s Cassette Tape DM-la gift pannum. Eppadi use panradhu: DM header-la 📼 icon tap panni track names enter panni send pannunga." onclick="openCassetteModal()" style="margin-right:4px;color:#facc15;">📼</button>
@@ -190,6 +184,17 @@
    <button class="dm-header-button" type="button" aria-label="Heartbeat Pulse Sync" title="Heartbeat Pulse Sync" data-vybe-feature="dm_pulse_sync" onclick="openPulseSyncModal()" style="margin-right:4px;color:#f43f5e;">💓</button>
    <button class="dm-header-button" type="button" aria-label="Close messages" onclick="closeDMDrawer()">✕</button>
   </header>
+  <div id="dmInboxTopControls" class="dm-inbox-top-controls">
+   <div class="dm-search-bar">
+    <span class="dm-search-icon">⌕</span>
+    <input id="dmSearchChatsInput" type="search" placeholder="Search chats..." oninput="filterDMInbox(this.value)" autocomplete="off">
+    <img id="dmOwnMiniAvatar" class="dm-own-mini-avatar" src="" alt="You" onclick="closeDMDrawer();go('profile')">
+   </div>
+   <div class="dm-active-section">
+    <span class="dm-active-label">ACTIVE NOW</span>
+    <div id="dmActiveNowCarousel" class="dm-active-carousel"></div>
+   </div>
+  </div>
   <div class="dm-inbox" id="dmInbox"></div>
   <div class="dm-thread" id="dmThread" style="display:none" aria-live="polite"></div>
     <div class="dm-quick-burst" id="dmQuickBurstBar" style="display:none" aria-label="Quick emoji burst">
@@ -221,29 +226,11 @@
 </div>
 
 
-<div class="dm-action-overlay" id="dmMessageActionSheet" aria-hidden="true" onclick="if(event.target===this)closeDMMessageActionSheet()">
- <section class="dm-action-sheet" role="dialog" aria-modal="true" aria-label="Message actions">
-  <button type="button" onclick="replyToSelectedDMMessage()">↩ Reply to Message</button>
-  <button type="button" onclick="deleteDMMessageForMe()">🗑 Delete for Me</button>
-  <button id="dmDeleteBothBtn" class="delete-conversation-action" type="button" onclick="deleteDMMessageForBoth()">🔥 Delete for Both</button>
-  <button type="button" onclick="closeDMMessageActionSheet()">Cancel</button>
- </section>
-</div>
 
-<div class="dm-action-overlay" id="dmActionSheet" aria-hidden="true" onclick="if(event.target===this)closeDMActionSheet()">
- <section class="dm-action-sheet" role="dialog" aria-modal="true" aria-label="Conversation actions">
-  <button class="delete-conversation-action" type="button" onclick="confirmDeleteConversation()">Delete Conversation</button>
-  <button type="button" onclick="closeDMActionSheet()">Cancel</button>
- </section>
-</div>
 
-<div class="dm-action-overlay" id="noteActionSheet" aria-hidden="true" onclick="if(event.target===this)closeNoteActionSheet()">
- <section class="dm-action-sheet" role="dialog" aria-modal="true" aria-label="Note actions">
-  <button class="delete-conversation-action" type="button" onclick="deleteStatusNote()">Delete Note</button>
-  <button type="button" onclick="closeNoteActionSheet();editStatusNote()">Share new note / Rewrite</button>
-  <button type="button" onclick="closeNoteActionSheet()">Cancel</button>
- </section>
-</div>
+
+
+
 
 <div class="reel-share-overlay" id="reelShareDrawer" aria-hidden="true" onclick="if(event.target===this)closeReelShareDrawer()">
  <section class="reel-share-sheet" role="dialog" aria-modal="true" aria-labelledby="reelShareTitle">
@@ -512,7 +499,7 @@
   <div class="settings-handle"></div>
   <header class="settings-header"><button id="settingsBackButton" class="settings-close" type="button" aria-label="Back to settings" onclick="showSettingsHome()" style="display:none">←</button><h2 id="settingsSheetTitle">Settings</h2><button class="settings-close" type="button" aria-label="Close settings" onclick="closeSettingsSheet()">✕</button></header>
   <div id="settingsHome">
-   <div class="settings-version">VYBE v19.0 (Notched L-Card Feed + Fullscreen Discover + Black/White Theme)</div>
+   <div class="settings-version">VYBE v20.0 (Pure White Minimal iOS Glassmorphism + Fullscreen Profile Media + Voice Waveform)</div>
    <div class="settings-menu">
     <button type="button" style="border-color:#38bdf8;background:linear-gradient(135deg,rgba(14,165,233,0.18),rgba(168,85,247,0.18));" onclick="showSettingsSubview('futures')">✨ Futures (Feature Controls) <span>ON / OFF ›</span></button>
     <button type="button" onclick="openSavedCollection()">Saved <span>›</span></button>
@@ -1480,6 +1467,35 @@
   </section>
 </div>
 
+<div class="highlight-overlay" id="highlightModal" style="z-index:12500;" aria-hidden="true" onclick="if(event.target===this)closeHighlightModal()">
+  <section class="highlight-dialog" role="dialog" aria-modal="true" aria-labelledby="highlightTitle">
+   <header class="highlight-header"><h2 id="highlightTitle">New Story Highlight</h2><button class="camera-close" type="button" aria-label="Close highlights" onclick="closeHighlightModal()">✕</button></header>
+   <input id="highlightNameInput" type="text" maxlength="24" placeholder="Highlight title (e.g. Travel)">
+   <div class="highlight-story-options" id="highlightStoryOptions"></div>
+   <button class="primary highlight-save" type="button" onclick="saveStoryHighlight()">Add Highlight</button>
+  </section>
+ </div>
+<div class="dm-action-overlay" id="dmMessageActionSheet" aria-hidden="true" onclick="if(event.target===this)closeDMMessageActionSheet()">
+ <section class="dm-action-sheet" role="dialog" aria-modal="true" aria-label="Message actions">
+  <button type="button" onclick="replyToSelectedDMMessage()">↩ Reply to Message</button>
+  <button type="button" onclick="deleteDMMessageForMe()">🗑 Delete for Me</button>
+  <button id="dmDeleteBothBtn" class="delete-conversation-action" type="button" onclick="deleteDMMessageForBoth()">🔥 Delete for Both</button>
+  <button type="button" onclick="closeDMMessageActionSheet()">Cancel</button>
+ </section>
+</div>
+<div class="dm-action-overlay" id="dmActionSheet" aria-hidden="true" onclick="if(event.target===this)closeDMActionSheet()">
+ <section class="dm-action-sheet" role="dialog" aria-modal="true" aria-label="Conversation actions">
+  <button class="delete-conversation-action" type="button" onclick="confirmDeleteConversation()">Delete Conversation</button>
+  <button type="button" onclick="closeDMActionSheet()">Cancel</button>
+ </section>
+</div>
+<div class="dm-action-overlay" id="noteActionSheet" aria-hidden="true" onclick="if(event.target===this)closeNoteActionSheet()">
+ <section class="dm-action-sheet" role="dialog" aria-modal="true" aria-label="Note actions">
+  <button class="delete-conversation-action" type="button" onclick="deleteStatusNote()">Delete Note</button>
+  <button type="button" onclick="closeNoteActionSheet();editStatusNote()">Share new note / Rewrite</button>
+  <button type="button" onclick="closeNoteActionSheet()">Cancel</button>
+ </section>
+</div>
 <div class="toast" id="toast"></div>
 
 <script src="config.js"></script>
