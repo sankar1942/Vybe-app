@@ -5082,7 +5082,18 @@ async function initializeApp(){
  renderProfile();
 }
 
-void initializeApp();
+
+function hideVybeSplashScreen() {
+  const splash = document.getElementById('vybeSplashScreen');
+  if (!splash || splash.dataset.hidden === 'true') return;
+  splash.dataset.hidden = 'true';
+  splash.classList.add('fade-out');
+  setTimeout(() => { splash.remove(); }, 500);
+}
+// Safety fallback max 3.5s so app never gets stuck if network is slow
+setTimeout(hideVybeSplashScreen, 3500);
+
+void initializeApp().finally(() => { setTimeout(hideVybeSplashScreen, 650); });
 if ('serviceWorker' in navigator) {
  window.addEventListener('load', () => {
   navigator.serviceWorker.register('/sw.js', { scope: '/' })

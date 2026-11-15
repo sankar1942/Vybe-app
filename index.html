@@ -20,6 +20,20 @@
 </head>
 
 <body>
+<div id="vybeSplashScreen" class="vybe-splash-screen" role="status" aria-label="Loading VYBE">
+  <div class="vybe-splash-blobs" aria-hidden="true">
+    <span class="splash-blob-1"></span>
+    <span class="splash-blob-2"></span>
+  </div>
+  <div class="vybe-splash-card">
+    <div class="vybe-splash-logo">VYBE</div>
+    <p class="vybe-splash-tagline">SHARE • CONNECT • BELONG</p>
+    <div class="vybe-splash-loader-track">
+      <div class="vybe-splash-loader-bar"></div>
+    </div>
+    <span id="vybeSplashStatus" class="vybe-splash-status">Preparing your vibe...</span>
+  </div>
+</div>
 <div id="liveTopNotifPopup" class="live-top-notif-popup" hidden onclick="this.hidden=true;openActivityDrawer()">
   <span class="live-notif-dot"></span>
   <div id="liveTopNotifText" style="flex:1;min-width:0;font-size:12px;font-weight:700;">New notification</div>
@@ -499,7 +513,7 @@
   <div class="settings-handle"></div>
   <header class="settings-header"><button id="settingsBackButton" class="settings-close" type="button" aria-label="Back to settings" onclick="showSettingsHome()" style="display:none">←</button><h2 id="settingsSheetTitle">Settings</h2><button class="settings-close" type="button" aria-label="Close settings" onclick="closeSettingsSheet()">✕</button></header>
   <div id="settingsHome">
-   <div class="settings-version">VYBE v21.0 (DM Chat & History Fix + Clean Inbox + Fullscreen Feed Media + High-Contrast Black Icons/Text)</div>
+   <div class="settings-version">VYBE v22.0 (Pure White Glass Splash Loading Screen + Smooth App Entry)</div>
    <div class="settings-menu">
     <button type="button" style="border-color:#38bdf8;background:linear-gradient(135deg,rgba(14,165,233,0.18),rgba(168,85,247,0.18));" onclick="showSettingsSubview('futures')">✨ Futures (Feature Controls) <span>ON / OFF ›</span></button>
     <button type="button" onclick="openSavedCollection()">Saved <span>›</span></button>
