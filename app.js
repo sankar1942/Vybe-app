@@ -3288,25 +3288,31 @@ function openActivityPost(reelId){
  if(video) void video.play().catch(error=>console.info('Post video autoplay was blocked:',error));
 }
 
+let activityPollTimer = null;
+let lastKnownTopNotifId = null;
+
 function subscribeToActivityNotifications(){
- if(activityChannel||!currentUser) return;
- const userId=String(currentUser.id);
- activityChannel=supabaseClient.channel(`user-notifications-${userId}-${Date.now()}`)
-  .on('postgres_changes',{event:'INSERT',schema:'public',table:'user_notifications',filter:`receiver_id=eq.${userId}`},payload=>{
-   const incoming=payload.new;
-   if(!incoming) return;
-   const exists=activityNotifications.some(item=>String(item.id)===String(incoming.id));
-   if(!exists) activityNotifications.unshift({...incoming,is_read:Boolean(incoming.is_read)});
-   showTopNotificationPopup(incoming);
-   void loadActivityNotifications();
-   updateNotificationBadge();
-  })
-  .subscribe(status=>{
-   if(status==='CHANNEL_ERROR'||status==='TIMED_OUT') console.error('Activity realtime subscription status:',status);
-  });
+ if(!currentUser) return;
+ if(activityPollTimer) clearInterval(activityPollTimer);
+ activityPollTimer = setInterval(async () => {
+  if(document.hidden || !currentUser) return;
+  try {
+   const prevTopId = activityNotifications[0]?.id ? String(activityNotifications[0].id) : lastKnownTopNotifId;
+   await loadActivityNotifications();
+   const newest = activityNotifications[0];
+   if(newest && !newest.is_read && String(newest.id) !== prevTopId){
+    lastKnownTopNotifId = String(newest.id);
+    showTopNotificationPopup(newest);
+   }
+  } catch(_) {}
+ }, 30000);
 }
 
 function closeActivityRealtime(){
+ if(activityPollTimer){
+  clearInterval(activityPollTimer);
+  activityPollTimer = null;
+ }
  if(!activityChannel) return;
  const channel=activityChannel;
  activityChannel=null;
@@ -3363,12 +3369,26 @@ function isStrictReelVideo(reel){
  return mediaType==='video'||/\.(mp4|webm|mov)$/i.test(url);
 }
 
-async function loadReels(){
+let reelsPageOffset = 0;
+const REELS_PAGE_SIZE = 12;
+let reelsHasMore = true;
+let reelsLoadingMore = false;
+
+async function loadReels(append = false){
+  if (append && (reelsLoadingMore || !reelsHasMore)) return false;
   let loadSucceeded=false;
-  reelsLoading=true;
-  if(!reels.length) renderReels();
+  if (append) {
+    reelsLoadingMore = true;
+  } else {
+    reelsPageOffset = 0;
+    reelsHasMore = true;
+    reelsLoading = true;
+    if(!reels.length) renderReels();
+  }
   try {
-    const { data, error } = await supabaseClient.from('reels').select('*').order('created_at', { ascending: false });
+    const from = reelsPageOffset;
+    const to = from + REELS_PAGE_SIZE - 1;
+    const { data, error } = await supabaseClient.from('reels').select('*').order('created_at', { ascending: false }).range(from, to);
     if (error) throw error;
     loadSucceeded=true;
     const loadedReels=(data || []).map(normalizeReel);
@@ -3396,12 +3416,16 @@ async function loadReels(){
       ...loadedReels.filter(reel=>reel.isArchived && isOwnReel(reel)),
       ...archivedReels.filter(reel=>!loadedIds.has(String(reel.id)) && isOwnReel(reel))
     ];
+    const fetchedCount = (data || []).length;
+    reelsPageOffset += fetchedCount;
+    if (fetchedCount < REELS_PAGE_SIZE) reelsHasMore = false;
     await loadReelLikes();
   } catch (err) {
     console.error('Supabase reels fetch error:', err);
     toast(err?.message||'Unable to refresh reels.');
   } finally {
     reelsLoading=false;
+    reelsLoadingMore=false;
   }
   renderReels();
   renderExplore();
@@ -5283,3 +5307,22 @@ function openLocalPostMenu(id) {
   content.innerHTML = `<button class="secondary" style="width:100%;margin:8px 0;color:#dc2626;font-weight:700;" onclick="reportPostItem('${safe(id)}')">🚩 Report Post</button>`;
   show('listModal');
 }
+
+
+
+// ================= V23.0: INFINITE SCROLL PAGINATION FOR FEED & REELS =================
+window.addEventListener('scroll', () => {
+  if (!reelsHasMore || reelsLoadingMore || !currentUser) return;
+  if (document.getElementById('home')?.classList.contains('active')) {
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) {
+      void loadReels(true);
+    }
+  }
+}, { passive: true });
+
+document.getElementById('reelList')?.addEventListener('scroll', function () {
+  if (!reelsHasMore || reelsLoadingMore || !currentUser) return;
+  if (this.scrollTop + this.clientHeight >= this.scrollHeight - 400) {
+    void loadReels(true);
+  }
+}, { passive: true });
