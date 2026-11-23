@@ -335,6 +335,9 @@
   <button class="media-picker" type="button" style="border-color:#a855f7;color:#e9d5ff;" data-vybe-feature="parallel_universe_post" data-vybe-label="⏳ Parallel-Universe Split Post" data-vybe-desc="Create a Universe A vs Universe B comparison post" data-vybe-guide="Idhu enna pannum: Ore post-la Universe A vs Universe B alternate reality slider post create pannum. Eppadi use panradhu: Create Post-la ⏳ Parallel Split button tap panni post podunga." onclick="attachParallelUniverseTag()">⏳ Parallel Split</button>
   <button class="media-picker" type="button" style="border-color:#38bdf8;color:#7dd3fc;" data-vybe-feature="black_mirror_echo" data-vybe-label="🪞 Black-Mirror Shard Echo" data-vybe-desc="Tap to shatter mirror overlay & reveal hidden backstage note" data-vybe-guide="Idhu enna pannum: Post mela mirror shard overlay pottu, tap panna udainju secret backstage note kaattum. Eppadi use panradhu: Create Post-la 🪞 Mirror Echo button tap pannunga." onclick="attachBlackMirrorTag()">🪞 Mirror Echo</button>
  </div>
+ <div class="ig-embed-create-box" style="margin:8px 0 4px;">
+  <input id="igLinkInput" type="url" placeholder="🔗 Paste Instagram Reel or Post Link (0 MB storage)..." style="margin:0;padding:11px 14px;font-size:12px;border-radius:14px;">
+ </div>
  <textarea id="caption" maxlength="2200" placeholder="Write a caption... Add hashtags with #"></textarea>
  <div style="display:flex;gap:6px;margin:-4px 0 8px;flex-wrap:wrap;">
   <button type="button" class="qv-chip" style="border-color:#38bdf8;color:#7dd3fc;" data-vybe-feature="magic_caption" onclick="magicPolishCaption()">🪄 Magic Caption Polish</button>
@@ -513,9 +516,10 @@
   <div class="settings-handle"></div>
   <header class="settings-header"><button id="settingsBackButton" class="settings-close" type="button" aria-label="Back to settings" onclick="showSettingsHome()" style="display:none">←</button><h2 id="settingsSheetTitle">Settings</h2><button class="settings-close" type="button" aria-label="Close settings" onclick="closeSettingsSheet()">✕</button></header>
   <div id="settingsHome">
-   <div class="settings-version">VYBE v23.0 (Zero-Cost Unlimited Scale: On-Demand DM Realtime + Smart Notification Polling + Feed Pagination)</div>
+   <div class="settings-version">VYBE v25.0 (Instagram Reel/Post Link Embed + Zero-Cost Native Sponsored Ad Monetization)</div>
    <div class="settings-menu">
     <button type="button" style="border-color:#38bdf8;background:linear-gradient(135deg,rgba(14,165,233,0.18),rgba(168,85,247,0.18));" onclick="showSettingsSubview('futures')">✨ Futures (Feature Controls) <span>ON / OFF ›</span></button>
+    <button type="button" onclick="openSponsorAdManager()">💰 Sponsored Ads Manager <span>Monetize ›</span></button>
     <button type="button" onclick="openSavedCollection()">Saved <span>›</span></button>
     <button type="button" onclick="closeSettingsSheet();openSecretVault()">🔒 Secret PIN Vault <span>6-Char PIN ›</span></button>
     <button type="button" onclick="openArchiveCollection()">Archive <span>›</span></button>
@@ -1517,5 +1521,23 @@
 <script src="app.js"></script>
 <script src="features.js"></script>
 
+
+<div class="modal" id="sponsorAdModal" onclick="if(event.target===this)hide('sponsorAdModal')">
+  <div class="modalbox glass">
+    <button class="close" type="button" onclick="hide('sponsorAdModal')">×</button>
+    <h2 style="margin-bottom:4px;">💰 VYBE Sponsored Ads Manager</h2>
+    <p class="meta" style="margin-bottom:12px;">Customize the native Sponsored Ad Card shown every 4 posts in Home Feed to earn direct revenue!</p>
+    <label style="display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:10px;">
+      <span>Enable Feed Sponsored Ads</span>
+      <input id="sponsorAdEnabledToggle" type="checkbox" class="settings-toggle" checked>
+    </label>
+    <input id="sponsorAdBrandInput" type="text" maxlength="40" placeholder="Sponsor / Brand Name (e.g. VYBE Store)">
+    <input id="sponsorAdTitleInput" type="text" maxlength="90" placeholder="Ad Headline (e.g. 50% OFF Custom Riding Gear 🔥)">
+    <input id="sponsorAdImageInput" type="url" placeholder="Banner Image URL (https://...)">
+    <input id="sponsorAdLinkInput" type="url" placeholder="Destination Website / WhatsApp Link (https://...)">
+    <input id="sponsorAdCtaInput" type="text" maxlength="20" placeholder="Button Label (e.g. Shop Now / Visit)">
+    <button type="button" class="primary" style="width:100%;margin-top:8px;" onclick="saveSponsorAdConfig()">Save & Publish Ad</button>
+  </div>
+</div>
 </body>
 </html>

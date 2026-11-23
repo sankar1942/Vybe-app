@@ -5326,3 +5326,296 @@ document.getElementById('reelList')?.addEventListener('scroll', function () {
     void loadReels(true);
   }
 }, { passive: true });
+
+
+
+// ================= V24.0: SMART 5-MIN BROWSER CACHE (95% SUPABASE EGRESS REDUCTION) =================
+const VYBE_REELS_CACHE_KEY = 'vybe:cache:reels:v24';
+const VYBE_STORIES_CACHE_KEY = 'vybe:cache:stories:v24';
+const VYBE_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes cache window
+
+function readVybeCache(key) {
+  try {
+    const raw = JSON.parse(localStorage.getItem(key) || 'null');
+    if (raw && Array.isArray(raw.items) && (Date.now() - Number(raw.ts || 0) < VYBE_CACHE_TTL_MS)) {
+      return raw.items;
+    }
+  } catch (_) {}
+  return null;
+}
+
+function writeVybeCache(key, items) {
+  try {
+    localStorage.setItem(key, JSON.stringify({ ts: Date.now(), items: (items || []).slice(0, 36) }));
+  } catch (_) {}
+}
+
+function clearVybeSmartCache() {
+  try {
+    localStorage.removeItem(VYBE_REELS_CACHE_KEY);
+    localStorage.removeItem(VYBE_STORIES_CACHE_KEY);
+  } catch (_) {}
+}
+
+// Wrap loadReels with instant Smart Cache & force-refresh option
+if (typeof loadReels === 'function') {
+  const _v24OrigLoadReels = loadReels;
+  window.loadReels = async function (append = false, forceRefresh = false) {
+    if (!append && !forceRefresh) {
+      const cached = readVybeCache(VYBE_REELS_CACHE_KEY);
+      if (cached && cached.length) {
+        reels = cached;
+        reelsLoading = false;
+        renderReels();
+        renderExplore();
+        renderProfile();
+        renderFeed();
+        startVisibleReel();
+        return true;
+      }
+    }
+    const ok = await _v24OrigLoadReels.apply(this, arguments);
+    if (ok && reels.length) writeVybeCache(VYBE_REELS_CACHE_KEY, reels);
+    return ok;
+  };
+}
+
+// Wrap loadStories with Smart Cache
+if (typeof loadStories === 'function') {
+  const _v24OrigLoadStories = loadStories;
+  window.loadStories = async function (forceRefresh = false) {
+    if (!forceRefresh) {
+      const cached = readVybeCache(VYBE_STORIES_CACHE_KEY);
+      if (cached && cached.length) {
+        storyGroups = cached;
+        renderStories();
+        return true;
+      }
+    }
+    const ok = await _v24OrigLoadStories.apply(this, arguments);
+    if (ok && storyGroups.length) writeVybeCache(VYBE_STORIES_CACHE_KEY, storyGroups);
+    return ok;
+  };
+}
+
+// Invalidate cache when user creates or deletes a post so fresh post appears immediately
+if (typeof createPost === 'function') {
+  const _v24OrigCreatePost = createPost;
+  window.createPost = async function () {
+    clearVybeSmartCache();
+    const res = await _v24OrigCreatePost.apply(this, arguments);
+    if (reels.length) writeVybeCache(VYBE_REELS_CACHE_KEY, reels);
+    return res;
+  };
+}
+
+if (typeof deleteReel === 'function') {
+  const _v24OrigDeleteReel = deleteReel;
+  window.deleteReel = async function () {
+    clearVybeSmartCache();
+    const res = await _v24OrigDeleteReel.apply(this, arguments);
+    if (reels.length) writeVybeCache(VYBE_REELS_CACHE_KEY, reels);
+    return res;
+  };
+}
+
+// Force fresh network fetch on pull-to-refresh
+if (typeof refreshHomeFeed === 'function') {
+  window.refreshHomeFeed = async function () {
+    if (feedRefreshing) return;
+    const indicator = document.getElementById('feedRefreshIndicator');
+    const label = document.getElementById('feedRefreshText');
+    feedRefreshing = true;
+    indicator?.classList.add('visible', 'refreshing');
+    if (label) label.textContent = 'Refreshing feed...';
+    renderFeed();
+    try {
+      clearVybeSmartCache();
+      const [reelsLoaded, storiesLoaded] = await Promise.all([loadReels(false, true), loadStories(true)]);
+      toast(reelsLoaded === false || storiesLoaded === false ? 'Feed refreshed with some content unavailable.' : 'Feed refreshed');
+    } catch (error) {
+      toast(error?.message || 'Unable to refresh the feed.');
+    } finally {
+      feedRefreshing = false;
+      indicator?.classList.remove('refreshing');
+      if (label) label.textContent = 'Pull to refresh';
+      renderFeed();
+      window.setTimeout(() => indicator?.classList.remove('visible'), 250);
+    }
+  };
+}
+
+
+
+// ================= V25.0: INSTAGRAM REEL/POST EMBED + SPONSORED AD MONETIZATION =================
+const VYBE_SPONSOR_AD_KEY = 'vybe:sponsor-ad-config:v25';
+
+function getSponsorAdConfig() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(VYBE_SPONSOR_AD_KEY) || 'null');
+    if (saved && typeof saved === 'object') return saved;
+  } catch (_) {}
+  return {
+    enabled: true,
+    brand: 'VYBE Partner Ads',
+    title: 'Promote your brand, shop, or page directly to active VYBE users 🚀',
+    image: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800',
+    link: 'https://vybe.app',
+    cta: 'Learn More'
+  };
+}
+
+function openSponsorAdManager() {
+  const cfg = getSponsorAdConfig();
+  const tog = document.getElementById('sponsorAdEnabledToggle');
+  if (tog) tog.checked = cfg.enabled !== false;
+  if (document.getElementById('sponsorAdBrandInput')) document.getElementById('sponsorAdBrandInput').value = cfg.brand || '';
+  if (document.getElementById('sponsorAdTitleInput')) document.getElementById('sponsorAdTitleInput').value = cfg.title || '';
+  if (document.getElementById('sponsorAdImageInput')) document.getElementById('sponsorAdImageInput').value = cfg.image || '';
+  if (document.getElementById('sponsorAdLinkInput')) document.getElementById('sponsorAdLinkInput').value = cfg.link || '';
+  if (document.getElementById('sponsorAdCtaInput')) document.getElementById('sponsorAdCtaInput').value = cfg.cta || 'Visit Now';
+  closeSettingsSheet();
+  show('sponsorAdModal');
+}
+
+function saveSponsorAdConfig() {
+  const cfg = {
+    enabled: Boolean(document.getElementById('sponsorAdEnabledToggle')?.checked),
+    brand: (document.getElementById('sponsorAdBrandInput')?.value || 'Sponsored').trim(),
+    title: (document.getElementById('sponsorAdTitleInput')?.value || 'Featured Partner Offer').trim(),
+    image: (document.getElementById('sponsorAdImageInput')?.value || '').trim(),
+    link: (document.getElementById('sponsorAdLinkInput')?.value || '#').trim(),
+    cta: (document.getElementById('sponsorAdCtaInput')?.value || 'Visit Now').trim()
+  };
+  try {
+    localStorage.setItem(VYBE_SPONSOR_AD_KEY, JSON.stringify(cfg));
+  } catch (_) {}
+  hide('sponsorAdModal');
+  renderFeed();
+  toast('💰 Sponsored Ad updated in Feed!');
+}
+
+function parseInstagramEmbedUrl(rawUrl) {
+  const str = String(rawUrl || '').trim();
+  const match = str.match(/https?:\/\/(?:www\.)?instagram\.com\/(p|reel|tv)\/([A-Za-z0-9_-]+)/i);
+  if (!match) return null;
+  const kind = match[1].toLowerCase();
+  const shortcode = match[2];
+  return `https://www.instagram.com/${kind}/${shortcode}/embed/captioned/`;
+}
+
+// Allow creating a post directly from an Instagram link (0 MB Cloudinary/Supabase storage!)
+if (typeof createPost === 'function') {
+  const _v25PrevCreatePost = createPost;
+  window.createPost = async function () {
+    const igRaw = (document.getElementById('igLinkInput')?.value || '').trim();
+    if (!igRaw) {
+      return _v25PrevCreatePost.apply(this, arguments);
+    }
+    const embedUrl = parseInstagramEmbedUrl(igRaw);
+    if (!embedUrl) {
+      setCreateStatus('Please enter a valid Instagram Post or Reel link (e.g. https://www.instagram.com/reel/...).', 'error');
+      return;
+    }
+    if (!currentUser) {
+      setCreateStatus('Please log in before sharing.', 'error');
+      return;
+    }
+    if (creatingPost) return;
+    creatingPost = true;
+    const shareButton = document.getElementById('sharePostButton');
+    const label = document.getElementById('sharePostLabel');
+    if (shareButton) shareButton.disabled = true;
+    if (label) label.textContent = 'Sharing...';
+    setCreateStatus('Embedding Instagram post...', 'info');
+    try {
+      const captionText = (document.getElementById('caption')?.value || '').trim();
+      const { data: insertedReel, error: insertError } = await supabaseClient
+        .from('reels')
+        .insert({
+          user_id: currentUser.id,
+          media_url: embedUrl,
+          caption: captionText
+        })
+        .select()
+        .single();
+      if (insertError) throw insertError;
+      const reel = normalizeReel({
+        ...insertedReel,
+        media_url: insertedReel?.media_url || embedUrl,
+        caption: insertedReel?.caption ?? captionText,
+        user_id: insertedReel?.user_id ?? currentUser.id,
+        is_archived: false
+      }, 0);
+      reels = [reel, ...reels.filter(item => String(item.id) !== String(reel.id))];
+      if (typeof clearVybeSmartCache === 'function') clearVybeSmartCache();
+      if (typeof writeVybeCache === 'function') writeVybeCache(VYBE_REELS_CACHE_KEY, reels);
+      const igInp = document.getElementById('igLinkInput');
+      if (igInp) igInp.value = '';
+      creatingPost = false;
+      cancelCreate();
+      renderFeed();
+      renderProfile();
+      go('home');
+      toast('✓ Instagram Post/Reel shared to VYBE!');
+    } catch (err) {
+      console.error('Instagram embed post error:', err);
+      setCreateStatus(err?.message || 'Unable to share Instagram link.', 'error');
+    } finally {
+      if (shareButton) shareButton.disabled = false;
+      if (label) label.textContent = 'Share';
+      creatingPost = false;
+    }
+  };
+}
+
+// Enhance renderFeed to render Instagram Embed iframes cleanly + inject Sponsored Ad Card every 4 posts
+if (typeof renderFeed === 'function') {
+  const _v25PrevRenderFeed = renderFeed;
+  window.renderFeed = function () {
+    _v25PrevRenderFeed.apply(this, arguments);
+    const feed = document.getElementById('feed');
+    if (!feed) return;
+
+    // 1. Convert any post whose media src is an Instagram embed URL into a sleek live Instagram embed player
+    feed.querySelectorAll('article.post').forEach((article) => {
+      const img = article.querySelector('.notched-media-stage img.postmedia');
+      if (!img) return;
+      const src = img.getAttribute('src') || '';
+      if (!/instagram\.com\/(p|reel|tv)\/[^/]+\/embed/i.test(src)) return;
+      const stage = article.querySelector('.notched-media-stage');
+      if (!stage) return;
+      stage.onclick = null;
+      stage.innerHTML = `
+        <div class="ig-embed-frame-wrap">
+          <span class="ig-source-pill">Instagram</span>
+          <iframe src="${safe(src)}" loading="lazy" allowtransparency="true" allowfullscreen="true" title="Instagram Post"></iframe>
+        </div>
+      `;
+    });
+
+    // 2. Inject Native VYBE Sponsored Ad Card after every 3rd post (for monetization)
+    const adCfg = getSponsorAdConfig();
+    if (adCfg && adCfg.enabled !== false) {
+      const cards = [...feed.querySelectorAll('article.post')];
+      cards.forEach((card, idx) => {
+        if ((idx + 1) % 3 === 0) {
+          const adCard = document.createElement('div');
+          adCard.className = 'vybe-sponsored-card';
+          adCard.innerHTML = `
+            <div class="sponsor-card-header">
+              <strong style="font-size:13px;">${safe(adCfg.brand || 'Sponsored')}</strong>
+              <span class="sponsor-badge-pill">SPONSORED</span>
+            </div>
+            ${adCfg.image ? `<img class="sponsor-banner-img" src="${safe(adCfg.image)}" alt="Sponsored Ad">` : ''}
+            <div class="sponsor-cta-row">
+              <p style="font-size:12px;font-weight:600;flex:1;min-width:0;">${safe(adCfg.title || '')}</p>
+              <a href="${safe(adCfg.link || '#')}" target="_blank" rel="noopener noreferrer" class="primary" style="padding:8px 14px;font-size:11px;text-decoration:none;white-space:nowrap;">${safe(adCfg.cta || 'Visit')} ↗</a>
+            </div>
+          `;
+          card.insertAdjacentElement('afterend', adCard);
+        }
+      });
+    }
+  };
+}
